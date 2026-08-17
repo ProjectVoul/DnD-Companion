@@ -289,3 +289,279 @@ body {
         min-height: 70px;
     }
 }
+
+/* ---------- Spells ---------- */
+
+.back-button {
+    background: transparent;
+    color: var(--accent-light);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    padding: 7px 12px;
+    margin-bottom: 14px;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.back-button:hover {
+    background: var(--surface);
+}
+
+
+/* Spell tabs */
+
+.spell-tabs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+
+    margin-bottom: 24px;
+}
+
+.spell-tab {
+    background: var(--surface);
+
+    color: var(--text-muted);
+
+    border: 1px solid var(--border);
+    border-radius: 10px;
+
+    padding: 12px;
+
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.spell-tab.active {
+    color: var(--accent-light);
+    border-color: var(--accent);
+}
+
+
+/* Spell slots */
+
+.spell-slots {
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    padding: 16px;
+
+    margin-bottom: 24px;
+}
+
+.spell-slots h2 {
+    font-size: 17px;
+    margin-bottom: 14px;
+}
+
+.slot-row {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 8px 0;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.slot-row:last-child {
+    border-bottom: none;
+}
+
+.slot-level {
+    width: 32px;
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.slot-dots {
+    display: flex;
+    gap: 6px;
+
+    flex: 1;
+}
+
+.slot-dot {
+    width: 12px;
+    height: 12px;
+
+    border-radius: 50%;
+
+    border: 1px solid var(--accent);
+}
+
+.slot-dot.filled {
+    background: var(--accent);
+}
+
+.slot-dot.empty {
+    background: transparent;
+}
+
+.slot-count {
+    color: var(--accent-light);
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* Prepared spells */
+
+.prepared-section h2 {
+    font-size: 18px;
+
+    margin-bottom: 12px;
+}
+
+.spell-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.spell-card {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    text-align: left;
+
+    background: var(--surface);
+
+    color: var(--text);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    padding: 13px 14px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+.spell-card:hover {
+    background: var(--surface-light);
+    border-color: #4a4a4a;
+}
+
+.spell-card:active {
+    transform: scale(0.99);
+}
+
+.spell-icon {
+    font-size: 22px;
+
+    flex-shrink: 0;
+}
+
+.spell-info {
+    flex: 1;
+}
+
+.spell-info h3 {
+    font-size: 15px;
+
+    font-weight: 600;
+
+    margin-bottom: 3px;
+}
+
+.spell-info p {
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    line-height: 1.4;
+}
+
+.spell-arrow {
+    color: var(--text-muted);
+
+    font-size: 22px;
+}
+
+
+/* ---------- Spell Details ---------- */
+
+.spell-details {
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    overflow: hidden;
+}
+
+.spell-detail-grid {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.spell-detail-grid > div {
+    padding: 14px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.spell-detail-grid > div:nth-child(odd) {
+    border-right: 1px solid var(--border);
+}
+
+.spell-detail-grid span {
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+
+    letter-spacing: 0.7px;
+
+    margin-bottom: 5px;
+}
+
+.spell-detail-grid strong {
+    font-size: 13px;
+
+    font-weight: 500;
+
+    line-height: 1.4;
+}
+
+.spell-description {
+    padding: 18px;
+}
+
+.spell-description h2 {
+    font-size: 17px;
+
+    margin-bottom: 10px;
+}
+
+.spell-description p {
+    color: var(--text-muted);
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}

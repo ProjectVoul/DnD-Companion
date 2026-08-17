@@ -565,3 +565,56 @@ body {
 
     line-height: 1.6;
 }
+
+/* ---------- Clickable Spell Slots ---------- */
+
+.slot-dots {
+    display: flex;
+    gap: 7px;
+    flex: 1;
+}
+
+.slot-dot-button {
+    width: 18px;
+    height: 18px;
+
+    padding: 0;
+
+    border-radius: 50%;
+
+    border: 1px solid var(--accent);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.1s ease,
+        opacity 0.15s ease;
+}
+
+.slot-dot-button.filled {
+    background: var(--accent);
+}
+
+.slot-dot-button.empty {
+    background: transparent;
+}
+
+.slot-dot-button:hover {
+    opacity: 0.8;
+}
+
+.slot-dot-button:active {
+    transform: scale(0.85);
+}
+
+
+/* ---------- Prepared Spell Levels ---------- */
+
+.prepared-level {
+    margin-bottom: 24px;
+}
+
+.prepared-level h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}

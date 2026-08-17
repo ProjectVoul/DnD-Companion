@@ -4,7 +4,7 @@
 // ========================================
 
 
-// ---------- Sample Spell Data ----------
+// ---------- Spell Data ----------
 
 const spells = [
     {
@@ -74,6 +74,20 @@ const spells = [
 ];
 
 
+// ---------- Load Saved Prepared Spells ----------
+
+const savedPreparedSpells =
+    JSON.parse(localStorage.getItem("preparedSpells"));
+
+if (savedPreparedSpells) {
+
+    spells.forEach(spell => {
+        spell.prepared = savedPreparedSpells.includes(spell.name);
+    });
+
+}
+
+
 // ---------- Spell Slots ----------
 
 const spellSlots = {
@@ -85,17 +99,27 @@ const spellSlots = {
 };
 
 
-// ---------- Menu Buttons ----------
+// ---------- Save Prepared Spells ----------
 
-const menuButtons = document.querySelectorAll(".menu-button");
+function savePreparedSpells() {
+
+    const prepared = spells
+        .filter(spell => spell.prepared)
+        .map(spell => spell.name);
+
+    localStorage.setItem(
+        "preparedSpells",
+        JSON.stringify(prepared)
+    );
+}
 
 
-// ---------- Open a Section ----------
+// ---------- Open Section ----------
 
 function openSection(section) {
 
     if (section === "spells") {
-        showSpells();
+        showSpells("prepared");
         return;
     }
 
@@ -105,17 +129,27 @@ function openSection(section) {
 
 // ---------- Spells Page ----------
 
-function showSpells() {
+function showSpells(tab = "prepared") {
 
     const app = document.getElementById("app");
 
     app.innerHTML = `
-    
+
         <header class="app-header">
-            <button class="back-button" onclick="goHome()">← Back</button>
+
+            <button
+                class="back-button"
+                onclick="goHome()"
+            >
+                ← Back
+            </button>
 
             <h1>Spells</h1>
-            <p>Your spellbook and prepared spells</p>
+
+            <p>
+                Your spellbook and prepared spells
+            </p>
+
         </header>
 
 
@@ -123,39 +157,56 @@ function showSpells() {
 
             <section class="spell-tabs">
 
-                <button class="spell-tab active">
+                <button
+                    class="spell-tab ${tab === "prepared" ? "active" : ""}"
+                    onclick="showSpells('prepared')"
+                >
                     ⭐ Prepared
                 </button>
 
-                <button class="spell-tab">
+                <button
+                    class="spell-tab ${tab === "spellbook" ? "active" : ""}"
+                    onclick="showSpells('spellbook')"
+                >
                     📚 Spellbook
                 </button>
 
             </section>
 
 
-            <section class="spell-slots">
-
-                <h2>Spell Slots</h2>
-
-                ${renderSpellSlots()}
-
-            </section>
+            ${renderSpellSlotsSection(tab)}
 
 
-            <section class="prepared-section">
-
-                <h2>Prepared Spells</h2>
-
-                <div class="spell-list">
-
-                    ${renderPreparedSpells()}
-
-                </div>
-
-            </section>
+            ${tab === "prepared"
+                ? renderPreparedSection()
+                : renderSpellbookSection()
+            }
 
         </main>
+    `;
+}
+
+
+// ---------- Spell Slots Section ----------
+
+function renderSpellSlotsSection(tab) {
+
+    // Spell slots are currently shown only
+    // on the Prepared screen.
+
+    if (tab !== "prepared") {
+        return "";
+    }
+
+    return `
+
+        <section class="spell-slots">
+
+            <h2>Spell Slots</h2>
+
+            ${renderSpellSlots()}
+
+        </section>
     `;
 }
 
@@ -175,6 +226,7 @@ function renderSpellSlots() {
         }
 
         html += `
+
             <div class="slot-row">
 
                 <span class="slot-level">
@@ -182,9 +234,7 @@ function renderSpellSlots() {
                 </span>
 
                 <div class="slot-dots">
-
                     ${renderSlotDots(slot)}
-
                 </div>
 
                 <span class="slot-count">
@@ -219,13 +269,47 @@ function renderSlotDots(slot) {
 }
 
 
-// ---------- Render Prepared Spells ----------
+// ---------- Prepared Spells ----------
 
-function renderPreparedSpells() {
+function renderPreparedSection() {
 
-    const preparedSpells = spells.filter(spell => spell.prepared);
+    const preparedSpells =
+        spells.filter(spell => spell.prepared);
 
-    return preparedSpells.map(spell => `
+    return `
+
+        <section class="prepared-section">
+
+            <h2>
+                Prepared Spells
+            </h2>
+
+            <div class="spell-list">
+
+                ${
+                    preparedSpells.length > 0
+                    ? preparedSpells
+                        .map(renderPreparedSpellCard)
+                        .join("")
+                    : `
+                        <p class="empty-message">
+                            No spells prepared.
+                        </p>
+                    `
+                }
+
+            </div>
+
+        </section>
+    `;
+}
+
+
+// ---------- Prepared Spell Card ----------
+
+function renderPreparedSpellCard(spell) {
+
+    return `
 
         <button
             class="spell-card"
@@ -238,20 +322,134 @@ function renderPreparedSpells() {
 
             <div class="spell-info">
 
-                <h3>${spell.name}</h3>
+                <h3>
+                    ${spell.name}
+                </h3>
 
                 <p>
-                    ${spell.level}${getOrdinal(spell.level)} level
-                    · ${spell.duration}
+                    ${spell.level}${getOrdinal(spell.level)}
+                    level · ${spell.duration}
                 </p>
 
             </div>
 
-            <span class="spell-arrow">›</span>
+            <span class="spell-arrow">
+                ›
+            </span>
 
         </button>
+    `;
+}
 
-    `).join("");
+
+// ---------- Spellbook ----------
+
+function renderSpellbookSection() {
+
+    let html = "";
+
+    for (let level = 1; level <= 5; level++) {
+
+        const levelSpells =
+            spells.filter(spell => spell.level === level);
+
+        if (levelSpells.length === 0) {
+            continue;
+        }
+
+        html += `
+
+            <section class="spellbook-level">
+
+                <h2>
+                    ${level}${getOrdinal(level)} Level
+                </h2>
+
+                <div class="spell-list">
+
+                    ${levelSpells
+                        .map(renderSpellbookCard)
+                        .join("")}
+
+                </div>
+
+            </section>
+        `;
+    }
+
+    return html;
+}
+
+
+// ---------- Spellbook Card ----------
+
+function renderSpellbookCard(spell) {
+
+    const preparedClass =
+        spell.prepared ? "prepared" : "";
+
+    const buttonText =
+        spell.prepared
+            ? "✓ Unprepare"
+            : "Prepare";
+
+    return `
+
+        <div class="spellbook-card ${preparedClass}">
+
+            <button
+                class="spell-card-main"
+                onclick="showSpellDetails('${spell.name}')"
+            >
+
+                <div class="spell-icon">
+                    ✨
+                </div>
+
+                <div class="spell-info">
+
+                    <h3>
+                        ${spell.name}
+                    </h3>
+
+                    <p>
+                        ${spell.duration}
+                    </p>
+
+                </div>
+
+            </button>
+
+
+            <button
+                class="prepare-button"
+                onclick="togglePrepared('${spell.name}')"
+            >
+                ${buttonText}
+            </button>
+
+        </div>
+    `;
+}
+
+
+// ---------- Prepare / Unprepare ----------
+
+function togglePrepared(spellName) {
+
+    const spell = spells.find(
+        spell => spell.name === spellName
+    );
+
+    if (!spell) {
+        return;
+    }
+
+    spell.prepared = !spell.prepared;
+
+    savePreparedSpells();
+
+    showSpells("spellbook");
 }
 
 
@@ -275,16 +473,18 @@ function showSpellDetails(spellName) {
 
             <button
                 class="back-button"
-                onclick="showSpells()"
+                onclick="showSpells('prepared')"
             >
                 ← Spells
             </button>
 
-            <h1>${spell.name}</h1>
+            <h1>
+                ${spell.name}
+            </h1>
 
             <p>
-                ${spell.level}${getOrdinal(spell.level)} level
-                · ${spell.school}
+                ${spell.level}${getOrdinal(spell.level)}
+                level · ${spell.school}
             </p>
 
         </header>
@@ -298,22 +498,30 @@ function showSpellDetails(spellName) {
 
                     <div>
                         <span>CASTING TIME</span>
-                        <strong>${spell.castingTime}</strong>
+                        <strong>
+                            ${spell.castingTime}
+                        </strong>
                     </div>
 
                     <div>
                         <span>RANGE</span>
-                        <strong>${spell.range}</strong>
+                        <strong>
+                            ${spell.range}
+                        </strong>
                     </div>
 
                     <div>
                         <span>DURATION</span>
-                        <strong>${spell.duration}</strong>
+                        <strong>
+                            ${spell.duration}
+                        </strong>
                     </div>
 
                     <div>
                         <span>COMPONENTS</span>
-                        <strong>${spell.components}</strong>
+                        <strong>
+                            ${spell.components}
+                        </strong>
                     </div>
 
                 </div>
@@ -321,7 +529,9 @@ function showSpellDetails(spellName) {
 
                 <div class="spell-description">
 
-                    <h2>Description</h2>
+                    <h2>
+                        Description
+                    </h2>
 
                     <p>
                         ${spell.description}
@@ -357,13 +567,17 @@ function getOrdinal(number) {
 }
 
 
-// ---------- Menu Events ----------
+// ---------- Home Menu ----------
+
+const menuButtons =
+    document.querySelectorAll(".menu-button");
 
 menuButtons.forEach(button => {
 
     button.addEventListener("click", () => {
 
-        const text = button.innerText.toLowerCase();
+        const text =
+            button.innerText.toLowerCase();
 
         if (text.includes("spells")) {
             openSection("spells");

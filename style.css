@@ -618,3 +618,132 @@ body {
     font-size: 18px;
     margin-bottom: 10px;
 }
+
+/* ---------- Spellbook Card Fix ---------- */
+
+.spellbook-card {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    overflow: hidden;
+
+    margin-bottom: 8px;
+}
+
+
+/* Main spell area */
+
+.spell-card-main {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    padding: 14px;
+
+    background: transparent;
+    color: var(--text);
+
+    border: none;
+    border-radius: 0;
+
+    -webkit-appearance: none;
+    appearance: none;
+
+    font-family: inherit;
+
+    text-align: left;
+
+    cursor: pointer;
+}
+
+
+/* Prepare button */
+
+.prepare-button {
+    flex-shrink: 0;
+
+    width: 110px;
+
+    padding: 10px;
+
+    background: transparent;
+    color: var(--accent-light);
+
+    border: none;
+    border-left: 1px solid var(--border);
+    border-radius: 0;
+
+    -webkit-appearance: none;
+    appearance: none;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.prepare-button:hover {
+    background: var(--surface-light);
+}
+
+.spellbook-card.prepared {
+    border-color: var(--accent);
+}
+
+.spellbook-card.prepared .prepare-button {
+    color: var(--accent);
+}
+
+
+/* Spellbook text */
+
+.spell-card-main .spell-info {
+    flex: 1;
+}
+
+.spell-card-main .spell-info h3 {
+    color: var(--text);
+
+    font-size: 15px;
+    font-weight: 600;
+
+    margin-bottom: 3px;
+}
+
+.spell-card-main .spell-info p {
+    color: var(--text-muted);
+
+    font-size: 12px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 430px) {
+
+    .spellbook-card {
+        min-height: 72px;
+    }
+
+    .spell-card-main {
+        padding: 12px;
+    }
+
+    .prepare-button {
+        width: 105px;
+        font-size: 12px;
+    }
+}

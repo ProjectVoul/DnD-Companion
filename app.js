@@ -82,7 +82,8 @@ const savedPreparedSpells =
 if (savedPreparedSpells) {
 
     spells.forEach(spell => {
-        spell.prepared = savedPreparedSpells.includes(spell.name);
+        spell.prepared =
+            savedPreparedSpells.includes(spell.name);
     });
 
 }
@@ -90,13 +91,28 @@ if (savedPreparedSpells) {
 
 // ---------- Spell Slots ----------
 
-const spellSlots = {
+const savedSpellSlots =
+    JSON.parse(localStorage.getItem("spellSlots"));
+
+const spellSlots = savedSpellSlots || {
     1: { current: 4, maximum: 4 },
     2: { current: 3, maximum: 3 },
     3: { current: 2, maximum: 2 },
     4: { current: 1, maximum: 1 },
     5: { current: 0, maximum: 0 }
 };
+
+
+// ---------- Save Spell Slots ----------
+
+function saveSpellSlots() {
+
+    localStorage.setItem(
+        "spellSlots",
+        JSON.stringify(spellSlots)
+    );
+
+}
 
 
 // ---------- Save Prepared Spells ----------
@@ -111,6 +127,7 @@ function savePreparedSpells() {
         "preparedSpells",
         JSON.stringify(prepared)
     );
+
 }
 
 
@@ -124,6 +141,7 @@ function openSection(section) {
     }
 
     alert("This section is coming soon.");
+
 }
 
 
@@ -184,15 +202,13 @@ function showSpells(tab = "prepared") {
 
         </main>
     `;
+
 }
 
 
 // ---------- Spell Slots Section ----------
 
 function renderSpellSlotsSection(tab) {
-
-    // Spell slots are currently shown only
-    // on the Prepared screen.
 
     if (tab !== "prepared") {
         return "";
@@ -208,6 +224,7 @@ function renderSpellSlotsSection(tab) {
 
         </section>
     `;
+
 }
 
 
@@ -234,7 +251,9 @@ function renderSpellSlots() {
                 </span>
 
                 <div class="slot-dots">
-                    ${renderSlotDots(slot)}
+
+                    ${renderSlotDots(level, slot)}
+
                 </div>
 
                 <span class="slot-count">
@@ -246,26 +265,58 @@ function renderSpellSlots() {
     }
 
     return html;
+
 }
 
 
-// ---------- Render Slot Dots ----------
+// ---------- Render Clickable Slot Dots ----------
 
-function renderSlotDots(slot) {
+function renderSlotDots(level, slot) {
 
     let html = "";
 
     for (let i = 0; i < slot.maximum; i++) {
 
-        if (i < slot.current) {
-            html += `<span class="slot-dot filled"></span>`;
-        } else {
-            html += `<span class="slot-dot empty"></span>`;
-        }
+        const filled = i < slot.current;
 
+        html += `
+
+            <button
+                class="slot-dot-button ${filled ? "filled" : "empty"}"
+                onclick="toggleSpellSlot(${level}, ${i})"
+                aria-label="${filled ? "Use" : "Restore"} spell slot"
+            ></button>
+
+        `;
     }
 
     return html;
+
+}
+
+
+// ---------- Toggle Spell Slot ----------
+
+function toggleSpellSlot(level, index) {
+
+    const slot = spellSlots[level];
+
+    if (index < slot.current) {
+
+        // Use one spell slot
+        slot.current--;
+
+    } else {
+
+        // Restore one spell slot
+        slot.current++;
+
+    }
+
+    saveSpellSlots();
+
+    showSpells("prepared");
+
 }
 
 
@@ -276,32 +327,60 @@ function renderPreparedSection() {
     const preparedSpells =
         spells.filter(spell => spell.prepared);
 
+    let html = "";
+
+    for (let level = 1; level <= 5; level++) {
+
+        const levelSpells =
+            preparedSpells.filter(
+                spell => spell.level === level
+            );
+
+        if (levelSpells.length === 0) {
+            continue;
+        }
+
+        html += `
+
+            <section class="prepared-level">
+
+                <h2>
+                    ${level}${getOrdinal(level)} Level
+                </h2>
+
+                <div class="spell-list">
+
+                    ${levelSpells
+                        .map(renderPreparedSpellCard)
+                        .join("")}
+
+                </div>
+
+            </section>
+        `;
+    }
+
+    if (html === "") {
+
+        html = `
+            <p class="empty-message">
+                No spells prepared.
+            </p>
+        `;
+
+    }
+
     return `
 
         <section class="prepared-section">
 
-            <h2>
-                Prepared Spells
-            </h2>
+            <h2>Prepared Spells</h2>
 
-            <div class="spell-list">
-
-                ${
-                    preparedSpells.length > 0
-                    ? preparedSpells
-                        .map(renderPreparedSpellCard)
-                        .join("")
-                    : `
-                        <p class="empty-message">
-                            No spells prepared.
-                        </p>
-                    `
-                }
-
-            </div>
+            ${html}
 
         </section>
     `;
+
 }
 
 
@@ -327,8 +406,7 @@ function renderPreparedSpellCard(spell) {
                 </h3>
 
                 <p>
-                    ${spell.level}${getOrdinal(spell.level)}
-                    level · ${spell.duration}
+                    ${spell.duration}
                 </p>
 
             </div>
@@ -339,6 +417,7 @@ function renderPreparedSpellCard(spell) {
 
         </button>
     `;
+
 }
 
 
@@ -378,6 +457,7 @@ function renderSpellbookSection() {
     }
 
     return html;
+
 }
 
 
@@ -430,6 +510,7 @@ function renderSpellbookCard(spell) {
 
         </div>
     `;
+
 }
 
 
@@ -450,6 +531,7 @@ function togglePrepared(spellName) {
     savePreparedSpells();
 
     showSpells("spellbook");
+
 }
 
 
@@ -529,9 +611,7 @@ function showSpellDetails(spellName) {
 
                 <div class="spell-description">
 
-                    <h2>
-                        Description
-                    </h2>
+                    <h2>Description</h2>
 
                     <p>
                         ${spell.description}
@@ -543,6 +623,7 @@ function showSpellDetails(spellName) {
 
         </main>
     `;
+
 }
 
 
@@ -564,6 +645,7 @@ function getOrdinal(number) {
     if (number === 3) return "rd";
 
     return "th";
+
 }
 
 
@@ -580,9 +662,13 @@ menuButtons.forEach(button => {
             button.innerText.toLowerCase();
 
         if (text.includes("spells")) {
+
             openSection("spells");
+
         } else {
+
             alert("This section is coming soon.");
+
         }
 
     });

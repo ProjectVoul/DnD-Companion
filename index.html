@@ -67,18 +67,38 @@
                         ❤️ HP
                     </div>
 
-                    <div class="hp-value">
-                        <span id="current-hp">
-                            100
-                        </span>
+                    <div class="hp-controls">
 
-                        <span class="hp-divider">
-                            /
-                        </span>
+                        <button
+                            class="hp-button"
+                            onclick="changeHP(-1)"
+                        >
+                            −
+                        </button>
 
-                        <span id="maximum-hp">
-                            100
-                        </span>
+                        <div class="hp-value">
+
+                            <span id="current-hp">
+                                100
+                            </span>
+
+                            <span class="hp-divider">
+                                /
+                            </span>
+
+                            <span id="maximum-hp">
+                                100
+                            </span>
+
+                        </div>
+
+                        <button
+                            class="hp-button"
+                            onclick="changeHP(1)"
+                        >
+                            +
+                        </button>
+
                     </div>
 
                 </div>
@@ -101,11 +121,11 @@
                 </div>
 
 
-                <div class="status-row">
+                <div class="status-row status-row-conditions">
 
-                    <span>
+                    <div class="status-name">
                         🥀 Status
-                    </span>
+                    </div>
 
                     <button
                         id="status-selector"
@@ -116,6 +136,11 @@
                     </button>
 
                 </div>
+
+                <div
+                    id="active-conditions"
+                    class="active-conditions hidden"
+                ></div>
 
 
                 <div
@@ -258,12 +283,28 @@
                         🎲 Hit Dice
                     </span>
 
-                    <span
-                        id="hit-dice-value"
-                        class="status-value"
-                    >
-                        5 / 5
-                    </span>
+                    <div class="resource-controls">
+
+                        <button
+                            onclick="changeHitDice(-1)"
+                        >
+                            −
+                        </button>
+
+                        <span
+                            id="hit-dice-value"
+                            class="status-value"
+                        >
+                            5 / 5
+                        </span>
+
+                        <button
+                            onclick="changeHitDice(1)"
+                        >
+                            +
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -282,14 +323,17 @@
                             <div class="save-dots">
                                 <button
                                     class="save-dot"
+                                    onclick="toggleDeathSave('success', 0)"
                                 ></button>
 
                                 <button
                                     class="save-dot"
+                                    onclick="toggleDeathSave('success', 1)"
                                 ></button>
 
                                 <button
                                     class="save-dot"
+                                    onclick="toggleDeathSave('success', 2)"
                                 ></button>
                             </div>
                         </div>
@@ -301,14 +345,17 @@
                             <div class="save-dots">
                                 <button
                                     class="save-dot failure"
+                                    onclick="toggleDeathSave('failure', 0)"
                                 ></button>
 
                                 <button
                                     class="save-dot failure"
+                                    onclick="toggleDeathSave('failure', 1)"
                                 ></button>
 
                                 <button
                                     class="save-dot failure"
+                                    onclick="toggleDeathSave('failure', 2)"
                                 ></button>
                             </div>
                         </div>
@@ -375,6 +422,26 @@
 
                     <span>
                         Spells
+                    </span>
+
+                    <span class="main-menu-arrow">
+                        ›
+                    </span>
+
+                </button>
+
+
+                <button
+                    class="main-menu-button"
+                    onclick="openRestMenu()"
+                >
+
+                    <span class="main-menu-icon">
+                        🌙
+                    </span>
+
+                    <span>
+                        Rest
                     </span>
 
                     <span class="main-menu-arrow">

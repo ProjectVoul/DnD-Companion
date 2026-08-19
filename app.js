@@ -145,6 +145,11 @@ function openSection(section) {
         return;
     }
 
+    if (section === "inventory") {
+        showInventory();
+        return;
+    }
+
     if (section === "rest") {
         openRestMenu();
         return;
@@ -2659,6 +2664,18 @@ menuButtons.forEach(
 
                 else if (
                     text.includes(
+                        "inventory"
+                    )
+                ) {
+
+                    openSection(
+                        "inventory"
+                    );
+
+                }
+
+                else if (
+                    text.includes(
                         "rest"
                     )
                 ) {
@@ -2683,6 +2700,1338 @@ menuButtons.forEach(
     }
 );
 
+// ========================================
+// INVENTORY
+// ========================================
+
+
+// ---------- Currency ----------
+
+const currency = {
+
+    copper: 30,
+
+    silver: 11,
+
+    gold: 24,
+
+    platinum: 3
+
+};
+
+
+// ---------- Inventory Items ----------
+
+const inventoryItems = [
+
+    // ---------- Equipment ----------
+
+    {
+        id: "plate-armor",
+
+        name: "Plate Armor",
+
+        category: "armor",
+
+        location: "equipment",
+
+        icon: "🛡️",
+
+        description:
+            "Heavy armor consisting of shaped metal plates covering most of the body.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: true,
+
+        magical: false,
+
+        properties: [
+            "Heavy Armor",
+            "+7 AC"
+        ],
+
+        tags: []
+
+    },
+
+
+    {
+        id: "golden-choice-sword",
+
+        name: "Sword of the Golden Choice",
+
+        category: "weapons",
+
+        location: "equipment",
+
+        icon: "⚔️",
+
+        description:
+            "A magical sword carrying the power of the Dragon.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: true,
+
+        magical: true,
+
+        properties: [
+            "Magical Weapon",
+            "Dragon's Judgment"
+        ],
+
+        linkedAbility: "dragons-judgment",
+
+        tags: []
+
+    },
+
+
+    {
+        id: "bahamut-shield",
+
+        name: "Shield of Bahamut",
+
+        category: "shield",
+
+        location: "equipment",
+
+        icon: "🛡️",
+
+        description:
+            "A magical shield bearing the symbol of Bahamut.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: true,
+
+        magical: true,
+
+        properties: [
+            "+4 AC"
+        ],
+
+        tags: []
+
+    },
+
+
+    {
+        id: "bahamut-symbol",
+
+        name: "Symbol of Bahamut",
+
+        category: "focus",
+
+        location: "equipment",
+
+        icon: "✝️",
+
+        description:
+            "A simple holy symbol of Bahamut used as a divine spellcasting focus.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: true,
+
+        magical: false,
+
+        properties: [
+            "Divine Focus"
+        ],
+
+        tags: []
+
+    },
+
+
+    // ---------- Miscellaneous ----------
+
+    {
+        id: "healing-potion",
+
+        name: "Simple Healing Potion",
+
+        category: "miscellaneous",
+
+        location: "miscellaneous",
+
+        icon: "🧪",
+
+        description:
+            "A simple potion made from red berries. Restores 1d6 hit points.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: false,
+
+        magical: false,
+
+        properties: [
+            "Restores 1d6 HP"
+        ],
+
+        tags: [
+            "Consumable",
+            "Potion"
+        ]
+
+    },
+
+
+    {
+        id: "silver-rings",
+
+        name: "Silver Rings",
+
+        category: "miscellaneous",
+
+        location: "miscellaneous",
+
+        icon: "💍",
+
+        description:
+            "A pair of silver rings that can be used for magic or as a symbol of a bond between two people.",
+
+        quantity: 1,
+
+        weight: null,
+
+        equipped: false,
+
+        magical: false,
+
+        properties: [
+            "Pair of rings"
+        ],
+
+        tags: [
+            "Accessory",
+            "Treasure",
+            "Spell Component"
+        ]
+
+    }
+
+];
+
+
+// ---------- Inventory Categories ----------
+
+const equipmentCategories = [
+
+    {
+        id: "armor",
+        name: "Armor",
+        icon: "🛡️"
+    },
+
+    {
+        id: "weapons",
+        name: "Weapons",
+        icon: "⚔️"
+    },
+
+    {
+        id: "ammunition",
+        name: "Ammunition",
+        icon: "🏹"
+    },
+
+    {
+        id: "focus",
+        name: "Focus",
+        icon: "✝️"
+    },
+
+    {
+        id: "shield",
+        name: "Shield",
+        icon: "🛡️"
+    },
+
+    {
+        id: "accessories",
+        name: "Accessories / Others",
+        icon: "💍"
+    }
+
+];
+
+
+// ---------- Miscellaneous Tags ----------
+
+const inventoryTags = [
+
+    "Consumable",
+
+    "Potion",
+
+    "Treasure",
+
+    "Common",
+
+    "Quest Item",
+
+    "Spell Component",
+
+    "Accessory",
+
+    "Magical",
+
+    "Material",
+
+    "Utility"
+
+];
+
+
+// ---------- Currency Conversion ----------
+
+function getCurrencyInGold() {
+
+    return (
+
+        currency.copper / 100
+
+        +
+
+        currency.silver / 10
+
+        +
+
+        currency.gold
+
+        +
+
+        currency.platinum * 10
+
+    );
+
+}
+
+
+// ---------- Format Gold Value ----------
+
+function formatGoldValue(value) {
+
+    return value
+        .toFixed(2)
+        .replace(
+            ".00",
+            ""
+        );
+
+}
+
+
+// ========================================
+// INVENTORY PAGE
+// ========================================
+
+
+function showInventory() {
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="goHome()"
+            >
+                ← Back
+            </button>
+
+
+            <h1>
+                Inventory
+            </h1>
+
+
+            <p>
+                Equipment, possessions and currency
+            </p>
+
+        </header>
+
+
+        <main>
+
+
+            <!-- ================================ -->
+            <!-- EQUIPMENT -->
+            <!-- ================================ -->
+
+            <section class="inventory-section">
+
+                <div class="inventory-section-header">
+
+                    <h2>
+                        ⚔️ Equipment
+                    </h2>
+
+                </div>
+
+
+                ${renderEquipment()}
+
+            </section>
+
+
+            <!-- ================================ -->
+            <!-- MISCELLANEOUS -->
+            <!-- ================================ -->
+
+            <section class="inventory-section">
+
+                <div class="inventory-section-header">
+
+                    <h2>
+                        📦 Miscellaneous
+                    </h2>
+
+                </div>
+
+
+                ${renderMiscellaneous()}
+
+            </section>
+
+
+            <!-- ================================ -->
+            <!-- CURRENCY -->
+            <!-- ================================ -->
+
+            <section class="inventory-section currency-section">
+
+                <div class="inventory-section-header">
+
+                    <h2>
+                        💰 Currency
+                    </h2>
+
+                </div>
+
+
+                <button
+                    class="currency-summary"
+                    onclick="showCurrencyDetails()"
+                >
+
+                    <div class="currency-summary-icon">
+                        💰
+                    </div>
+
+
+                    <div class="currency-summary-info">
+
+                        <span>
+                            Coin Pouch
+                        </span>
+
+                        <strong>
+                            ${formatGoldValue(
+                                getCurrencyInGold()
+                            )}
+                            GP
+                        </strong>
+
+                    </div>
+
+
+                    <span class="inventory-arrow">
+                        ›
+                    </span>
+
+                </button>
+
+            </section>
+
+
+        </main>
+
+    `;
+
+}
+
+
+// ========================================
+// EQUIPMENT
+// ========================================
+
+
+function renderEquipment() {
+
+    let html = "";
+
+
+    equipmentCategories.forEach(
+        category => {
+
+            const items =
+                inventoryItems.filter(
+                    item =>
+                        item.location ===
+                            "equipment"
+                        &&
+                        item.category ===
+                            category.id
+                );
+
+
+            if (
+                items.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            html += `
+
+                <div class="inventory-category">
+
+                    <h3>
+
+                        ${category.icon}
+
+                        ${category.name}
+
+                    </h3>
+
+
+                    <div class="inventory-list">
+
+                        ${items
+                            .map(
+                                renderInventoryItem
+                            )
+                            .join("")}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    return html;
+
+}
+
+
+// ========================================
+// MISCELLANEOUS
+// ========================================
+
+
+function renderMiscellaneous() {
+
+    const items =
+        inventoryItems.filter(
+            item =>
+                item.location ===
+                "miscellaneous"
+        );
+
+
+    if (
+        items.length === 0
+    ) {
+
+        return `
+
+            <p class="empty-message">
+
+                No miscellaneous items.
+
+            </p>
+
+        `;
+
+    }
+
+
+    return `
+
+        <div class="inventory-list">
+
+            ${items
+                .map(
+                    renderInventoryItem
+                )
+                .join("")}
+
+        </div>
+
+    `;
+
+}
+
+
+// ========================================
+// INVENTORY ITEM CARD
+// ========================================
+
+
+function renderInventoryItem(
+    item
+) {
+
+    const weightText =
+        item.weight !== null
+
+            ? `${item.weight} kg`
+
+            : "Weight not set";
+
+
+    const quantityText =
+        item.quantity > 1
+
+            ? `× ${item.quantity}`
+
+            : "";
+
+
+    const equippedText =
+        item.equipped
+
+            ? "Equipped"
+
+            : "";
+
+
+    return `
+
+        <button
+            class="inventory-item-card"
+            onclick="showInventoryItem('${item.id}')"
+        >
+
+
+            <div class="inventory-item-icon">
+
+                ${item.icon}
+
+            </div>
+
+
+            <div class="inventory-item-info">
+
+
+                <div class="inventory-item-top">
+
+                    <h3>
+                        ${item.name}
+                    </h3>
+
+
+                    <span class="inventory-arrow">
+                        ›
+                    </span>
+
+                </div>
+
+
+                <div class="inventory-item-meta">
+
+                    ${quantityText}
+
+
+                    ${equippedText}
+
+
+                    ${
+                        item.magical
+                            ? "✨ Magical"
+                            : ""
+                    }
+
+                </div>
+
+
+                ${
+                    item.tags.length > 0
+
+                        ? `
+
+                            <div class="inventory-tags">
+
+                                ${item.tags
+                                    .map(
+                                        tag => `
+
+                                            <span
+                                                class="inventory-tag"
+                                            >
+                                                ${tag}
+                                            </span>
+
+                                        `
+                                    )
+                                    .join("")}
+
+                            </div>
+
+                        `
+
+                        : ""
+
+                }
+
+
+                <span class="inventory-weight">
+
+                    ⚖️ ${weightText}
+
+                </span>
+
+
+            </div>
+
+
+        </button>
+
+    `;
+
+}
+
+
+// ========================================
+// ITEM DETAILS
+// ========================================
+
+
+function showInventoryItem(
+    itemId
+) {
+
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
+
+
+    if (!item) {
+
+        return;
+
+    }
+
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    const locationName =
+        item.location ===
+            "equipment"
+
+            ? "Equipment"
+
+            : "Miscellaneous";
+
+
+    let propertiesHTML = "";
+
+
+    if (
+        item.properties &&
+        item.properties.length > 0
+    ) {
+
+        propertiesHTML = `
+
+            <div class="inventory-details-properties">
+
+                <h2>
+                    Properties
+                </h2>
+
+
+                <div>
+
+                    ${item.properties
+                        .map(
+                            property => `
+
+                                <span
+                                    class="inventory-property"
+                                >
+                                    ${property}
+                                </span>
+
+                            `
+                        )
+                        .join("")}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    let tagsHTML = "";
+
+
+    if (
+        item.tags &&
+        item.tags.length > 0
+    ) {
+
+        tagsHTML = `
+
+            <div class="inventory-details-properties">
+
+                <h2>
+                    Tags
+                </h2>
+
+
+                <div>
+
+                    ${item.tags
+                        .map(
+                            tag => `
+
+                                <span
+                                    class="inventory-tag"
+                                >
+                                    ${tag}
+                                </span>
+
+                            `
+                        )
+                        .join("")}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    let linkedAbilityHTML = "";
+
+
+    if (
+        item.linkedAbility
+    ) {
+
+        const ability =
+            abilities.find(
+                ability =>
+                    ability.id ===
+                    item.linkedAbility
+            );
+
+
+        if (ability) {
+
+            linkedAbilityHTML = `
+
+                <button
+                    class="linked-ability-card"
+                    onclick="showAbilityDetails('${ability.id}')"
+                >
+
+                    <div>
+
+                        <span>
+                            Linked Ability
+                        </span>
+
+                        <strong>
+                            ${ability.icon}
+                            ${ability.name}
+                        </strong>
+
+                    </div>
+
+
+                    <span>
+                        ›
+                    </span>
+
+                </button>
+
+            `;
+
+        }
+
+    }
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+
+            <button
+                class="back-button"
+                onclick="showInventory()"
+            >
+                ← Inventory
+            </button>
+
+
+            <h1>
+
+                ${item.icon}
+
+                ${item.name}
+
+            </h1>
+
+
+            <p>
+                ${locationName}
+            </p>
+
+
+        </header>
+
+
+        <main>
+
+
+            <section class="inventory-details">
+
+
+                <div class="inventory-detail-summary">
+
+
+                    <div class="inventory-detail-stat">
+
+                        <span>
+                            QUANTITY
+                        </span>
+
+                        <strong>
+                            ${item.quantity}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="inventory-detail-stat">
+
+                        <span>
+                            WEIGHT
+                        </span>
+
+                        <strong>
+
+                            ${
+                                item.weight !== null
+                                    ? `${item.weight} kg`
+                                    : "—"
+                            }
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="inventory-detail-stat">
+
+                        <span>
+                            STATUS
+                        </span>
+
+                        <strong>
+
+                            ${
+                                item.equipped
+                                    ? "Equipped"
+                                    : "Carried"
+                            }
+
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+                <div class="inventory-description">
+
+                    <h2>
+                        Description
+                    </h2>
+
+
+                    <p>
+                        ${item.description}
+                    </p>
+
+                </div>
+
+
+                ${propertiesHTML}
+
+
+                ${tagsHTML}
+
+
+                ${linkedAbilityHTML}
+
+
+                ${
+                    item.location ===
+                    "equipment"
+
+                        ? `
+
+                            <button
+                                class="inventory-action-button"
+                                onclick="toggleEquipment('${item.id}')"
+                            >
+
+                                ${
+                                    item.equipped
+                                        ? "Unequip"
+                                        : "Equip"
+                                }
+
+                            </button>
+
+                        `
+
+                        : ""
+
+                }
+
+
+            </section>
+
+
+        </main>
+
+    `;
+
+}
+
+
+// ========================================
+// EQUIP / UNEQUIP
+// ========================================
+
+
+function toggleEquipment(
+    itemId
+) {
+
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
+
+
+    if (!item) {
+
+        return;
+
+    }
+
+
+    item.equipped =
+        !item.equipped;
+
+
+    if (
+        item.equipped
+    ) {
+
+        item.location =
+            "equipment";
+
+    }
+
+
+    else {
+
+        item.location =
+            "miscellaneous";
+
+    }
+
+
+    showInventory();
+
+}
+
+
+// ========================================
+// CURRENCY DETAILS
+// ========================================
+
+
+function showCurrencyDetails() {
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+
+            <button
+                class="back-button"
+                onclick="showInventory()"
+            >
+                ← Inventory
+            </button>
+
+
+            <h1>
+                💰 Coin Pouch
+            </h1>
+
+
+            <p>
+                Your physical currency
+            </p>
+
+
+        </header>
+
+
+        <main>
+
+
+            <section class="currency-details">
+
+
+                <div class="currency-total-card">
+
+                    <span>
+                        Total Value
+                    </span>
+
+
+                    <strong>
+                        ${formatGoldValue(
+                            getCurrencyInGold()
+                        )}
+                        GP
+                    </strong>
+
+                </div>
+
+
+                ${renderCurrencyRow(
+                    "copper",
+                    "🟤",
+                    "Copper",
+                    "CP"
+                )}
+
+
+                ${renderCurrencyRow(
+                    "silver",
+                    "⚪",
+                    "Silver",
+                    "SP"
+                )}
+
+
+                ${renderCurrencyRow(
+                    "gold",
+                    "🟡",
+                    "Gold",
+                    "GP"
+                )}
+
+
+                ${renderCurrencyRow(
+                    "platinum",
+                    "⚪",
+                    "Platinum",
+                    "PP"
+                )}
+
+
+            </section>
+
+
+        </main>
+
+    `;
+
+}
+
+
+// ---------- Currency Row ----------
+
+function renderCurrencyRow(
+    type,
+    icon,
+    name,
+    abbreviation
+) {
+
+    return `
+
+        <div class="currency-row">
+
+
+            <div class="currency-row-name">
+
+                <span>
+                    ${icon}
+                </span>
+
+
+                <div>
+
+                    <strong>
+                        ${name}
+                    </strong>
+
+                    <small>
+                        ${abbreviation}
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div class="currency-controls">
+
+
+                <button
+                    class="currency-minus"
+                    onclick="changeCurrency('${type}', -1)"
+                >
+                    −
+                </button>
+
+
+                <input
+                    class="currency-input"
+                    type="number"
+                    min="0"
+                    value="${currency[type]}"
+                    onchange="setCurrency('${type}', this.value)"
+                >
+
+
+                <button
+                    class="currency-plus"
+                    onclick="changeCurrency('${type}', 1)"
+                >
+                    +
+                </button>
+
+
+            </div>
+
+
+        </div>
+
+    `;
+
+}
+
+
+// ---------- Change Currency ----------
+
+function changeCurrency(
+    type,
+    amount
+) {
+
+    currency[type] +=
+        amount;
+
+
+    if (
+        currency[type] < 0
+    ) {
+
+        currency[type] = 0;
+
+    }
+
+
+    showCurrencyDetails();
+
+}
+
+
+// ---------- Set Currency ----------
+
+function setCurrency(
+    type,
+    value
+) {
+
+    const amount =
+        Number(value);
+
+
+    if (
+        !Number.isFinite(
+            amount
+        ) ||
+        amount < 0
+    ) {
+
+        return;
+
+    }
+
+
+    currency[type] =
+        Math.floor(
+            amount
+        );
+
+
+    showCurrencyDetails();
+
+}
 
 // ---------- Initialize ----------
 

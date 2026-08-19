@@ -141,7 +141,7 @@ function openSection(section) {
     }
 
     if (section === "abilities") {
-        showAbilities();
+        showAbilities("racial");
         return;
     }
 
@@ -150,19 +150,9 @@ function openSection(section) {
         return;
     }
 
-    if (section === "rest") {
-        openRestMenu();
-        return;
-    }
-
     alert("This section is coming soon.");
 
 }
-
-
-// ========================================
-// SPELLS
-// ========================================
 
 
 // ---------- Spells Page ----------
@@ -327,9 +317,7 @@ function toggleSpellSlot(level, index) {
 
     } else {
 
-        if (slot.current < slot.maximum) {
-            slot.current++;
-        }
+        slot.current++;
 
     }
 
@@ -670,863 +658,6 @@ function getOrdinal(number) {
 
 
 // ========================================
-// ABILITIES
-// ========================================
-
-
-const abilities = [
-
-    // ---------- Racial ----------
-
-    {
-        id: "dragon-breath",
-
-        name: "Dragon Breath",
-
-        category: "racial",
-
-        icon: "🐉",
-
-        description:
-            "You exhale a destructive breath that deals 4d6 damage. The target must make a saving throw against your Dragon Breath DC.",
-
-        details: [
-            {
-                label: "Save DC",
-                value: "8 + Constitution modifier + proficiency bonus"
-            },
-            {
-                label: "Damage",
-                value: "4d6"
-            }
-        ],
-
-        resource: {
-            type: "uses",
-            current: 2,
-            maximum: 2,
-            recovery: "longRest"
-        },
-
-        actions: [
-            "Action"
-        ]
-
-    },
-
-
-    // ---------- Class ----------
-
-    {
-        id: "lay-on-hands",
-
-        name: "Lay on Hands",
-
-        category: "class",
-
-        icon: "✋",
-
-        description:
-            "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest.",
-
-        details: [
-            {
-                label: "Healing Pool",
-                value: "5 × Paladin level"
-            },
-            {
-                label: "Current Pool",
-                value: "65 HP"
-            },
-            {
-                label: "Special",
-                value: "Spend 5 HP from the pool to cure a disease or neutralize a poison."
-            }
-        ],
-
-        resource: {
-            type: "pool",
-            current: 65,
-            maximum: 65,
-            unit: "HP",
-            recovery: "longRest"
-        },
-
-        actions: [
-            "Action"
-        ]
-
-    },
-
-
-    // ---------- Feat ----------
-
-    {
-        id: "shield-master",
-
-        name: "Shield Master",
-
-        category: "feat",
-
-        icon: "🛡️",
-
-        description:
-            "You have mastered the use of your shield to defend yourself and control the battlefield.",
-
-        details: [
-            {
-                label: "Dexterity Saves",
-                value: "Add the AC bonus from your shield to Dexterity saving throws."
-            },
-            {
-                label: "Reaction",
-                value: "When an effect allows you to make a Dexterity saving throw to take only half damage on a success, you can use your reaction to take no damage instead."
-            },
-            {
-                label: "Bonus Action",
-                value: "After attacking, you can use a bonus action to shove a creature up to 5 feet away."
-            }
-        ],
-
-        resource: {
-            type: "none",
-            recovery: null
-        },
-
-        actions: [
-            "Passive",
-            "Reaction",
-            "Bonus Action"
-        ]
-
-    },
-
-
-    // ---------- Additional / Magic Weapon ----------
-
-    {
-        id: "dragons-judgment",
-
-        name: "Dragon's Judgment",
-
-        category: "additional",
-
-        icon: "⚔️",
-
-        description:
-            "When you hit a creature with the Sword of the Golden Choice, you can force the target to make a Wisdom saving throw.",
-
-        details: [
-            {
-                label: "On Failure",
-                value: "Choose one of the two effects below."
-            },
-            {
-                label: "Prone",
-                value: "The target falls prone and can stand only at the end of its turn, without using additional movement."
-            },
-            {
-                label: "Silenced",
-                value: "The target becomes unable to speak or cast spells with verbal components until the end of its next turn."
-            }
-        ],
-
-        resource: {
-            type: "uses",
-            current: 3,
-            maximum: 3,
-            recovery: "longRest"
-        },
-
-        actions: [
-            "Special"
-        ]
-
-    },
-
-
-    // ---------- Additional / Magic Item ----------
-
-    {
-        id: "dragon-licorice",
-
-        name: "Dragon Licorice",
-
-        category: "additional",
-
-        icon: "🍬",
-
-        description:
-            "This magical item grants you one additional use of Dragon Breath per long rest.",
-
-        details: [
-            {
-                label: "Effect",
-                value: "+1 Dragon Breath use per Long Rest."
-            }
-        ],
-
-        resource: {
-            type: "none",
-            recovery: null
-        },
-
-        actions: [
-            "Passive"
-        ]
-
-    }
-
-];
-
-
-// ---------- Ability Resource State ----------
-
-abilities.forEach(ability => {
-
-    if (!ability.resource) {
-        return;
-    }
-
-    const saved =
-        JSON.parse(
-            localStorage.getItem(
-                `ability-${ability.id}`
-            )
-        );
-
-    if (saved !== null) {
-
-        ability.resource.current =
-            saved;
-
-    }
-
-});
-
-
-// ---------- Save Ability Resource ----------
-
-function saveAbilityResource(ability) {
-
-    if (
-        !ability.resource ||
-        ability.resource.type === "none"
-    ) {
-        return;
-    }
-
-    localStorage.setItem(
-        `ability-${ability.id}`,
-        JSON.stringify(
-            ability.resource.current
-        )
-    );
-
-}
-
-
-// ---------- Ability Category Names ----------
-
-function getAbilityCategoryName(category) {
-
-    const names = {
-
-        racial: "Racial",
-
-        class: "Class",
-
-        feat: "Feats",
-
-        additional: "Additional"
-
-    };
-
-    return names[category] || category;
-
-}
-
-
-// ---------- Render Ability Resource ----------
-
-function renderAbilityResource(ability) {
-
-    const resource =
-        ability.resource;
-
-    if (
-        !resource ||
-        resource.type === "none"
-    ) {
-
-        return `
-
-            <div class="ability-passive-label">
-
-                Passive
-
-            </div>
-
-        `;
-
-    }
-
-
-    if (resource.type === "uses") {
-
-        let dots = "";
-
-        for (
-            let i = 0;
-            i < resource.maximum;
-            i++
-        ) {
-
-            const filled =
-                i < resource.current;
-
-            dots += `
-
-                <button
-                    class="ability-dot ${filled ? "filled" : "empty"}"
-                    onclick="event.stopPropagation(); toggleAbilityUse('${ability.id}', ${i})"
-                    aria-label="${filled ? "Use" : "Restore"} ability use"
-                ></button>
-
-            `;
-
-        }
-
-
-        return `
-
-            <div class="ability-resource uses-resource">
-
-                <div class="ability-resource-dots">
-
-                    ${dots}
-
-                </div>
-
-                <span>
-                    ${resource.current} / ${resource.maximum}
-                </span>
-
-            </div>
-
-        `;
-
-    }
-
-
-    if (resource.type === "pool") {
-
-        const percentage =
-            resource.maximum > 0
-                ? (
-                    resource.current /
-                    resource.maximum
-                ) * 100
-                : 0;
-
-
-        return `
-
-            <div
-                class="ability-resource pool-resource"
-                onclick="event.stopPropagation()"
-            >
-
-                <div class="ability-pool-value">
-
-                    <span>
-                        ${resource.current}
-                    </span>
-
-                    <span class="ability-pool-divider">
-                        /
-                    </span>
-
-                    <span class="ability-pool-max">
-                        ${resource.maximum}
-                        ${resource.unit || ""}
-                    </span>
-
-                </div>
-
-
-                <input
-                    class="ability-pool-slider"
-                    type="range"
-                    min="0"
-                    max="${resource.maximum}"
-                    value="${resource.current}"
-                    style="--pool-progress: ${percentage}%"
-                    oninput="setAbilityPool('${ability.id}', this.value)"
-                    aria-label="${ability.name} resource"
-                >
-
-            </div>
-
-        `;
-
-    }
-
-
-    return "";
-
-}
-
-
-// ---------- Render Ability Card ----------
-
-function renderAbilityCard(ability) {
-
-    const categoryName =
-        getAbilityCategoryName(
-            ability.category
-        );
-
-
-    return `
-
-        <button
-            class="ability-card"
-            onclick="showAbilityDetails('${ability.id}')"
-        >
-
-            <div class="ability-icon">
-
-                ${ability.icon}
-
-            </div>
-
-
-            <div class="ability-card-content">
-
-                <div class="ability-card-top">
-
-                    <div>
-
-                        <h3>
-                            ${ability.name}
-                        </h3>
-
-                        <p class="ability-category-label">
-                            ${categoryName}
-                        </p>
-
-                    </div>
-
-                    <span class="ability-arrow">
-                        ›
-                    </span>
-
-                </div>
-
-
-                ${renderAbilityResource(ability)}
-
-            </div>
-
-        </button>
-
-    `;
-
-}
-
-
-// ---------- Render Ability Section ----------
-
-function renderAbilitySection(
-    category,
-    abilitiesInCategory
-) {
-
-    if (
-        abilitiesInCategory.length === 0
-    ) {
-
-        return "";
-
-    }
-
-
-    return `
-
-        <section class="ability-section">
-
-            <div class="ability-section-title">
-
-                <h2>
-                    ${getAbilityCategoryName(category)}
-                </h2>
-
-            </div>
-
-
-            <div class="ability-list">
-
-                ${abilitiesInCategory
-                    .map(renderAbilityCard)
-                    .join("")}
-
-            </div>
-
-        </section>
-
-    `;
-
-}
-
-
-// ---------- Abilities Page ----------
-
-function showAbilities() {
-
-    const app =
-        document.getElementById("app");
-
-
-    const categories = [
-        "racial",
-        "class",
-        "feat",
-        "additional"
-    ];
-
-
-    let html = "";
-
-
-    categories.forEach(category => {
-
-        const categoryAbilities =
-            abilities.filter(
-                ability =>
-                    ability.category === category
-            );
-
-
-        html += renderAbilitySection(
-            category,
-            categoryAbilities
-        );
-
-    });
-
-
-    app.innerHTML = `
-
-        <header class="app-header">
-
-            <button
-                class="back-button"
-                onclick="goHome()"
-            >
-                ← Back
-            </button>
-
-            <h1>
-                Abilities
-            </h1>
-
-            <p>
-                Your abilities, feats and special features
-            </p>
-
-        </header>
-
-
-        <main>
-
-            ${html}
-
-        </main>
-
-    `;
-
-}
-
-
-// ---------- Toggle Ability Use ----------
-
-function toggleAbilityUse(
-    abilityId,
-    index
-) {
-
-    const ability =
-        abilities.find(
-            ability =>
-                ability.id === abilityId
-        );
-
-
-    if (
-        !ability ||
-        ability.resource.type !== "uses"
-    ) {
-
-        return;
-
-    }
-
-
-    if (index < ability.resource.current) {
-
-        ability.resource.current--;
-
-    } else {
-
-        if (
-            ability.resource.current <
-            ability.resource.maximum
-        ) {
-
-            ability.resource.current++;
-
-        }
-
-    }
-
-
-    saveAbilityResource(
-        ability
-    );
-
-
-    showAbilities();
-
-}
-
-
-// ---------- Set Ability Pool ----------
-
-function setAbilityPool(
-    abilityId,
-    value
-) {
-
-    const ability =
-        abilities.find(
-            ability =>
-                ability.id === abilityId
-        );
-
-
-    if (
-        !ability ||
-        ability.resource.type !== "pool"
-    ) {
-
-        return;
-
-    }
-
-
-    ability.resource.current =
-        Math.max(
-            0,
-            Math.min(
-                ability.resource.maximum,
-                Number(value)
-            )
-        );
-
-
-    saveAbilityResource(
-        ability
-    );
-
-
-    const slider =
-        document.querySelector(
-            `.ability-pool-slider[aria-label="${ability.name} resource"]`
-        );
-
-
-    if (slider) {
-
-        const percentage =
-            (
-                ability.resource.current /
-                ability.resource.maximum
-            ) * 100;
-
-        slider.style
-            .setProperty(
-                "--pool-progress",
-                `${percentage}%`
-            );
-
-    }
-
-
-    const valueElement =
-        document.querySelector(
-            ".ability-pool-value span:first-child"
-        );
-
-
-    if (valueElement) {
-
-        valueElement.textContent =
-            ability.resource.current;
-
-    }
-
-}
-
-
-// ---------- Ability Details ----------
-
-function showAbilityDetails(
-    abilityId
-) {
-
-    const ability =
-        abilities.find(
-            ability =>
-                ability.id === abilityId
-        );
-
-
-    if (!ability) {
-
-        return;
-
-    }
-
-
-    const app =
-        document.getElementById("app");
-
-
-    const categoryName =
-        getAbilityCategoryName(
-            ability.category
-        );
-
-
-    let detailsHTML = "";
-
-
-    if (
-        ability.details &&
-        ability.details.length > 0
-    ) {
-
-        detailsHTML = `
-
-            <div class="ability-details-list">
-
-                ${ability.details
-                    .map(detail => `
-
-                        <div class="ability-detail-row">
-
-                            <span>
-                                ${detail.label}
-                            </span>
-
-                            <strong>
-                                ${detail.value}
-                            </strong>
-
-                        </div>
-
-                    `)
-                    .join("")}
-
-            </div>
-
-        `;
-
-    }
-
-
-    let actionsHTML = "";
-
-
-    if (
-        ability.actions &&
-        ability.actions.length > 0
-    ) {
-
-        actionsHTML = `
-
-            <div class="ability-actions">
-
-                <span>
-                    ${ability.actions.join(" · ")}
-                </span>
-
-            </div>
-
-        `;
-
-    }
-
-
-    app.innerHTML = `
-
-        <header class="app-header">
-
-            <button
-                class="back-button"
-                onclick="showAbilities()"
-            >
-                ← Abilities
-            </button>
-
-            <h1>
-                ${ability.icon}
-                ${ability.name}
-            </h1>
-
-            <p>
-                ${categoryName}
-            </p>
-
-        </header>
-
-
-        <main>
-
-            <section class="ability-details">
-
-                ${renderAbilityResource(ability)}
-
-
-                ${actionsHTML}
-
-
-                <div class="ability-description">
-
-                    <h2>
-                        Description
-                    </h2>
-
-                    <p>
-                        ${ability.description}
-                    </p>
-
-                </div>
-
-
-                ${detailsHTML}
-
-            </section>
-
-        </main>
-
-    `;
-
-}
-
-
-// ========================================
 // CHARACTER RESOURCES
 // ========================================
 
@@ -1545,15 +676,9 @@ function toggleConcentration() {
             "concentration-toggle"
         );
 
-    if (!button) {
-        return;
-    }
-
-
     if (concentrating) {
 
-        button.textContent =
-            "ON";
+        button.textContent = "ON";
 
         button.classList.add(
             "active"
@@ -1561,8 +686,7 @@ function toggleConcentration() {
 
     } else {
 
-        button.textContent =
-            "OFF";
+        button.textContent = "OFF";
 
         button.classList.remove(
             "active"
@@ -1585,10 +709,6 @@ function toggleStatusMenu() {
             "status-menu"
         );
 
-    if (!menu) {
-        return;
-    }
-
     menu.classList.toggle(
         "hidden"
     );
@@ -1596,17 +716,11 @@ function toggleStatusMenu() {
 }
 
 
-function toggleCondition(
-    checkbox
-) {
+function toggleCondition(checkbox) {
 
     if (checkbox.checked) {
 
-        if (
-            !conditions.includes(
-                checkbox.value
-            )
-        ) {
+        if (!conditions.includes(checkbox.value)) {
 
             conditions.push(
                 checkbox.value
@@ -1624,7 +738,6 @@ function toggleCondition(
 
     }
 
-
     updateStatusDisplay();
 
 }
@@ -1637,29 +750,19 @@ function updateStatusDisplay() {
             "status-selector"
         );
 
-
     const container =
         document.getElementById(
             "active-conditions"
         );
 
-
-    if (
-        !button ||
-        !container
-    ) {
-
+    if (!button || !container) {
         return;
-
     }
-
 
     container.innerHTML = "";
 
 
-    if (
-        conditions.length === 0
-    ) {
+    if (conditions.length === 0) {
 
         button.textContent =
             "Normal ▾";
@@ -1669,7 +772,6 @@ function updateStatusDisplay() {
         );
 
         return;
-
     }
 
 
@@ -1681,144 +783,41 @@ function updateStatusDisplay() {
     );
 
 
-    conditions.forEach(
-        condition => {
+    conditions.forEach(condition => {
 
-            const badge =
-                document.createElement(
-                    "span"
-                );
+        const badge =
+            document.createElement("span");
 
+        badge.className =
+            "condition-badge";
 
-            badge.className =
-                "condition-badge";
+        badge.textContent =
+            condition;
 
+        container.appendChild(badge);
 
-            badge.textContent =
-                condition;
-
-
-            container.appendChild(
-                badge
-            );
-
-        }
-    );
+    });
 
 }
 
 
-// ========================================
-// HP
-// ========================================
-
+// ---------- HP ----------
 
 let currentHP = 100;
-
 const maximumHP = 100;
 
 
-// ---------- Build HP Slider ----------
-
-function setupHPSlider() {
-
-    const controls =
-        document.querySelector(
-            ".hp-controls"
-        );
-
-
-    if (!controls) {
-
-        return;
-
-    }
-
-
-    controls.innerHTML = `
-
-        <div class="hp-slider-container">
-
-            <div class="hp-slider-value">
-
-                <span id="current-hp">
-                    ${currentHP}
-                </span>
-
-                <span class="hp-divider">
-                    /
-                </span>
-
-                <span id="maximum-hp">
-                    ${maximumHP}
-                </span>
-
-            </div>
-
-
-            <input
-                id="hp-slider"
-                class="hp-slider"
-                type="range"
-                min="0"
-                max="${maximumHP}"
-                value="${currentHP}"
-                step="1"
-                oninput="setHPFromSlider(this.value)"
-                aria-label="Hit Points"
-            >
-
-        </div>
-
-    `;
-
-}
-
-
-function setHPFromSlider(
-    value
-) {
-
-    currentHP =
-        Math.max(
-            0,
-            Math.min(
-                maximumHP,
-                Number(value)
-            )
-        );
-
-
-    updateHP();
-
-}
-
-
-function changeHP(
-    amount
-) {
+function changeHP(amount) {
 
     currentHP += amount;
 
-
-    if (
-        currentHP < 0
-    ) {
-
+    if (currentHP < 0) {
         currentHP = 0;
-
     }
 
-
-    if (
-        currentHP > maximumHP
-    ) {
-
-        currentHP =
-            maximumHP;
-
+    if (currentHP > maximumHP) {
+        currentHP = maximumHP;
     }
-
 
     updateHP();
 
@@ -1832,66 +831,30 @@ function updateHP() {
             "current-hp"
         );
 
-
     if (hp) {
-
-        hp.textContent =
-            currentHP;
-
-    }
-
-
-    const slider =
-        document.getElementById(
-            "hp-slider"
-        );
-
-
-    if (slider) {
-
-        slider.value =
-            currentHP;
-
+        hp.textContent = currentHP;
     }
 
 }
 
 
-// ========================================
-// HIT DICE
-// ========================================
-
+// ---------- Hit Dice ----------
 
 let currentHitDice = 5;
-
 const maximumHitDice = 5;
 
 
-function changeHitDice(
-    amount
-) {
+function changeHitDice(amount) {
 
     currentHitDice += amount;
 
-
-    if (
-        currentHitDice < 0
-    ) {
-
+    if (currentHitDice < 0) {
         currentHitDice = 0;
-
     }
 
-
-    if (
-        currentHitDice > maximumHitDice
-    ) {
-
-        currentHitDice =
-            maximumHitDice;
-
+    if (currentHitDice > maximumHitDice) {
+        currentHitDice = maximumHitDice;
     }
-
 
     updateHitDice();
 
@@ -1905,7 +868,6 @@ function updateHitDice() {
             "hit-dice-value"
         );
 
-
     if (element) {
 
         element.textContent =
@@ -1916,10 +878,7 @@ function updateHitDice() {
 }
 
 
-// ========================================
-// DEATH SAVES
-// ========================================
-
+// ---------- Death Saves ----------
 
 let deathSaves = {
 
@@ -1930,40 +889,26 @@ let deathSaves = {
 };
 
 
-function toggleDeathSave(
-    type,
-    index
-) {
+function toggleDeathSave(type, index) {
 
-    if (
-        type === "success"
-    ) {
+    if (type === "success") {
 
         deathSaves.successes =
-            deathSaves.successes ===
-            index + 1
-
+            deathSaves.successes === index + 1
                 ? index
-
                 : index + 1;
 
     }
 
 
-    if (
-        type === "failure"
-    ) {
+    if (type === "failure") {
 
         deathSaves.failures =
-            deathSaves.failures ===
-            index + 1
-
+            deathSaves.failures === index + 1
                 ? index
-
                 : index + 1;
 
     }
-
 
     updateDeathSaves();
 
@@ -1977,37 +922,30 @@ function updateDeathSaves() {
             ".save-dot:not(.failure)"
         );
 
-
     const failureDots =
         document.querySelectorAll(
             ".save-dot.failure"
         );
 
 
-    successDots.forEach(
-        (dot, index) => {
+    successDots.forEach((dot, index) => {
 
-            dot.classList.toggle(
-                "active",
-                index <
-                deathSaves.successes
-            );
+        dot.classList.toggle(
+            "active",
+            index < deathSaves.successes
+        );
 
-        }
-    );
+    });
 
 
-    failureDots.forEach(
-        (dot, index) => {
+    failureDots.forEach((dot, index) => {
 
-            dot.classList.toggle(
-                "active",
-                index <
-                deathSaves.failures
-            );
+        dot.classList.toggle(
+            "active",
+            index < deathSaves.failures
+        );
 
-        }
-    );
+    });
 
 }
 
@@ -2015,7 +953,6 @@ function updateDeathSaves() {
 function resetDeathSaves() {
 
     deathSaves.successes = 0;
-
     deathSaves.failures = 0;
 
     updateDeathSaves();
@@ -2023,37 +960,15 @@ function resetDeathSaves() {
 }
 
 
-// ========================================
-// REST
-// ========================================
-
-
-// ---------- Open Rest Menu ----------
+// ---------- Rest ----------
 
 function openRestMenu() {
 
-    const existing =
-        document.querySelector(
-            ".rest-overlay"
-        );
-
-
-    if (existing) {
-
-        return;
-
-    }
-
-
     const menu =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     menu.className =
         "rest-overlay";
-
 
     menu.innerHTML = `
 
@@ -2073,7 +988,6 @@ function openRestMenu() {
             <p>
                 Choose your type of rest.
             </p>
-
 
             <button
                 class="rest-option"
@@ -2101,7 +1015,7 @@ function openRestMenu() {
 
             <button
                 class="rest-option"
-                onclick="openShortRestDiceSelection()"
+                onclick="shortRest()"
             >
 
                 <span>
@@ -2126,15 +1040,10 @@ function openRestMenu() {
 
     `;
 
-
-    document.body.appendChild(
-        menu
-    );
+    document.body.appendChild(menu);
 
 }
 
-
-// ---------- Close Rest Menu ----------
 
 function closeRestMenu() {
 
@@ -2143,415 +1052,72 @@ function closeRestMenu() {
             ".rest-overlay"
         );
 
-
     if (menu) {
-
         menu.remove();
-
     }
 
 }
 
 
-// ========================================
-// LONG REST
-// ========================================
-
+// ---------- Long Rest ----------
 
 function longRest() {
 
-    currentHP =
-        maximumHP;
-
+    currentHP = maximumHP;
 
     resetDeathSaves();
 
-
-    concentrating =
-        false;
-
+    concentrating = false;
 
     currentHitDice =
         Math.min(
             maximumHitDice,
             currentHitDice +
-            Math.ceil(
-                maximumHitDice / 2
-            )
+            Math.ceil(maximumHitDice / 2)
         );
 
-
-    for (
-        let level = 1;
-        level <= 5;
-        level++
-    ) {
+    for (let level = 1; level <= 5; level++) {
 
         spellSlots[level].current =
             spellSlots[level].maximum;
 
     }
 
-
     saveSpellSlots();
 
-
-    // Reset ability resources
-    abilities.forEach(
-        ability => {
-
-            if (
-                ability.resource &&
-                ability.resource.recovery ===
-                "longRest"
-            ) {
-
-                ability.resource.current =
-                    ability.resource.maximum;
-
-                saveAbilityResource(
-                    ability
-                );
-
-            }
-
-        }
-    );
-
-
     closeRestMenu();
-
 
     updateHP();
-
     updateHitDice();
 
-
-    const concentrationButton =
-        document.getElementById(
-            "concentration-toggle"
-        );
-
-
-    if (
-        concentrationButton
-    ) {
-
-        concentrationButton.textContent =
-            "OFF";
-
-        concentrationButton.classList.remove(
-            "active"
-        );
-
-    }
-
 }
 
 
-// ========================================
-// SHORT REST
-// ========================================
+// ---------- Short Rest ----------
 
-
-// ---------- Step 1: Choose Hit Dice ----------
-
-function openShortRestDiceSelection() {
-
-    const modal =
-        document.querySelector(
-            ".rest-modal"
-        );
-
-
-    if (!modal) {
-
-        return;
-
-    }
-
-
-    let diceButtons =
-        "";
-
-
-    for (
-        let dice = 1;
-        dice <= currentHitDice;
-        dice++
-    ) {
-
-        diceButtons += `
-
-            <button
-                class="rest-option rest-dice-option"
-                onclick="selectShortRestDice(${dice})"
-            >
-
-                <span>
-                    🎲
-                </span>
-
-                <div>
-
-                    <strong>
-                        ${dice}
-                        Hit
-                        ${dice === 1
-                            ? "Die"
-                            : "Dice"}
-                    </strong>
-
-                    <small>
-                        Spend
-                        ${dice}
-                        ${dice === 1
-                            ? "die"
-                            : "dice"}
-                    </small>
-
-                </div>
-
-            </button>
-
-        `;
-
-    }
-
-
-    if (
-        currentHitDice === 0
-    ) {
-
-        modal.innerHTML = `
-
-            <button
-                class="rest-close"
-                onclick="closeRestMenu()"
-            >
-                ×
-            </button>
-
-            <h2>
-                Short Rest
-            </h2>
-
-            <p>
-                You have no Hit Dice available.
-            </p>
-
-
-            <button
-                class="rest-option"
-                onclick="closeRestMenu()"
-            >
-
-                <span>
-                    ←
-                </span>
-
-                <div>
-
-                    <strong>
-                        Back
-                    </strong>
-
-                </div>
-
-            </button>
-
-        `;
-
-        return;
-
-    }
-
-
-    modal.innerHTML = `
-
-        <button
-            class="rest-close"
-            onclick="closeRestMenu()"
-        >
-            ×
-        </button>
-
-        <h2>
-            Short Rest
-        </h2>
-
-        <p>
-            You have
-            <strong>
-                ${currentHitDice}
-            </strong>
-            Hit Dice available.
-            How many do you want to spend?
-        </p>
-
-
-        <div class="rest-dice-grid">
-
-            ${diceButtons}
-
-        </div>
-
-
-        <button
-            class="rest-back-button"
-            onclick="openRestMenuFromShortRest()"
-        >
-            ← Back
-        </button>
-
-    `;
-
-}
-
-
-// ---------- Return to Rest Selection ----------
-
-function openRestMenuFromShortRest() {
+function shortRest() {
 
     closeRestMenu();
 
-    openRestMenu();
-
-}
-
-
-// ---------- Step 2: Confirm Dice Spent ----------
-
-function selectShortRestDice(
-    diceSpent
-) {
-
-    const modal =
-        document.querySelector(
-            ".rest-modal"
+    const diceSpent =
+        prompt(
+            `Hit Dice available: ${currentHitDice}\n\nHow many Hit Dice did you spend?`
         );
 
-
-    if (!modal) {
-
+    if (diceSpent === null) {
         return;
-
     }
 
+    const spent =
+        parseInt(diceSpent);
 
-    modal.innerHTML = `
+    if (
+        isNaN(spent) ||
+        spent < 0 ||
+        spent > currentHitDice
+    ) {
 
-        <button
-            class="rest-close"
-            onclick="closeRestMenu()"
-        >
-            ×
-        </button>
-
-
-        <h2>
-            Short Rest
-        </h2>
-
-
-        <p>
-            You are spending
-            <strong>
-                ${diceSpent}
-            </strong>
-            ${diceSpent === 1
-                ? "Hit Die"
-                : "Hit Dice"}.
-        </p>
-
-
-        <div class="rest-roll-message">
-
-            <span>
-                🎲
-            </span>
-
-            <strong>
-                Roll your Hit Dice
-            </strong>
-
-            <small>
-                Roll
-                ${diceSpent}
-                physical
-                ${diceSpent === 1
-                    ? "die"
-                    : "dice"},
-                then enter the total HP recovered.
-            </small>
-
-        </div>
-
-
-        <label
-            class="rest-input-label"
-            for="short-rest-hp"
-        >
-            HP recovered
-        </label>
-
-
-        <input
-            id="short-rest-hp"
-            class="rest-input"
-            type="number"
-            min="0"
-            inputmode="numeric"
-            placeholder="0"
-        >
-
-
-        <button
-            class="rest-confirm-button"
-            onclick="confirmShortRest(${diceSpent})"
-        >
-            Recover HP
-        </button>
-
-
-        <button
-            class="rest-back-button"
-            onclick="openShortRestDiceSelection()"
-        >
-            ← Change Hit Dice
-        </button>
-
-    `;
-
-
-    const input =
-        document.getElementById(
-            "short-rest-hp"
-        );
-
-
-    if (input) {
-
-        input.focus();
-
-    }
-
-}
-
-
-// ---------- Step 3: Apply Short Rest ----------
-
-function confirmShortRest(
-    diceSpent
-) {
-
-    const input =
-        document.getElementById(
-            "short-rest-hp"
-        );
-
-
-    if (!input) {
+        alert("Invalid number of Hit Dice.");
 
         return;
 
@@ -2559,61 +1125,1041 @@ function confirmShortRest(
 
 
     const hpRecovered =
-        Number(input.value);
+        prompt(
+            "How many HP did you recover from your physical dice rolls?"
+        );
 
+    if (hpRecovered === null) {
+        return;
+    }
+
+    const recovered =
+        parseInt(hpRecovered);
 
     if (
-        !Number.isFinite(
-            hpRecovered
-        ) ||
-        hpRecovered < 0
+        isNaN(recovered) ||
+        recovered < 0
     ) {
 
-        input.focus();
+        alert("Invalid HP amount.");
 
         return;
 
     }
 
 
-    currentHitDice -=
-        diceSpent;
-
+    currentHitDice -= spent;
 
     currentHP =
         Math.min(
             maximumHP,
-            currentHP +
-            hpRecovered
+            currentHP + recovered
         );
 
-
     updateHP();
-
     updateHitDice();
 
+}
 
-    closeRestMenu();
+// ========================================
+// ABILITIES
+// ========================================
+
+
+// ---------- Ability Data ----------
+
+const abilities = [
+
+    {
+        id: "dragons-breath",
+        name: "Dragon's Breath",
+        category: "racial",
+        icon: "🐉",
+        actionType: "Action",
+        usageType: "uses",
+        currentUses: 1,
+        maximumUses: 1,
+        linkedItems: [
+            "dragon-licorice"
+        ],
+        description:
+            "You exhale destructive energy. The saving throw DC equals 8 + your Constitution modifier + your proficiency bonus. A creature that fails the saving throw takes 4d6 damage. You regain this ability after a long rest."
+    },
+
+
+    {
+        id: "lay-on-hands",
+        name: "Lay on Hands",
+        category: "class",
+        icon: "✋",
+        actionType: "Action",
+        usageType: "pool",
+        currentPool: 65,
+        maximumPool: 65,
+        description:
+            "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest. You can restore a total number of hit points equal to five times your paladin level. You can spend 5 points from the pool to cure a disease or neutralize a poison."
+    },
+
+
+    {
+        id: "shield-master",
+        name: "Shield Master",
+        category: "feat",
+        icon: "🛡️",
+        actionType: "Bonus Action / Reaction",
+        usageType: "passive",
+        description:
+            "Add your shield's AC bonus to Dexterity saving throws and take no damage when a successful Dexterity saving throw would normally deal half damage. You can use a bonus action after attacking to shove a creature up to 5 feet away."
+    },
+
+
+    {
+        id: "dragons-judgment",
+        name: "Dragon's Judgment",
+        category: "additional",
+        icon: "⚔️",
+        actionType: "On Hit",
+        usageType: "uses",
+        currentUses: 3,
+        maximumUses: 3,
+        linkedItems: [
+            "golden-choice-sword"
+        ],
+        description:
+            "When you hit a creature with this weapon, you can force the target to make a Wisdom saving throw. On a failure, choose one effect: the target falls prone and can stand only at the end of its turn without additional movement, or the target becomes mute and unable to speak or cast spells with verbal components until the end of its next turn. Three uses per long rest."
+    },
+
+
+    {
+        id: "dragon-licorice",
+        name: "Dragon Licorice",
+        category: "additional",
+        icon: "🍬",
+        actionType: "Passive",
+        usageType: "passive",
+        linkedItems: [],
+        description:
+            "You have one additional use of Dragon's Breath per long rest."
+    }
+
+];
+
+
+// ---------- Saved Ability State ----------
+
+const savedAbilities =
+    JSON.parse(
+        localStorage.getItem(
+            "abilityState"
+        )
+    );
+
+
+if (savedAbilities) {
+
+    abilities.forEach(
+        ability => {
+
+            const saved =
+                savedAbilities[
+                    ability.id
+                ];
+
+            if (!saved) {
+                return;
+            }
+
+
+            if (
+                ability.usageType ===
+                "uses"
+            ) {
+
+                ability.currentUses =
+                    saved.currentUses;
+
+            }
+
+
+            if (
+                ability.usageType ===
+                "pool"
+            ) {
+
+                ability.currentPool =
+                    saved.currentPool;
+
+            }
+
+        }
+    );
 
 }
 
 
-// ========================================
-// HOME INITIALIZATION
-// ========================================
+// ---------- Save Ability State ----------
+
+function saveAbilityState() {
+
+    const state = {};
+
+    abilities.forEach(
+        ability => {
+
+            if (
+                ability.usageType ===
+                "uses"
+            ) {
+
+                state[ability.id] = {
+
+                    currentUses:
+                        ability.currentUses
+
+                };
+
+            }
 
 
-function initializeHome() {
+            if (
+                ability.usageType ===
+                "pool"
+            ) {
 
-    setupHPSlider();
+                state[ability.id] = {
 
-    updateHP();
+                    currentPool:
+                        ability.currentPool
 
-    updateHitDice();
+                };
 
-    updateDeathSaves();
+            }
 
-    updateStatusDisplay();
+        }
+    );
+
+
+    localStorage.setItem(
+        "abilityState",
+        JSON.stringify(state)
+    );
+
+}
+
+
+// ---------- Ability Categories ----------
+
+const abilityCategories = [
+
+    {
+        id: "racial",
+        name: "Racial Abilities",
+        icon: "🧬"
+    },
+
+    {
+        id: "class",
+        name: "Class Abilities",
+        icon: "⚔️"
+    },
+
+    {
+        id: "feat",
+        name: "Feats",
+        icon: "⭐"
+    },
+
+    {
+        id: "additional",
+        name: "Additional",
+        icon: "✨"
+    }
+
+];
+
+
+// ---------- Show Abilities ----------
+
+function showAbilities(
+    category = "racial"
+) {
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="goHome()"
+            >
+                ← Back
+            </button>
+
+
+            <h1>
+                Abilities
+            </h1>
+
+
+            <p>
+                Your racial, class and additional abilities
+            </p>
+
+        </header>
+
+
+        <main>
+
+            <section class="ability-tabs">
+
+                ${abilityCategories
+                    .map(
+                        cat => `
+
+                            <button
+                                class="
+                                    ability-tab
+                                    ${
+                                        category ===
+                                        cat.id
+                                            ? "active"
+                                            : ""
+                                    }
+                                "
+                                onclick="
+                                    showAbilities('${cat.id}')
+                                "
+                            >
+
+                                ${cat.icon}
+
+                                ${cat.name}
+
+                            </button>
+
+                        `
+                    )
+                    .join("")}
+
+            </section>
+
+
+            ${renderAbilityCategory(
+                category
+            )}
+
+        </main>
+
+    `;
+
+}
+
+
+// ---------- Render Ability Category ----------
+
+function renderAbilityCategory(
+    category
+) {
+
+    const categoryData =
+        abilityCategories.find(
+            cat =>
+                cat.id === category
+        );
+
+
+    if (!categoryData) {
+        return "";
+    }
+
+
+    const categoryAbilities =
+        abilities.filter(
+            ability =>
+                ability.category ===
+                category
+        );
+
+
+    if (
+        categoryAbilities.length === 0
+    ) {
+
+        return `
+
+            <p class="empty-message">
+                No abilities in this category.
+            </p>
+
+        `;
+
+    }
+
+
+    return `
+
+        <section class="ability-section">
+
+            <h2>
+                ${categoryData.icon}
+                ${categoryData.name}
+            </h2>
+
+
+            <div class="ability-list">
+
+                ${categoryAbilities
+                    .map(
+                        renderAbilityCard
+                    )
+                    .join("")}
+
+            </div>
+
+        </section>
+
+    `;
+
+}
+
+
+// ---------- Render Ability Card ----------
+
+function renderAbilityCard(
+    ability
+) {
+
+    const usageHTML =
+        renderAbilityUsage(
+            ability
+        );
+
+
+    return `
+
+        <div
+            class="ability-card"
+            onclick="
+                showAbilityDetails(
+                    '${ability.id}'
+                )
+            "
+        >
+
+            <div class="ability-icon">
+
+                ${ability.icon}
+
+            </div>
+
+
+            <div class="ability-info">
+
+                <div
+                    class="ability-card-title"
+                >
+
+                    <h3>
+                        ${ability.name}
+                    </h3>
+
+
+                    <span
+                        class="ability-action-type"
+                    >
+                        ${ability.actionType}
+                    </span>
+
+                </div>
+
+
+                <div
+                    class="ability-meta"
+                >
+
+                    ${usageHTML}
+
+                </div>
+
+            </div>
+
+
+            <span
+                class="ability-arrow"
+            >
+                ›
+            </span>
+
+        </div>
+
+    `;
+
+}
+
+
+// ---------- Render Ability Usage ----------
+
+function renderAbilityUsage(
+    ability
+) {
+
+    if (
+        ability.usageType ===
+        "uses"
+    ) {
+
+        let dots = "";
+
+
+        for (
+            let i = 0;
+            i < ability.maximumUses;
+            i++
+        ) {
+
+            dots += `
+
+                <span
+                    class="
+                        ability-use-dot
+                        ${
+                            i <
+                            ability.currentUses
+                                ? "filled"
+                                : "empty"
+                        }
+                    "
+                ></span>
+
+            `;
+
+        }
+
+
+        return `
+
+            <div
+                class="ability-uses"
+            >
+
+                <span>
+                    Uses
+                </span>
+
+                <div
+                    class="ability-use-dots"
+                >
+                    ${dots}
+                </div>
+
+                <span>
+                    ${ability.currentUses}
+                    /
+                    ${ability.maximumUses}
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (
+        ability.usageType ===
+        "pool"
+    ) {
+
+        const percentage =
+            (
+                ability.currentPool /
+                ability.maximumPool
+            ) * 100;
+
+
+        return `
+
+            <div
+                class="ability-pool"
+            >
+
+                <div
+                    class="ability-pool-header"
+                >
+
+                    <span>
+                        Pool
+                    </span>
+
+                    <strong>
+                        ${ability.currentPool}
+                        /
+                        ${ability.maximumPool}
+                    </strong>
+
+                </div>
+
+
+                <div
+                    class="ability-pool-bar"
+                >
+
+                    <div
+                        class="ability-pool-fill"
+                        style="
+                            width: ${percentage}%;
+                        "
+                    ></div>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    return `
+
+        <span
+            class="ability-passive"
+        >
+            Passive
+        </span>
+
+    `;
+
+}
+
+
+// ---------- Ability Details ----------
+
+function showAbilityDetails(
+    abilityId
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id ===
+                abilityId
+        );
+
+
+    if (!ability) {
+        return;
+    }
+
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="
+                    showAbilities(
+                        '${ability.category}'
+                    )
+                "
+            >
+                ← Abilities
+            </button>
+
+
+            <h1>
+                ${ability.icon}
+                ${ability.name}
+            </h1>
+
+
+            <p>
+                ${ability.actionType}
+            </p>
+
+        </header>
+
+
+        <main>
+
+            <section
+                class="ability-details"
+            >
+
+
+                <div
+                    class="ability-detail-usage"
+                >
+
+                    ${renderAbilityUsage(
+                        ability
+                    )}
+
+                </div>
+
+
+                <div
+                    class="ability-description"
+                >
+
+                    <h2>
+                        Description
+                    </h2>
+
+
+                    <p>
+                        ${ability.description}
+                    </p>
+
+                </div>
+
+
+                ${
+                    ability.linkedItems &&
+                    ability.linkedItems.length
+                        ? `
+
+                            <div
+                                class="
+                                    ability-linked-items
+                                "
+                            >
+
+                                <h2>
+                                    Related Items
+                                </h2>
+
+
+                                ${ability.linkedItems
+                                    .map(
+                                        itemId => {
+
+                                            const item =
+                                                inventoryItems.find(
+                                                    item =>
+                                                        item.id ===
+                                                        itemId
+                                                );
+
+
+                                            if (!item) {
+                                                return "";
+                                            }
+
+
+                                            return `
+
+                                                <button
+                                                    class="
+                                                        linked-ability-card
+                                                    "
+                                                    onclick="
+                                                        showInventoryItem(
+                                                            '${item.id}'
+                                                        )
+                                                    "
+                                                >
+
+                                                    <span>
+                                                        ${item.icon}
+                                                    </span>
+
+
+                                                    <div>
+
+                                                        <small>
+                                                            Item
+                                                        </small>
+
+                                                        <strong>
+                                                            ${item.name}
+                                                        </strong>
+
+                                                    </div>
+
+
+                                                    <span>
+                                                        ›
+                                                    </span>
+
+                                                </button>
+
+                                            `;
+
+                                        }
+                                    )
+                                    .join("")}
+
+                            </div>
+
+                        `
+                        : ""
+                }
+
+
+                <div
+                    class="ability-action-group"
+                >
+
+
+                    ${
+                        ability.usageType ===
+                        "uses"
+                            ? `
+
+                                <div
+                                    class="
+                                        ability-counter-actions
+                                    "
+                                >
+
+                                    <button
+                                        class="
+                                            ability-counter-button
+                                        "
+                                        onclick="
+                                            changeAbilityUses(
+                                                '${ability.id}',
+                                                -1
+                                            )
+                                        "
+                                    >
+                                        −
+                                    </button>
+
+
+                                    <span>
+                                        ${ability.currentUses}
+                                        /
+                                        ${ability.maximumUses}
+                                    </span>
+
+
+                                    <button
+                                        class="
+                                            ability-counter-button
+                                        "
+                                        onclick="
+                                            changeAbilityUses(
+                                                '${ability.id}',
+                                                1
+                                            )
+                                        "
+                                    >
+                                        +
+                                    </button>
+
+                                </div>
+
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        ability.usageType ===
+                        "pool"
+                            ? `
+
+                                <input
+                                    type="range"
+                                    class="
+                                        ability-pool-slider
+                                    "
+                                    min="0"
+                                    max="${ability.maximumPool}"
+                                    value="${ability.currentPool}"
+                                    oninput="
+                                        changeAbilityPool(
+                                            '${ability.id}',
+                                            this.value
+                                        )
+                                    "
+                                >
+
+                            `
+                            : ""
+                    }
+
+                </div>
+
+
+            </section>
+
+        </main>
+
+    `;
+
+}
+
+
+// ---------- Change Ability Uses ----------
+
+function changeAbilityUses(
+    abilityId,
+    amount
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id ===
+                abilityId
+        );
+
+
+    if (!ability) {
+        return;
+    }
+
+
+    if (
+        ability.usageType !==
+        "uses"
+    ) {
+        return;
+    }
+
+
+    ability.currentUses +=
+        amount;
+
+
+    if (
+        ability.currentUses < 0
+    ) {
+
+        ability.currentUses = 0;
+
+    }
+
+
+    if (
+        ability.currentUses >
+        ability.maximumUses
+    ) {
+
+        ability.currentUses =
+            ability.maximumUses;
+
+    }
+
+
+    saveAbilityState();
+
+    showAbilityDetails(
+        ability.id
+    );
+
+}
+
+
+// ---------- Change Ability Pool ----------
+
+function changeAbilityPool(
+    abilityId,
+    value
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id ===
+                abilityId
+        );
+
+
+    if (!ability) {
+        return;
+    }
+
+
+    if (
+        ability.usageType !==
+        "pool"
+    ) {
+        return;
+    }
+
+
+    ability.currentPool =
+        Number(value);
+
+
+    saveAbilityState();
+
+
+    const valueElement =
+        document.querySelector(
+            ".ability-pool-current"
+        );
+
+
+    if (valueElement) {
+
+        valueElement.textContent =
+            ability.currentPool;
+
+    }
+
+}
+
+
+// ---------- Reset Ability Uses ----------
+
+function resetAbilityUses() {
+
+    abilities.forEach(
+        ability => {
+
+            if (
+                ability.usageType ===
+                "uses"
+            ) {
+
+                ability.currentUses =
+                    ability.maximumUses;
+
+            }
+
+
+            if (
+                ability.usageType ===
+                "pool"
+            ) {
+
+                ability.currentPool =
+                    ability.maximumPool;
+
+            }
+
+        }
+    );
+
+
+    saveAbilityState();
+
+}
+
+
+// ---------- Character Resources ----------
+
+function restoreAbilityResources() {
+
+    resetAbilityUses();
 
 }
 
@@ -2648,11 +2194,9 @@ menuButtons.forEach(
                         "spells"
                     );
 
-                }
-
-                else if (
+                } else if (
                     text.includes(
-                        "abilit"
+                        "abilities"
                     )
                 ) {
 
@@ -2660,9 +2204,7 @@ menuButtons.forEach(
                         "abilities"
                     );
 
-                }
-
-                else if (
+                } else if (
                     text.includes(
                         "inventory"
                     )
@@ -2672,21 +2214,7 @@ menuButtons.forEach(
                         "inventory"
                     );
 
-                }
-
-                else if (
-                    text.includes(
-                        "rest"
-                    )
-                ) {
-
-                    openSection(
-                        "rest"
-                    );
-
-                }
-
-                else {
+                } else {
 
                     alert(
                         "This section is coming soon."
@@ -2705,11 +2233,6 @@ menuButtons.forEach(
 // ========================================
 
 
-// ========================================
-// INVENTORY DATA
-// ========================================
-
-
 // ---------- Currency ----------
 
 const defaultCurrency = {
@@ -2724,7 +2247,9 @@ const defaultCurrency = {
 
 const savedCurrency =
     JSON.parse(
-        localStorage.getItem("inventoryCurrency")
+        localStorage.getItem(
+            "inventoryCurrency"
+        )
     );
 
 
@@ -2879,12 +2404,15 @@ const defaultInventoryItems = [
 
 const savedInventory =
     JSON.parse(
-        localStorage.getItem("inventoryItems")
+        localStorage.getItem(
+            "inventoryItems"
+        )
     );
 
 
 const inventoryItems =
-    savedInventory || defaultInventoryItems;
+    savedInventory ||
+    defaultInventoryItems;
 
 
 // ---------- Save Inventory ----------
@@ -2893,7 +2421,9 @@ function saveInventory() {
 
     localStorage.setItem(
         "inventoryItems",
-        JSON.stringify(inventoryItems)
+        JSON.stringify(
+            inventoryItems
+        )
     );
 
 }
@@ -2903,7 +2433,9 @@ function saveCurrency() {
 
     localStorage.setItem(
         "inventoryCurrency",
-        JSON.stringify(currency)
+        JSON.stringify(
+            currency
+        )
     );
 
 }
@@ -2979,49 +2511,8 @@ const inventoryTags = [
 
 ];
 
-// ---------- Currency Conversion ----------
 
-function getCurrencyInGold() {
-
-    return (
-
-        currency.copper / 100
-
-        +
-
-        currency.silver / 10
-
-        +
-
-        currency.gold
-
-        +
-
-        currency.platinum * 10
-
-    );
-
-}
-
-
-// ---------- Format Gold Value ----------
-
-function formatGoldValue(value) {
-
-    return value
-        .toFixed(2)
-        .replace(
-            ".00",
-            ""
-        );
-
-}
-
-
-// ========================================
-// INVENTORY PAGE
-// ========================================
-
+// ---------- Show Inventory ----------
 
 function showInventory() {
 
@@ -3029,6 +2520,7 @@ function showInventory() {
         document.getElementById(
             "app"
         );
+
 
     app.innerHTML = `
 
@@ -3051,34 +2543,28 @@ function showInventory() {
 
         <main>
 
-            <!-- ================================ -->
-            <!-- INVENTORY AREAS -->
-            <!-- ================================ -->
-
-            <section class="inventory-navigation">
+            <section
+                class="inventory-main-menu"
+            >
 
                 <button
-                    class="inventory-navigation-button"
-                    onclick="showInventorySection('equipment')"
+                    class="inventory-main-button"
+                    onclick="
+                        showInventorySection(
+                            'equipment'
+                        )
+                    "
                 >
 
-                    <div class="inventory-navigation-icon">
-                        ⚔️
-                    </div>
+                    <span>
+                        🛡️
+                    </span>
 
-                    <div class="inventory-navigation-info">
+                    <strong>
+                        Equipment
+                    </strong>
 
-                        <strong>
-                            Equipment
-                        </strong>
-
-                        <span>
-                            Armor, weapons and equipped items
-                        </span>
-
-                    </div>
-
-                    <span class="inventory-arrow">
+                    <span>
                         ›
                     </span>
 
@@ -3086,27 +2572,23 @@ function showInventory() {
 
 
                 <button
-                    class="inventory-navigation-button"
-                    onclick="showInventorySection('miscellaneous')"
+                    class="inventory-main-button"
+                    onclick="
+                        showInventorySection(
+                            'miscellaneous'
+                        )
+                    "
                 >
 
-                    <div class="inventory-navigation-icon">
-                        📦
-                    </div>
+                    <span>
+                        🎒
+                    </span>
 
-                    <div class="inventory-navigation-info">
+                    <strong>
+                        Miscellaneous
+                    </strong>
 
-                        <strong>
-                            Miscellaneous
-                        </strong>
-
-                        <span>
-                            Consumables, treasures and other items
-                        </span>
-
-                    </div>
-
-                    <span class="inventory-arrow">
+                    <span>
                         ›
                     </span>
 
@@ -3115,68 +2597,84 @@ function showInventory() {
             </section>
 
 
-            <!-- ================================ -->
-            <!-- COIN POUCH -->
-            <!-- ================================ -->
-
-            <section class="currency-section">
+            <section
+                class="currency-summary"
+            >
 
                 <button
-                    class="currency-summary"
-                    onclick="showCurrencyDetails()"
+                    class="currency-summary-button"
+                    onclick="
+                        showCurrencyDetails()
+                    "
                 >
 
-                    <div class="currency-summary-icon">
-                        💰
-                    </div>
+                    <span>
+                        🪙
+                    </span>
 
 
-                    <div class="currency-summary-info">
-
-                        <span>
-                            Coin Pouch
-                        </span>
-
-                        <div class="currency-physical">
-
-                            ${currency.copper} CP ·
-                            ${currency.silver} SP ·
-                            ${currency.gold} GP ·
-                            ${currency.platinum} PP
-
-                        </div>
+                    <div>
 
                         <strong>
-                            Total value:
-                            ${formatGoldValue(
-                                getCurrencyInGold()
-                            )}
-                            GP
+                            Coin Pouch
                         </strong>
+
+
+                        <small>
+                            ${getTotalGoldValue()}
+                            gp total
+                        </small>
 
                     </div>
 
 
-                    <span class="inventory-arrow">
+                    <span>
                         ›
                     </span>
 
                 </button>
+
+
+                <div
+                    class="currency-mini"
+                >
+
+                    <span>
+                        🟤
+                        ${currency.copper}
+                    </span>
+
+                    <span>
+                        ⚪
+                        ${currency.silver}
+                    </span>
+
+                    <span>
+                        🟡
+                        ${currency.gold}
+                    </span>
+
+                    <span>
+                        🔵
+                        ${currency.platinum}
+                    </span>
+
+                </div>
 
             </section>
 
         </main>
+
     `;
 
 }
 
 
-// ========================================
-// INVENTORY SUB-SECTIONS
-// ========================================
+// ---------- Inventory Section ----------
 
-
-function showInventorySection(section) {
+function showInventorySection(
+    section
+) {
 
     const app =
         document.getElementById(
@@ -3184,40 +2682,26 @@ function showInventorySection(section) {
         );
 
 
-    let title = "";
-    let content = "";
-
-
-    if (section === "equipment") {
-
-        title = "⚔️ Equipment";
-        content = renderEquipment();
-
-    }
-
-
-    if (section === "miscellaneous") {
-
-        title = "📦 Miscellaneous";
-        content = renderMiscellaneous();
-
-    }
-
-
     app.innerHTML = `
 
         <header class="app-header">
 
             <button
                 class="back-button"
-                onclick="showInventory()"
+                onclick="
+                    showInventory()
+                "
             >
                 ← Inventory
             </button>
 
 
             <h1>
-                ${title}
+                ${
+                    section === "equipment"
+                        ? "Equipment"
+                        : "Miscellaneous"
+                }
             </h1>
 
         </header>
@@ -3225,7 +2709,11 @@ function showInventorySection(section) {
 
         <main>
 
-            ${content}
+            ${
+                section === "equipment"
+                    ? renderEquipment()
+                    : renderMiscellaneous()
+            }
 
         </main>
 
@@ -3234,638 +2722,1962 @@ function showInventorySection(section) {
 }
 
 
-// ========================================
-// EQUIPMENT
-// ========================================
+// ---------- Equipment ----------
 
 function renderEquipment() {
 
-    let html = "";
+    let html = `
 
-    equipmentCategories.forEach(category => {
-
-        const items = inventoryItems.filter(item =>
-            item.location === "equipment" &&
-            item.category === category.id
-        );
-
-        if (items.length === 0) return;
-
-        html += `
-            <div class="inventory-category">
-                <h3>${category.icon} ${category.name}</h3>
-                <div class="inventory-list">
-                    ${items.map(renderInventoryItem).join("")}
-                </div>
-            </div>
-        `;
-    });
-
-    html += `
-        <button class="inventory-add-button" onclick="openAddItemForm()">
+        <button
+            class="inventory-add-button"
+            onclick="
+                openAddItemForm()
+            "
+        >
             ＋ Add Item
         </button>
+
     `;
 
-    if (html === "") {
-        return `<p class="empty-message">No equipment.</p>`;
-    }
+
+    equipmentCategories.forEach(
+        category => {
+
+            const items =
+                inventoryItems.filter(
+                    item =>
+                        item.location ===
+                            "equipment"
+                        &&
+                        item.category ===
+                            category.id
+                );
+
+
+            if (
+                items.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            html += `
+
+                <div
+                    class="inventory-category"
+                >
+
+                    <h3>
+
+                        ${category.icon}
+
+                        ${category.name}
+
+                    </h3>
+
+
+                    <div
+                        class="inventory-list"
+                    >
+
+                        ${items
+                            .map(
+                                renderInventoryItem
+                            )
+                            .join("")}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
 
     return html;
+
 }
 
 
-// ========================================
-// MISCELLANEOUS
-// ========================================
+// ---------- Miscellaneous ----------
 
 function renderMiscellaneous() {
 
-    const items = inventoryItems.filter(
-        item => item.location === "miscellaneous"
-    );
+    const items =
+        inventoryItems.filter(
+            item =>
+                item.location ===
+                "miscellaneous"
+        );
+
 
     let html = `
-        <button class="inventory-add-button" onclick="openAddItemForm()">
+
+        <button
+            class="inventory-add-button"
+            onclick="
+                openAddItemForm()
+            "
+        >
             ＋ Add Item
         </button>
+
     `;
 
-    if (items.length === 0) {
+
+    if (
+        items.length === 0
+    ) {
+
         html += `
-            <p class="empty-message">
+
+            <p
+                class="empty-message"
+            >
                 No miscellaneous items.
             </p>
+
         `;
+
         return html;
+
     }
 
+
     html += `
-        <div class="inventory-list">
-            ${items.map(renderInventoryItem).join("")}
+
+        <div
+            class="inventory-list"
+        >
+
+            ${items
+                .map(
+                    renderInventoryItem
+                )
+                .join("")}
+
         </div>
+
     `;
 
+
     return html;
+
 }
 
 
-// ========================================
-// INVENTORY HELPERS
-// ========================================
+// ---------- Inventory Item ----------
 
-function hasQuickConsumeTag(item) {
-
-    return Array.isArray(item.tags) && item.tags.some(tag =>
-        ["Consumable", "Ammunition", "Spell Component"].includes(tag)
-    );
-}
-
-
-function getEquipmentTag(item) {
-
-    if (!Array.isArray(item.tags)) return null;
-
-    const equipmentTag = item.tags.find(tag =>
-        ["Armor", "Weapon", "Shield", "Focus", "Ammunition", "Accessory"].includes(tag)
-    );
-
-    return equipmentTag || null;
-}
-
-
-function hasEquipmentTag(item) {
-    return !!getEquipmentTag(item);
-}
-
-
-function getCategoryFromEquipmentTag(item) {
-
-    const tag = getEquipmentTag(item);
-
-    const categoryMap = {
-        Armor: "armor",
-        Weapon: "weapons",
-        Shield: "shield",
-        Focus: "focus",
-        Ammunition: "ammunition",
-        Accessory: "accessories"
-    };
-
-    return categoryMap[tag] || null;
-}
-
-
-function getEquipmentConflictCategory(category) {
-
-    return ["armor", "weapons", "shield", "focus"].includes(category)
-        ? category
-        : null;
-}
-
-
-// ========================================
-// INVENTORY ITEM CARD
-// ========================================
-
-function renderInventoryItem(item) {
+function renderInventoryItem(
+    item
+) {
 
     const weightText =
-        item.weight !== null && item.weight !== undefined
+        item.weight !== null
             ? `${item.weight} kg`
             : "Weight not set";
 
-    const quantityText = `× ${item.quantity}`;
 
-    const equippedText = item.equipped ? "Equipped" : "";
+    const canQuickConsume =
+        hasQuickConsumeTag(
+            item
+        );
 
-    const canQuickConsume = hasQuickConsumeTag(item);
-    const unavailable = item.quantity <= 0 && canQuickConsume;
-    const canEquip = item.location === "equipment" || hasEquipmentTag(item);
+
+    const unavailable =
+        item.quantity <= 0 &&
+        canQuickConsume;
+
 
     return `
+
         <div
             class="inventory-item-card"
-            onclick="showInventoryItem('${item.id}')"
+            onclick="
+                showInventoryItem(
+                    '${item.id}'
+                )
+            "
         >
-            <div class="inventory-item-icon">
-                ${item.icon || "📦"}
+
+            <div
+                class="inventory-item-icon"
+            >
+                ${item.icon}
             </div>
 
-            <div class="inventory-item-info">
-                <div class="inventory-item-top">
-                    <h3>${item.name}</h3>
-                    <span class="inventory-arrow">›</span>
+
+            <div
+                class="inventory-item-info"
+            >
+
+                <div
+                    class="inventory-item-top"
+                >
+
+                    <h3>
+                        ${item.name}
+                    </h3>
+
+
+                    <span
+                        class="inventory-arrow"
+                    >
+                        ›
+                    </span>
+
                 </div>
 
-                <div class="inventory-item-meta">
-                    ${quantityText}
-                    ${equippedText}
-                    ${item.magical ? "✨ Magical" : ""}
+
+                <div
+                    class="inventory-item-meta"
+                >
+
+                    × ${item.quantity}
+
+
+                    ${
+                        item.equipped
+                            ? " · Equipped"
+                            : ""
+                    }
+
+
+                    ${
+                        item.magical
+                            ? " · ✨ Magical"
+                            : ""
+                    }
+
                 </div>
 
-                ${unavailable ? `
-                    <div class="inventory-unavailable">
-                        ⚠️ Unavailable
-                    </div>
-                ` : ""}
 
-                ${item.tags && item.tags.length > 0 ? `
-                    <div class="inventory-tags">
-                        ${item.tags.map(tag => `
-                            <span class="inventory-tag">${tag}</span>
-                        `).join("")}
-                    </div>
-                ` : ""}
+                ${
+                    unavailable
+                        ? `
 
-                <span class="inventory-weight">
+                            <div
+                                class="
+                                    inventory-unavailable
+                                "
+                            >
+                                ⚠️ Unavailable
+                            </div>
+
+                        `
+                        : ""
+                }
+
+
+                ${
+                    item.tags &&
+                    item.tags.length > 0
+                        ? `
+
+                            <div
+                                class="
+                                    inventory-tags
+                                "
+                            >
+
+                                ${item.tags
+                                    .map(
+                                        tag => `
+
+                                            <span
+                                                class="
+                                                    inventory-tag
+                                                "
+                                            >
+                                                ${tag}
+                                            </span>
+
+                                        `
+                                    )
+                                    .join("")}
+
+                            </div>
+
+                        `
+                        : ""
+                }
+
+
+                <span
+                    class="inventory-weight"
+                >
                     ⚖️ ${weightText}
                 </span>
 
-                ${canQuickConsume ? `
-                    <button
-                        class="inventory-consume-button"
-                        onclick="event.stopPropagation(); consumeInventoryItem('${item.id}')"
-                        ${unavailable ? "disabled" : ""}
-                    >
-                        Consume 1
-                    </button>
-                ` : ""}
 
-                ${canEquip ? `
-                    <button
-                        class="inventory-equip-button"
-                        onclick="event.stopPropagation(); toggleEquipment('${item.id}')"
-                    >
-                        ${item.equipped ? "Unequip" : "Equip"}
-                    </button>
-                ` : ""}
+                ${
+                    canQuickConsume
+                        ? `
+
+                            <button
+                                class="
+                                    inventory-consume-button
+                                "
+                                onclick="
+                                    event.stopPropagation();
+
+                                    consumeInventoryItem(
+                                        '${item.id}'
+                                    )
+                                "
+                                ${
+                                    unavailable
+                                        ? "disabled"
+                                        : ""
+                                }
+                            >
+                                Consume 1
+                            </button>
+
+                        `
+                        : ""
+                }
+
+
+                ${
+                    item.location ===
+                    "equipment"
+                        ? `
+
+                            <button
+                                class="
+                                    inventory-equip-button
+                                "
+                                onclick="
+                                    event.stopPropagation();
+
+                                    toggleEquipment(
+                                        '${item.id}'
+                                    )
+                                "
+                            >
+                                ${
+                                    item.equipped
+                                        ? "Unequip"
+                                        : "Equip"
+                                }
+                            </button>
+
+                        `
+                        : hasEquipmentTag(
+                            item
+                        )
+                            ? `
+
+                                <button
+                                    class="
+                                        inventory-equip-button
+                                    "
+                                    onclick="
+                                        event.stopPropagation();
+
+                                        toggleEquipment(
+                                            '${item.id}'
+                                        )
+                                    "
+                                >
+                                    Equip
+                                </button>
+
+                            `
+                            : ""
+                }
+
             </div>
+
         </div>
+
     `;
+
 }
 
 
-// ========================================
-// ITEM DETAILS
-// ========================================
+// ---------- Inventory Item Details ----------
 
-function showInventoryItem(itemId) {
+function showInventoryItem(
+    itemId
+) {
 
-    const item = inventoryItems.find(item => item.id === itemId);
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
 
-    if (!item) return;
 
-    const app = document.getElementById("app");
-    const locationName = item.location === "equipment" ? "Equipment" : "Miscellaneous";
-
-    let propertiesHTML = "";
-
-    if (item.properties && item.properties.length > 0) {
-        propertiesHTML = `
-            <div class="inventory-details-properties">
-                <h2>Properties</h2>
-                <div>
-                    ${item.properties.map(property => `
-                        <span class="inventory-property">${property}</span>
-                    `).join("")}
-                </div>
-            </div>
-        `;
+    if (!item) {
+        return;
     }
 
-    let tagsHTML = "";
 
-    if (item.tags && item.tags.length > 0) {
-        tagsHTML = `
-            <div class="inventory-details-properties">
-                <h2>Tags</h2>
-                <div>
-                    ${item.tags.map(tag => `
-                        <span class="inventory-tag">${tag}</span>
-                    `).join("")}
-                </div>
-            </div>
-        `;
-    }
+    const locationName =
+        item.location ===
+        "equipment"
+            ? "Equipment"
+            : "Miscellaneous";
 
-    let linkedAbilityHTML = "";
 
-    if (item.linkedAbility) {
-        const ability = abilities.find(ability => ability.id === item.linkedAbility);
+    const app =
+        document.getElementById(
+            "app"
+        );
 
-        if (ability) {
-            linkedAbilityHTML = `
-                <button
-                    class="linked-ability-card"
-                    onclick="showAbilityDetails('${ability.id}')"
+
+    const propertiesHTML =
+        item.properties &&
+        item.properties.length > 0
+            ? `
+
+                <div
+                    class="
+                        inventory-details-properties
+                    "
                 >
+
+                    <h2>
+                        Properties
+                    </h2>
+
+
                     <div>
-                        <span>Linked Ability</span>
-                        <strong>${ability.icon} ${ability.name}</strong>
+
+                        ${item.properties
+                            .map(
+                                property => `
+
+                                    <span
+                                        class="
+                                            inventory-property
+                                        "
+                                    >
+                                        ${property}
+                                    </span>
+
+                                `
+                            )
+                            .join("")}
+
                     </div>
-                    <span>›</span>
-                </button>
-            `;
-        }
-    }
+
+                </div>
+
+            `
+            : "";
+
+
+    const tagsHTML =
+        item.tags &&
+        item.tags.length > 0
+            ? `
+
+                <div
+                    class="
+                        inventory-details-properties
+                    "
+                >
+
+                    <h2>
+                        Tags
+                    </h2>
+
+
+                    <div>
+
+                        ${item.tags
+                            .map(
+                                tag => `
+
+                                    <span
+                                        class="
+                                            inventory-tag
+                                        "
+                                    >
+                                        ${tag}
+                                    </span>
+
+                                `
+                            )
+                            .join("")}
+
+                    </div>
+
+                </div>
+
+            `
+            : "";
+
+
+    const canQuickConsume =
+        hasQuickConsumeTag(
+            item
+        );
+
+
+    const unavailable =
+        item.quantity <= 0 &&
+        canQuickConsume;
+
 
     app.innerHTML = `
-        <header class="app-header">
-            <button class="back-button" onclick="showInventorySection('${item.location}')">
+
+        <header
+            class="app-header"
+        >
+
+            <button
+                class="back-button"
+                onclick="
+                    showInventorySection(
+                        '${item.location}'
+                    )
+                "
+            >
                 ← ${locationName}
             </button>
 
-            <h1>${item.icon || "📦"} ${item.name}</h1>
-            <p>${locationName}</p>
+
+            <h1>
+                ${item.icon}
+                ${item.name}
+            </h1>
+
+
+            <p>
+                ${locationName}
+            </p>
+
         </header>
 
+
         <main>
-            <section class="inventory-details">
 
-                <div class="inventory-detail-summary">
-                    <div class="inventory-detail-stat">
-                        <span>QUANTITY</span>
-                        <strong>${item.quantity}</strong>
+            <section
+                class="inventory-details"
+            >
+
+                <div
+                    class="
+                        inventory-detail-summary
+                    "
+                >
+
+                    <div
+                        class="
+                            inventory-detail-stat
+                        "
+                    >
+
+                        <span>
+                            QUANTITY
+                        </span>
+
+                        <strong>
+                            ${item.quantity}
+                        </strong>
+
                     </div>
 
-                    <div class="inventory-detail-stat">
-                        <span>WEIGHT</span>
-                        <strong>${item.weight !== null && item.weight !== undefined ? `${item.weight} kg` : "—"}</strong>
+
+                    <div
+                        class="
+                            inventory-detail-stat
+                        "
+                    >
+
+                        <span>
+                            WEIGHT
+                        </span>
+
+                        <strong>
+                            ${
+                                item.weight !== null
+                                    ? `${item.weight} kg`
+                                    : "—"
+                            }
+                        </strong>
+
                     </div>
 
-                    <div class="inventory-detail-stat">
-                        <span>STATUS</span>
-                        <strong>${item.equipped ? "Equipped" : "Carried"}</strong>
+
+                    <div
+                        class="
+                            inventory-detail-stat
+                        "
+                    >
+
+                        <span>
+                            STATUS
+                        </span>
+
+                        <strong>
+                            ${
+                                item.equipped
+                                    ? "Equipped"
+                                    : unavailable
+                                        ? "Unavailable"
+                                        : "Carried"
+                            }
+                        </strong>
+
                     </div>
+
                 </div>
 
-                <div class="inventory-description">
-                    <h2>Description</h2>
-                    <p>${item.description || "No description."}</p>
+
+                <div
+                    class="inventory-description"
+                >
+
+                    <h2>
+                        Description
+                    </h2>
+
+
+                    <p>
+                        ${item.description}
+                    </p>
+
                 </div>
+
 
                 ${propertiesHTML}
+
                 ${tagsHTML}
-                ${linkedAbilityHTML}
 
-                <div class="inventory-detail-actions">
-                    ${item.location === "equipment" || hasEquipmentTag(item) ? `
-                        <button
-                            class="inventory-action-button"
-                            onclick="toggleEquipment('${item.id}')"
-                        >
-                            ${item.equipped ? "Unequip" : "Equip"}
-                        </button>
-                    ` : ""}
 
-                    ${hasQuickConsumeTag(item) ? `
-                        <button
-                            class="inventory-action-button"
-                            onclick="consumeInventoryItem('${item.id}')"
-                            ${item.quantity <= 0 ? "disabled" : ""}
-                        >
-                            Consume 1
-                        </button>
-                    ` : ""}
+                <div
+                    class="
+                        inventory-action-group
+                    "
+                >
+
+                    ${
+                        item.location ===
+                            "equipment" ||
+                        hasEquipmentTag(
+                            item
+                        )
+                            ? `
+
+                                <button
+                                    class="
+                                        inventory-action-button
+                                    "
+                                    onclick="
+                                        toggleEquipment(
+                                            '${item.id}'
+                                        )
+                                    "
+                                >
+                                    ${
+                                        item.equipped
+                                            ? "Unequip"
+                                            : "Equip"
+                                    }
+                                </button>
+
+                            `
+                            : ""
+                    }
+
+
+                    ${
+                        canQuickConsume
+                            ? `
+
+                                <button
+                                    class="
+                                        inventory-action-button
+                                    "
+                                    onclick="
+                                        consumeInventoryItem(
+                                            '${item.id}'
+                                        )
+                                    "
+                                    ${
+                                        unavailable
+                                            ? "disabled"
+                                            : ""
+                                    }
+                                >
+                                    Consume 1
+                                </button>
+
+                            `
+                            : ""
+                    }
+
 
                     <button
-                        class="inventory-action-button"
-                        onclick="openEditItemForm('${item.id}')"
+                        class="
+                            inventory-action-button
+                        "
+                        onclick="
+                            openEditItemForm(
+                                '${item.id}'
+                            )
+                        "
                     >
-                        Edit Item
+                        Edit
                     </button>
 
+
                     <button
-                        class="inventory-action-button"
-                        onclick="deleteInventoryItem('${item.id}')"
+                        class="
+                            inventory-action-button
+                            inventory-delete-button
+                        "
+                        onclick="
+                            deleteInventoryItem(
+                                '${item.id}'
+                            )
+                        "
                     >
-                        Delete Item
+                        Delete
                     </button>
+
                 </div>
 
             </section>
+
         </main>
+
     `;
+
+}
+
+
+// ---------- Equipment Tags ----------
+
+function hasEquipmentTag(
+    item
+) {
+
+    return item.tags &&
+        item.tags.some(
+            tag =>
+                [
+                    "Armor",
+                    "Weapon",
+                    "Shield",
+                    "Focus",
+                    "Ammunition",
+                    "Accessory"
+                ].includes(tag)
+        );
+
+}
+
+
+// ---------- Equipment Category ----------
+
+function getEquipmentCategoryFromTags(
+    item
+) {
+
+    const tagMap = {
+
+        Armor:
+            "armor",
+
+        Weapon:
+            "weapons",
+
+        Shield:
+            "shield",
+
+        Focus:
+            "focus",
+
+        Ammunition:
+            "ammunition",
+
+        Accessory:
+            "accessories"
+
+    };
+
+
+    for (
+        const tag of item.tags || []
+    ) {
+
+        if (
+            tagMap[tag]
+        ) {
+
+            return tagMap[tag];
+
+        }
+
+    }
+
+
+    return null;
+
+}
+
+
+// ---------- Single-Slot Equipment ----------
+
+function isSingleSlotEquipment(
+    category
+) {
+
+    return [
+        "armor",
+        "shield",
+        "focus"
+    ].includes(
+        category
+    );
+
+}
+
+
+// ---------- Equip / Unequip ----------
+
+function toggleEquipment(
+    itemId
+) {
+
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
+
+
+    if (!item) {
+        return;
+    }
+
+
+    // ---------- UNEQUIP ----------
+
+    if (
+        item.equipped
+    ) {
+
+        item.equipped =
+            false;
+
+
+        // Equipment items remain
+        // in their equipment category.
+        // Items originally coming from
+        // Miscellaneous return there.
+
+        if (
+            item.originalLocation ===
+            "miscellaneous"
+        ) {
+
+            item.location =
+                "miscellaneous";
+
+            item.category =
+                "miscellaneous";
+
+        } else {
+
+            item.location =
+                "equipment";
+
+        }
+
+
+        saveInventory();
+
+        showInventorySection(
+            item.location
+        );
+
+        return;
+
+    }
+
+
+    // ---------- EQUIP ----------
+
+    const category =
+        getEquipmentCategoryFromTags(
+            item
+        );
+
+
+    if (!category) {
+
+        alert(
+            "This item does not have an equipment tag."
+        );
+
+        return;
+
+    }
+
+
+    // ---------- Single-slot equipment ----------
+
+    if (
+        isSingleSlotEquipment(
+            category
+        )
+    ) {
+
+        const equippedItem =
+            inventoryItems.find(
+                other =>
+                    other.id !==
+                        item.id
+                    &&
+                    other.equipped ===
+                        true
+                    &&
+                    other.location ===
+                        "equipment"
+                    &&
+                    other.category ===
+                        category
+            );
+
+
+        if (
+            equippedItem
+        ) {
+
+            const confirmed =
+                confirm(
+                    `${equippedItem.name} is already equipped.\n\nEquip ${item.name} instead?`
+                );
+
+
+            if (!confirmed) {
+
+                return;
+
+            }
+
+
+            equippedItem.equipped =
+                false;
+
+
+            if (
+                equippedItem.originalLocation ===
+                "miscellaneous"
+            ) {
+
+                equippedItem.location =
+                    "miscellaneous";
+
+                equippedItem.category =
+                    "miscellaneous";
+
+            }
+
+        }
+
+    }
+
+
+    // ---------- Equipment category ----------
+
+    item.category =
+        category;
+
+
+    item.equipped =
+        true;
+
+
+    item.location =
+        "equipment";
+
+
+    if (
+        !item.originalLocation
+    ) {
+
+        item.originalLocation =
+            "miscellaneous";
+
+    }
+
+
+    saveInventory();
+
+    showInventorySection(
+        "equipment"
+    );
+
 }
 
 
 // ========================================
-// ADD / EDIT ITEM
+// INVENTORY ITEM MANAGEMENT
 // ========================================
 
-function getItemFormTags(selectedTags = []) {
 
-    return inventoryTags.map(tag => `
-        <label class="inventory-form-tag">
-            <input
-                type="checkbox"
-                name="item-tag"
-                value="${tag}"
-                ${selectedTags.includes(tag) ? "checked" : ""}
-            >
-            <span>${tag}</span>
-        </label>
-    `).join("");
+// ---------- Quick Consume ----------
+
+function hasQuickConsumeTag(
+    item
+) {
+
+    return item.tags &&
+        item.tags.some(
+            tag =>
+                [
+                    "Consumable",
+                    "Ammunition",
+                    "Spell Component"
+                ].includes(tag)
+        );
+
 }
 
+
+function consumeInventoryItem(
+    itemId
+) {
+
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
+
+
+    if (!item) {
+        return;
+    }
+
+
+    if (
+        !hasQuickConsumeTag(
+            item
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        item.quantity <= 0
+    ) {
+
+        return;
+
+    }
+
+
+    item.quantity--;
+
+
+    saveInventory();
+
+
+    if (
+        document.querySelector(
+            ".inventory-details"
+        )
+    ) {
+
+        showInventoryItem(
+            item.id
+        );
+
+    } else {
+
+        showInventorySection(
+            item.location
+        );
+
+    }
+
+}
+
+// ========================================
+// INVENTORY ITEM FORMS
+// ========================================
+
+
+// ---------- Add Item ----------
 
 function openAddItemForm() {
 
-    openInventoryItemForm(null);
+    openInventoryItemForm();
+
 }
 
 
-function openEditItemForm(itemId) {
+// ---------- Edit Item ----------
 
-    const item = inventoryItems.find(item => item.id === itemId);
+function openEditItemForm(
+    itemId
+) {
 
-    if (!item) return;
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id === itemId
+        );
 
-    openInventoryItemForm(item);
+
+    if (!item) {
+        return;
+    }
+
+
+    openInventoryItemForm(
+        item
+    );
+
 }
 
 
-function openInventoryItemForm(item = null) {
+// ---------- Inventory Form ----------
 
-    const isEdit = !!item;
-    const title = isEdit ? "Edit Item" : "Add Item";
+function openInventoryItemForm(
+    existingItem = null
+) {
 
-    const values = item || {
-        name: "",
-        description: "",
-        quantity: 1,
-        weight: "",
-        icon: "📦",
-        magical: false,
-        tags: [],
-        properties: []
-    };
+    const isEditing =
+        existingItem !== null;
 
-    const app = document.getElementById("app");
 
-    app.innerHTML = `
-        <header class="app-header">
+    const selectedTags =
+        existingItem
+            ? existingItem.tags || []
+            : [];
+
+
+    const selectedCategory =
+        existingItem
+            ? existingItem.category
+            : "miscellaneous";
+
+
+    const form =
+        document.createElement(
+            "div"
+        );
+
+
+    form.className =
+        "inventory-form-overlay";
+
+
+    form.innerHTML = `
+
+        <div
+            class="
+                inventory-form-modal
+            "
+        >
+
             <button
-                class="back-button"
-                onclick="${isEdit ? `showInventoryItem('${item.id}')` : `showInventory()`}"
+                class="rest-close"
+                onclick="
+                    this
+                        .closest(
+                            '.inventory-form-overlay'
+                        )
+                        .remove()
+                "
             >
-                ← Inventory
+                ×
             </button>
-            <h1>${title}</h1>
-        </header>
 
-        <main>
-            <section class="inventory-details">
-                <div class="inventory-form">
-                    <label>Name</label>
-                    <input id="item-name" class="inventory-input" value="${values.name}">
 
-                    <label>Description</label>
-                    <textarea id="item-description" class="inventory-input">${values.description}</textarea>
+            <h2>
+                ${
+                    isEditing
+                        ? "Edit Item"
+                        : "Add Item"
+                }
+            </h2>
 
-                    <label>Icon</label>
-                    <input id="item-icon" class="inventory-input" value="${values.icon || "📦"}">
 
-                    <label>Quantity</label>
-                    <input id="item-quantity" class="inventory-input" type="number" min="0" value="${values.quantity}">
+            <label>
 
-                    <label>Weight (kg)</label>
-                    <input id="item-weight" class="inventory-input" type="number" min="0" step="0.01" value="${values.weight ?? ""}">
+                Name
 
-                    <label>Properties</label>
-                    <input id="item-properties" class="inventory-input" value="${(values.properties || []).join(", ")}">
+                <input
+                    id="inventory-form-name"
+                    type="text"
+                    value="${
+                        escapeHTML(
+                            existingItem?.name ||
+                            ""
+                        )
+                    }"
+                    placeholder="Item name"
+                >
 
-                    <label class="inventory-form-tag">
-                        <input id="item-magical" type="checkbox" ${values.magical ? "checked" : ""}>
-                        <span>Magical item</span>
-                    </label>
+            </label>
 
-                    <h2>Tags</h2>
-                    <div class="inventory-form-tags">
-                        ${getItemFormTags(values.tags || [])}
-                    </div>
 
-                    <button
-                        class="inventory-action-button"
-                        onclick="saveInventoryItemFromForm(${isEdit ? `'${item.id}'` : "null"})"
+            <label>
+
+                Icon
+
+                <input
+                    id="inventory-form-icon"
+                    type="text"
+                    value="${
+                        escapeHTML(
+                            existingItem?.icon ||
+                            "📦"
+                        )
+                    }"
+                    maxlength="4"
+                >
+
+            </label>
+
+
+            <label>
+
+                Description
+
+                <textarea
+                    id="
+                        inventory-form-description
+                    "
+                    placeholder="
+                        Describe the item...
+                    "
+                >${
+                    escapeHTML(
+                        existingItem?.description ||
+                        ""
+                    )
+                }</textarea>
+
+            </label>
+
+
+            <label>
+
+                Quantity
+
+                <input
+                    id="
+                        inventory-form-quantity
+                    "
+                    type="number"
+                    min="0"
+                    step="1"
+                    inputmode="numeric"
+                    value="${
+                        existingItem
+                            ? existingItem.quantity
+                            : 1
+                    }"
+                >
+
+            </label>
+
+
+            <label>
+
+                Weight (kg)
+
+                <input
+                    id="
+                        inventory-form-weight
+                    "
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    inputmode="decimal"
+                    value="${
+                        existingItem?.weight ??
+                        ""
+                    }"
+                    placeholder="Optional"
+                >
+
+            </label>
+
+
+            <label>
+
+                Category
+
+                <select
+                    id="
+                        inventory-form-category
+                    "
+                >
+
+                    <option
+                        value="
+                            miscellaneous
+                        "
+                        ${
+                            selectedCategory ===
+                            "miscellaneous"
+                                ? "selected"
+                                : ""
+                        }
                     >
-                        ${isEdit ? "Save Changes" : "Add Item"}
-                    </button>
+                        Miscellaneous
+                    </option>
+
+
+                    ${equipmentCategories
+                        .map(
+                            category => `
+
+                                <option
+                                    value="
+                                        ${category.id}
+                                    "
+                                    ${
+                                        selectedCategory ===
+                                        category.id
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    ${category.name}
+                                </option>
+
+                            `
+                        )
+                        .join("")}
+
+                </select>
+
+            </label>
+
+
+            <label>
+
+                Properties
+
+                <input
+                    id="
+                        inventory-form-properties
+                    "
+                    type="text"
+                    value="${
+                        escapeHTML(
+                            existingItem?.properties
+                                ?.join(", ") ||
+                            ""
+                        )
+                    }"
+                    placeholder="
+                        Separate properties with commas
+                    "
+                >
+
+            </label>
+
+
+            <label
+                class="
+                    inventory-checkbox-label
+                "
+            >
+
+                <input
+                    id="
+                        inventory-form-magical
+                    "
+                    type="checkbox"
+                    ${
+                        existingItem?.magical
+                            ? "checked"
+                            : ""
+                    }
+                >
+
+                Magical item
+
+            </label>
+
+
+            <div
+                class="
+                    inventory-form-tags
+                "
+            >
+
+                <strong>
+                    Tags
+                </strong>
+
+
+                <small>
+                    Choose up to 3
+                </small>
+
+
+                <div
+                    class="
+                        inventory-tag-options
+                    "
+                >
+
+                    ${inventoryTags
+                        .map(
+                            tag => `
+
+                                <label>
+
+                                    <input
+                                        type="checkbox"
+                                        value="${tag}"
+                                        class="
+                                            inventory-tag-checkbox
+                                        "
+                                        ${
+                                            selectedTags
+                                                .includes(
+                                                    tag
+                                                )
+                                                ? "checked"
+                                                : ""
+                                        }
+                                        onchange="
+                                            limitInventoryTags(
+                                                this
+                                            )
+                                        "
+                                    >
+
+                                    ${tag}
+
+                                </label>
+
+                            `
+                        )
+                        .join("")}
+
                 </div>
-            </section>
-        </main>
+
+            </div>
+
+
+            <button
+                class="
+                    inventory-form-submit
+                "
+                onclick="
+                    saveInventoryItemForm(
+                        '${
+                            existingItem?.id ||
+                            ""
+                        }'
+                    )
+                "
+            >
+
+                ${
+                    isEditing
+                        ? "Save Changes"
+                        : "Add Item"
+                }
+
+            </button>
+
+        </div>
+
     `;
+
+
+    document.body.appendChild(
+        form
+    );
+
 }
 
 
-function saveInventoryItemFromForm(itemId) {
+// ---------- Limit Tags ----------
 
-    const name = document.getElementById("item-name").value.trim();
-    const description = document.getElementById("item-description").value.trim();
-    const icon = document.getElementById("item-icon").value.trim() || "📦";
-    const quantity = Math.max(0, Math.floor(Number(document.getElementById("item-quantity").value)));
-    const weightValue = document.getElementById("item-weight").value;
-    const weight = weightValue === "" ? null : Math.max(0, Number(weightValue));
-    const magical = document.getElementById("item-magical").checked;
-    const tags = Array.from(document.querySelectorAll('input[name="item-tag"]:checked')).map(input => input.value);
-    const properties = document.getElementById("item-properties").value
-        .split(",")
-        .map(value => value.trim())
-        .filter(Boolean);
+function limitInventoryTags(
+    checkbox
+) {
+
+    const checked =
+        document.querySelectorAll(
+            ".inventory-tag-checkbox:checked"
+        );
+
+
+    if (
+        checked.length > 3
+    ) {
+
+        checkbox.checked =
+            false;
+
+
+        alert(
+            "You can choose a maximum of 3 tags."
+        );
+
+    }
+
+}
+
+
+// ---------- Save Item Form ----------
+
+function saveInventoryItemForm(
+    existingId = ""
+) {
+
+    const name =
+        document.getElementById(
+            "inventory-form-name"
+        ).value.trim();
+
 
     if (!name) {
-        alert("Please enter an item name.");
+
+        alert(
+            "Please enter an item name."
+        );
+
         return;
+
     }
 
-    const equipmentCategory = getCategoryFromEquipmentTag({ tags });
 
-    if (itemId) {
-        const item = inventoryItems.find(item => item.id === itemId);
-        if (!item) return;
+    const quantity =
+        Number(
+            document.getElementById(
+                "inventory-form-quantity"
+            ).value
+        );
 
-        item.name = name;
-        item.description = description;
-        item.icon = icon;
-        item.quantity = quantity;
-        item.weight = weight;
-        item.magical = magical;
-        item.tags = tags;
-        item.properties = properties;
 
-        if (equipmentCategory && item.location === "equipment") {
-            item.category = equipmentCategory;
+    if (
+        !Number.isFinite(
+            quantity
+        ) ||
+        quantity < 0
+    ) {
+
+        alert(
+            "Quantity must be 0 or greater."
+        );
+
+        return;
+
+    }
+
+
+    const weightValue =
+        document.getElementById(
+            "inventory-form-weight"
+        ).value;
+
+
+    const weight =
+        weightValue === ""
+            ? null
+            : Number(
+                weightValue
+            );
+
+
+    if (
+        weight !== null &&
+        (
+            !Number.isFinite(
+                weight
+            ) ||
+            weight < 0
+        )
+    ) {
+
+        alert(
+            "Weight must be 0 or greater."
+        );
+
+        return;
+
+    }
+
+
+    const tags =
+        Array.from(
+            document.querySelectorAll(
+                ".inventory-tag-checkbox:checked"
+            )
+        )
+        .map(
+            checkbox =>
+                checkbox.value
+        );
+
+
+    const propertiesText =
+        document.getElementById(
+            "inventory-form-properties"
+        ).value;
+
+
+    const properties =
+        propertiesText
+            .split(",")
+            .map(
+                property =>
+                    property.trim()
+            )
+            .filter(
+                Boolean
+            );
+
+
+    const selectedCategory =
+        document.getElementById(
+            "inventory-form-category"
+        ).value;
+
+
+    const equipmentCategory =
+        getEquipmentCategoryFromTags(
+            {
+                tags
+            }
+        );
+
+
+    const isEquipmentItem =
+        equipmentCategory !== null;
+
+
+    // ---------- Edit ----------
+
+    if (existingId) {
+
+        const item =
+            inventoryItems.find(
+                item =>
+                    item.id ===
+                    existingId
+            );
+
+
+        if (!item) {
+            return;
         }
 
+
+        item.name =
+            name;
+
+
+        item.icon =
+            document.getElementById(
+                "inventory-form-icon"
+            ).value ||
+            "📦";
+
+
+        item.description =
+            document.getElementById(
+                "inventory-form-description"
+            ).value.trim();
+
+
+        item.quantity =
+            Math.floor(
+                quantity
+            );
+
+
+        item.weight =
+            weight;
+
+
+        item.properties =
+            properties;
+
+
+        item.magical =
+            document.getElementById(
+                "inventory-form-magical"
+            ).checked;
+
+
+        item.tags =
+            tags;
+
+
+        if (
+            item.equipped
+        ) {
+
+            if (
+                isEquipmentItem
+            ) {
+
+                item.category =
+                    equipmentCategory;
+
+
+                item.location =
+                    "equipment";
+
+            } else {
+
+                item.equipped =
+                    false;
+
+
+                item.location =
+                    "miscellaneous";
+
+
+                item.category =
+                    "miscellaneous";
+
+            }
+
+        } else {
+
+            item.category =
+                isEquipmentItem
+                    ? equipmentCategory
+                    : selectedCategory;
+
+        }
+
+
         saveInventory();
-        showInventoryItem(item.id);
+
+
+        closeInventoryForm();
+
+
+        showInventorySection(
+            item.location
+        );
+
+
         return;
+
     }
 
-    const newItem = {
-        id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-        name,
-        category: equipmentCategory || "miscellaneous",
-        location: "miscellaneous",
-        icon,
-        description,
-        quantity,
-        weight,
-        equipped: false,
-        magical,
-        properties,
-        tags
+
+    // ---------- Create ----------
+
+    const item = {
+
+        id:
+            "item-" +
+            Date.now(),
+
+
+        name:
+            name,
+
+
+        category:
+            isEquipmentItem
+                ? equipmentCategory
+                : selectedCategory,
+
+
+        location:
+            "miscellaneous",
+
+
+        icon:
+            document.getElementById(
+                "inventory-form-icon"
+            ).value ||
+            "📦",
+
+
+        description:
+            document.getElementById(
+                "inventory-form-description"
+            ).value.trim(),
+
+
+        quantity:
+            Math.floor(
+                quantity
+            ),
+
+
+        weight:
+            weight,
+
+
+        equipped:
+            false,
+
+
+        magical:
+            document.getElementById(
+                "inventory-form-magical"
+            ).checked,
+
+
+        properties:
+            properties,
+
+
+        tags:
+            tags,
+
+
+        originalLocation:
+            "miscellaneous"
+
     };
 
-    inventoryItems.push(newItem);
+
+    inventoryItems.push(
+        item
+    );
+
+
     saveInventory();
-    showInventorySection("miscellaneous");
+
+
+    closeInventoryForm();
+
+
+    showInventorySection(
+        "miscellaneous"
+    );
+
 }
 
 
-// ========================================
-// CONSUME ITEM
-// ========================================
+// ---------- Close Inventory Form ----------
 
-function consumeInventoryItem(itemId) {
+function closeInventoryForm() {
 
-    const item = inventoryItems.find(item => item.id === itemId);
+    const overlay =
+        document.querySelector(
+            ".inventory-form-overlay"
+        );
 
-    if (!item || !hasQuickConsumeTag(item)) return;
 
-    if (item.quantity <= 0) {
+    if (overlay) {
+
+        overlay.remove();
+
+    }
+
+}
+
+
+// ---------- Delete Item ----------
+
+function deleteInventoryItem(
+    itemId
+) {
+
+    const item =
+        inventoryItems.find(
+            item =>
+                item.id ===
+                itemId
+        );
+
+
+    if (!item) {
         return;
     }
 
-    item.quantity -= 1;
 
-    saveInventory();
-
-    if (document.querySelector(".inventory-details")) {
-        showInventoryItem(item.id);
-    } else {
-        showInventorySection(item.location);
-    }
-}
+    const confirmed =
+        confirm(
+            `Delete "${item.name}"?\n\nThis cannot be undone.`
+        );
 
 
-// ========================================
-// DELETE ITEM
-// ========================================
-
-function deleteInventoryItem(itemId) {
-
-    const item = inventoryItems.find(item => item.id === itemId);
-
-    if (!item) return;
-
-    if (!confirm(`Delete "${item.name}" from your inventory?`)) {
+    if (!confirmed) {
         return;
     }
 
-    const index = inventoryItems.findIndex(item => item.id === itemId);
 
-    if (index !== -1) {
-        inventoryItems.splice(index, 1);
-    }
-
-    saveInventory();
-    showInventorySection(item.location);
-}
+    const index =
+        inventoryItems.findIndex(
+            item =>
+                item.id ===
+                itemId
+        );
 
 
-// ========================================
-// EQUIP / UNEQUIP
-// ========================================
+    if (
+        index === -1
+    ) {
 
-function toggleEquipment(itemId) {
-
-    const item = inventoryItems.find(item => item.id === itemId);
-
-    if (!item) return;
-
-    if (item.equipped) {
-        item.equipped = false;
-        item.location = "miscellaneous";
-        saveInventory();
-        showInventorySection("miscellaneous");
         return;
+
     }
 
-    const category = getCategoryFromEquipmentTag(item) || item.category;
 
-    if (!category) return;
+    inventoryItems.splice(
+        index,
+        1
+    );
 
-    const exclusiveCategory = getEquipmentConflictCategory(category);
-
-    if (exclusiveCategory) {
-        inventoryItems.forEach(other => {
-            if (
-                other.id !== item.id &&
-                other.equipped &&
-                other.category === exclusiveCategory
-            ) {
-                other.equipped = false;
-                other.location = "miscellaneous";
-            }
-        });
-    }
-
-    item.category = category;
-    item.equipped = true;
-    item.location = "equipment";
 
     saveInventory();
-    showInventory();
-}
 
+
+    showInventorySection(
+        "miscellaneous"
+    );
+
+}
 
 
 // ========================================
 // CURRENCY DETAILS
 // ========================================
 
+
+// ---------- Currency Conversion ----------
+
+function getTotalGoldValue() {
+
+    return (
+
+        currency.gold +
+
+        currency.silver / 10 +
+
+        currency.copper / 100 +
+
+        currency.platinum * 10
+
+    ).toFixed(2);
+
+}
+
+
+// ---------- Currency Details ----------
 
 function showCurrencyDetails() {
 
@@ -3877,37 +4689,46 @@ function showCurrencyDetails() {
 
     app.innerHTML = `
 
-        <header class="app-header">
-
+        <header
+            class="app-header"
+        >
 
             <button
                 class="back-button"
-                onclick="showInventory()"
+                onclick="
+                    showInventory()
+                "
             >
                 ← Inventory
             </button>
 
 
             <h1>
-                💰 Coin Pouch
+                🪙 Coin Pouch
             </h1>
 
 
             <p>
-                Your physical currency
+                Your currency
             </p>
-
 
         </header>
 
 
         <main>
 
+            <section
+                class="
+                    currency-details
+                "
+            >
 
-            <section class="currency-details">
 
-
-                <div class="currency-total-card">
+                <div
+                    class="
+                        currency-total
+                    "
+                >
 
                     <span>
                         Total Value
@@ -3915,125 +4736,239 @@ function showCurrencyDetails() {
 
 
                     <strong>
-                        ${formatGoldValue(
-                            getCurrencyInGold()
-                        )}
-                        GP
+                        ${getTotalGoldValue()}
+                        gp
                     </strong>
 
                 </div>
 
 
-                ${renderCurrencyRow(
-                    "copper",
-                    "🟤",
-                    "Copper",
-                    "CP"
-                )}
+                <div
+                    class="
+                        currency-list
+                    "
+                >
 
 
-                ${renderCurrencyRow(
-                    "silver",
-                    "⚪",
-                    "Silver",
-                    "SP"
-                )}
+                    <div
+                        class="
+                            currency-row
+                            copper
+                        "
+                    >
+
+                        <span>
+                            🟤 Copper
+                        </span>
 
 
-                ${renderCurrencyRow(
-                    "gold",
-                    "🟡",
-                    "Gold",
-                    "GP"
-                )}
+                        <div>
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'copper',
+                                        -1
+                                    )
+                                "
+                            >
+                                −
+                            </button>
 
 
-                ${renderCurrencyRow(
-                    "platinum",
-                    "⚪",
-                    "Platinum",
-                    "PP"
-                )}
+                            <strong>
+                                ${currency.copper}
+                            </strong>
+
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'copper',
+                                        1
+                                    )
+                                "
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            currency-row
+                            silver
+                        "
+                    >
+
+                        <span>
+                            ⚪ Silver
+                        </span>
+
+
+                        <div>
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'silver',
+                                        -1
+                                    )
+                                "
+                            >
+                                −
+                            </button>
+
+
+                            <strong>
+                                ${currency.silver}
+                            </strong>
+
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'silver',
+                                        1
+                                    )
+                                "
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            currency-row
+                            gold
+                        "
+                    >
+
+                        <span>
+                            🟡 Gold
+                        </span>
+
+
+                        <div>
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'gold',
+                                        -1
+                                    )
+                                "
+                            >
+                                −
+                            </button>
+
+
+                            <strong>
+                                ${currency.gold}
+                            </strong>
+
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'gold',
+                                        1
+                                    )
+                                "
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="
+                            currency-row
+                            platinum
+                        "
+                    >
+
+                        <span>
+                            🔵 Platinum
+                        </span>
+
+
+                        <div>
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'platinum',
+                                        -1
+                                    )
+                                "
+                            >
+                                −
+                            </button>
+
+
+                            <strong>
+                                ${currency.platinum}
+                            </strong>
+
+
+                            <button
+                                onclick="
+                                    changeCurrency(
+                                        'platinum',
+                                        1
+                                    )
+                                "
+                            >
+                                +
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="
+                        currency-conversion
+                    "
+                >
+
+                    <h2>
+                        Gold Conversion
+                    </h2>
+
+
+                    <p>
+                        1 pp = 10 gp ·
+                        1 gp = 10 sp ·
+                        1 sp = 10 cp
+                    </p>
+
+
+                    <strong>
+                        ${getTotalGoldValue()}
+                        gp
+                    </strong>
+
+                </div>
 
 
             </section>
 
-
         </main>
-
-    `;
-
-}
-
-
-// ---------- Currency Row ----------
-
-function renderCurrencyRow(
-    type,
-    icon,
-    name,
-    abbreviation
-) {
-
-    return `
-
-        <div class="currency-row">
-
-
-            <div class="currency-row-name">
-
-                <span>
-                    ${icon}
-                </span>
-
-
-                <div>
-
-                    <strong>
-                        ${name}
-                    </strong>
-
-                    <small>
-                        ${abbreviation}
-                    </small>
-
-                </div>
-
-            </div>
-
-
-            <div class="currency-controls">
-
-
-                <button
-                    class="currency-minus"
-                    onclick="changeCurrency('${type}', -1)"
-                >
-                    −
-                </button>
-
-
-                <input
-                    class="currency-input"
-                    type="number"
-                    min="0"
-                    value="${currency[type]}"
-                    onchange="setCurrency('${type}', this.value)"
-                >
-
-
-                <button
-                    class="currency-plus"
-                    onclick="changeCurrency('${type}', 1)"
-                >
-                    +
-                </button>
-
-
-            </div>
-
-
-        </div>
 
     `;
 
@@ -4055,9 +4990,13 @@ function changeCurrency(
         currency[type] < 0
     ) {
 
-        currency[type] = 0;
+        currency[type] =
+            0;
 
     }
+
+
+    saveCurrency();
 
 
     showCurrencyDetails();
@@ -4073,7 +5012,9 @@ function setCurrency(
 ) {
 
     const amount =
-        Number(value);
+        Number(
+            value
+        );
 
 
     if (
@@ -4096,9 +5037,46 @@ function setCurrency(
 
     saveCurrency();
 
+
     showCurrencyDetails();
 
 }
+
+
+// ========================================
+// SIMPLE HTML ESCAPE
+// ========================================
+
+function escapeHTML(
+    value
+) {
+
+    return String(
+        value
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
 
 // ---------- Initialize ----------
 

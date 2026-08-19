@@ -747,3 +747,387 @@ body {
         font-size: 12px;
     }
 }
+
+/* ========================================
+   HOME
+======================================== */
+
+
+/* ---------- Character Header ---------- */
+
+.character-header {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    padding: 10px 4px 20px;
+}
+
+
+.character-avatar {
+    width: 72px;
+    height: 72px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: var(--surface-light);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    font-size: 30px;
+}
+
+
+.character-summary {
+    flex: 1;
+}
+
+
+.character-summary h1 {
+    font-size: 21px;
+    font-weight: 600;
+
+    margin-bottom: 4px;
+}
+
+
+.character-summary p {
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* ---------- Status ---------- */
+
+.status-section {
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    overflow: hidden;
+}
+
+
+/* HP */
+
+.status-hp {
+    padding: 16px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+
+.status-label {
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+
+    margin-bottom: 5px;
+}
+
+
+.hp-value {
+    font-size: 27px;
+
+    font-weight: 600;
+
+    letter-spacing: -0.5px;
+}
+
+
+.hp-divider {
+    color: var(--text-muted);
+
+    margin: 0 3px;
+}
+
+
+#maximum-hp {
+    color: var(--text-muted);
+}
+
+
+/* Status rows */
+
+.status-row {
+    position: relative;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 48px;
+
+    padding: 0 16px;
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: 14px;
+}
+
+
+.status-value {
+    color: var(--accent-light);
+
+    font-size: 13px;
+
+    font-weight: 600;
+}
+
+
+.status-toggle,
+.status-selector {
+    background: transparent;
+
+    border: none;
+
+    font-family: inherit;
+
+    cursor: pointer;
+}
+
+
+.status-toggle.active {
+    color: var(--accent);
+
+}
+
+
+/* ---------- Status Dropdown ---------- */
+
+.status-menu {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+
+    background: var(--surface-light);
+
+    border-bottom: 1px solid var(--border);
+
+    padding: 8px 16px 12px;
+}
+
+
+.status-menu.hidden {
+    display: none;
+}
+
+
+.status-menu label {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 7px 0;
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+}
+
+
+.status-menu input {
+    accent-color: var(--accent);
+}
+
+
+/* ---------- Hit Dice ---------- */
+
+#hit-dice-value {
+    color: var(--accent-light);
+}
+
+
+/* ---------- Death Saves ---------- */
+
+.death-saves {
+    padding: 14px 16px;
+}
+
+
+.death-saves-title {
+    color: var(--text-muted);
+
+    font-size: 12px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+
+    margin-bottom: 12px;
+}
+
+
+.death-saves-groups {
+    display: flex;
+
+    gap: 28px;
+}
+
+
+.death-saves-groups > div {
+    flex: 1;
+}
+
+
+.death-saves-groups > div > span {
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+
+    margin-bottom: 7px;
+}
+
+
+.save-dots {
+    display: flex;
+
+    gap: 7px;
+}
+
+
+.save-dot {
+    width: 16px;
+    height: 16px;
+
+    padding: 0;
+
+    background: transparent;
+
+    border: 1px solid var(--accent);
+
+    border-radius: 50%;
+
+    cursor: pointer;
+}
+
+
+.save-dot.failure {
+    border-color: var(--danger);
+}
+
+
+/* ---------- Main Menu ---------- */
+
+.main-menu {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+
+    margin-top: 16px;
+}
+
+
+.main-menu-button {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    min-height: 64px;
+
+    padding: 0 16px;
+
+    background: var(--surface);
+
+    color: var(--text);
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    font-weight: 500;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+
+.main-menu-button:hover {
+    background: var(--surface-light);
+
+    border-color: #4a4a4a;
+}
+
+
+.main-menu-button:active {
+    transform: scale(0.99);
+}
+
+
+.main-menu-icon {
+    width: 34px;
+
+    font-size: 22px;
+}
+
+
+.main-menu-arrow {
+    margin-left: auto;
+
+    color: var(--text-muted);
+
+    font-size: 24px;
+
+    font-weight: 300;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 430px) {
+
+    .character-header {
+        padding-top: 4px;
+    }
+
+    .character-avatar {
+        width: 64px;
+        height: 64px;
+
+        font-size: 27px;
+    }
+
+    .character-summary h1 {
+        font-size: 19px;
+    }
+
+    .hp-value {
+        font-size: 25px;
+    }
+
+}

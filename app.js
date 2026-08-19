@@ -3048,7 +3048,6 @@ function showInventory() {
             "app"
         );
 
-
     app.innerHTML = `
 
         <header class="app-header">
@@ -3065,71 +3064,80 @@ function showInventory() {
                 Inventory
             </h1>
 
-
-            <p>
-                Equipment, possessions and currency
-            </p>
-
         </header>
 
 
         <main>
 
-
             <!-- ================================ -->
-            <!-- EQUIPMENT -->
+            <!-- INVENTORY AREAS -->
             <!-- ================================ -->
 
-            <section class="inventory-section">
+            <section class="inventory-navigation">
 
-                <div class="inventory-section-header">
+                <button
+                    class="inventory-navigation-button"
+                    onclick="showInventorySection('equipment')"
+                >
 
-                    <h2>
-                        ⚔️ Equipment
-                    </h2>
+                    <div class="inventory-navigation-icon">
+                        ⚔️
+                    </div>
 
-                </div>
+                    <div class="inventory-navigation-info">
+
+                        <strong>
+                            Equipment
+                        </strong>
+
+                        <span>
+                            Armor, weapons and equipped items
+                        </span>
+
+                    </div>
+
+                    <span class="inventory-arrow">
+                        ›
+                    </span>
+
+                </button>
 
 
-                ${renderEquipment()}
+                <button
+                    class="inventory-navigation-button"
+                    onclick="showInventorySection('miscellaneous')"
+                >
+
+                    <div class="inventory-navigation-icon">
+                        📦
+                    </div>
+
+                    <div class="inventory-navigation-info">
+
+                        <strong>
+                            Miscellaneous
+                        </strong>
+
+                        <span>
+                            Consumables, treasures and other items
+                        </span>
+
+                    </div>
+
+                    <span class="inventory-arrow">
+                        ›
+                    </span>
+
+                </button>
 
             </section>
 
 
             <!-- ================================ -->
-            <!-- MISCELLANEOUS -->
+            <!-- COIN POUCH -->
             <!-- ================================ -->
 
-            <section class="inventory-section">
-
-                <div class="inventory-section-header">
-
-                    <h2>
-                        📦 Miscellaneous
-                    </h2>
-
-                </div>
-
-
-                ${renderMiscellaneous()}
-
-            </section>
-
-
-            <!-- ================================ -->
-            <!-- CURRENCY -->
-            <!-- ================================ -->
-
-            <section class="inventory-section currency-section">
-
-                <div class="inventory-section-header">
-
-                    <h2>
-                        💰 Currency
-                    </h2>
-
-                </div>
-
+            <section class="currency-section">
 
                 <button
                     class="currency-summary"
@@ -3147,7 +3155,17 @@ function showInventory() {
                             Coin Pouch
                         </span>
 
+                        <div class="currency-physical">
+
+                            ${currency.copper} CP ·
+                            ${currency.silver} SP ·
+                            ${currency.gold} GP ·
+                            ${currency.platinum} PP
+
+                        </div>
+
                         <strong>
+                            Total value:
                             ${formatGoldValue(
                                 getCurrencyInGold()
                             )}
@@ -3165,6 +3183,67 @@ function showInventory() {
 
             </section>
 
+        </main>
+    `;
+
+}
+
+
+// ========================================
+// INVENTORY SUB-SECTIONS
+// ========================================
+
+
+function showInventorySection(section) {
+
+    const app =
+        document.getElementById(
+            "app"
+        );
+
+
+    let title = "";
+    let content = "";
+
+
+    if (section === "equipment") {
+
+        title = "⚔️ Equipment";
+        content = renderEquipment();
+
+    }
+
+
+    if (section === "miscellaneous") {
+
+        title = "📦 Miscellaneous";
+        content = renderMiscellaneous();
+
+    }
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="showInventory()"
+            >
+                ← Inventory
+            </button>
+
+
+            <h1>
+                ${title}
+            </h1>
+
+        </header>
+
+
+        <main>
+
+            ${content}
 
         </main>
 

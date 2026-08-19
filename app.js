@@ -4015,61 +4015,6 @@ function openInventoryItemForm(
 
             </label>
 
-
-            <label>
-
-                Category
-
-                <select
-                    id="
-                        inventory-form-category
-                    "
-                >
-
-                    <option
-                        value="
-                            miscellaneous
-                        "
-                        ${
-                            selectedCategory ===
-                            "miscellaneous"
-                                ? "selected"
-                                : ""
-                        }
-                    >
-                        Miscellaneous
-                    </option>
-
-
-                    ${equipmentCategories
-                        .map(
-                            category => `
-
-                                <option
-                                    value="
-                                        ${category.id}
-                                    "
-                                    ${
-                                        selectedCategory ===
-                                        category.id
-                                            ? "selected"
-                                            : ""
-                                    }
-                                >
-                                    ${category.name}
-                                </option>
-
-                            `
-                        )
-                        .join("")}
-
-                </select>
-
-            </label>
-
-
-            <label>
-
                 Properties
 
                 <input

@@ -1,127 +1,387 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
     <title>D&D Companion</title>
-    <link rel="stylesheet" href="style.css">
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
     <div id="app">
 
-        <!-- HEADER -->
-        <header class="app-header">
-            <div>
-                <h1>D&D Companion</h1>
-                <p>Character Companion</p>
+        <!-- HOME -->
+
+        <header class="character-header">
+
+            <div class="character-avatar">
+                ⚔️
             </div>
+
+
+            <div class="character-summary">
+
+                <h1>Your Character</h1>
+
+                <p>
+                    Dragonborn
+                </p>
+
+                <p>
+                    Paladin · Level 13
+                </p>
+
+                <p>
+                    Lawful Good
+                </p>
+
+            </div>
+
         </header>
 
 
-        <!-- CHARACTER -->
         <main>
 
-            <section class="character-card">
 
-                <div class="character-image">
-                    <div class="placeholder-image">
+            <!-- STATUS -->
+
+            <section class="status-section">
+
+                <div class="status-hp">
+
+                    <div class="status-label">
+                        ❤️ HP
+                    </div>
+
+                    <div class="hp-value">
+                        <span id="current-hp">
+                            100
+                        </span>
+
+                        <span class="hp-divider">
+                            /
+                        </span>
+
+                        <span id="maximum-hp">
+                            100
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        🧠 Concentration
+                    </span>
+
+                    <button
+                        id="concentration-toggle"
+                        class="status-value status-toggle"
+                        onclick="toggleConcentration()"
+                    >
+                        OFF
+                    </button>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        🥀 Status
+                    </span>
+
+                    <button
+                        id="status-selector"
+                        class="status-value status-selector"
+                        onclick="toggleStatusMenu()"
+                    >
+                        Normal ▾
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="status-menu"
+                    class="status-menu hidden"
+                >
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Blinded"
+                            onchange="toggleCondition(this)"
+                        >
+                        Blinded
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Charmed"
+                            onchange="toggleCondition(this)"
+                        >
+                        Charmed
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Deafened"
+                            onchange="toggleCondition(this)"
+                        >
+                        Deafened
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Frightened"
+                            onchange="toggleCondition(this)"
+                        >
+                        Frightened
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Grappled"
+                            onchange="toggleCondition(this)"
+                        >
+                        Grappled
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Incapacitated"
+                            onchange="toggleCondition(this)"
+                        >
+                        Incapacitated
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Invisible"
+                            onchange="toggleCondition(this)"
+                        >
+                        Invisible
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Paralyzed"
+                            onchange="toggleCondition(this)"
+                        >
+                        Paralyzed
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Petrified"
+                            onchange="toggleCondition(this)"
+                        >
+                        Petrified
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Poisoned"
+                            onchange="toggleCondition(this)"
+                        >
+                        Poisoned
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Prone"
+                            onchange="toggleCondition(this)"
+                        >
+                        Prone
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Restrained"
+                            onchange="toggleCondition(this)"
+                        >
+                        Restrained
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Stunned"
+                            onchange="toggleCondition(this)"
+                        >
+                        Stunned
+                    </label>
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            value="Unconscious"
+                            onchange="toggleCondition(this)"
+                        >
+                        Unconscious
+                    </label>
+
+                </div>
+
+
+                <div class="status-row">
+
+                    <span>
+                        🎲 Hit Dice
+                    </span>
+
+                    <span
+                        id="hit-dice-value"
+                        class="status-value"
+                    >
+                        5 / 5
+                    </span>
+
+                </div>
+
+
+                <div class="death-saves">
+
+                    <div class="death-saves-title">
+                        💀 Death Saves
+                    </div>
+
+                    <div class="death-saves-groups">
+
+                        <div>
+                            <span>Successes</span>
+
+                            <div class="save-dots">
+                                <button
+                                    class="save-dot"
+                                ></button>
+
+                                <button
+                                    class="save-dot"
+                                ></button>
+
+                                <button
+                                    class="save-dot"
+                                ></button>
+                            </div>
+                        </div>
+
+
+                        <div>
+                            <span>Failures</span>
+
+                            <div class="save-dots">
+                                <button
+                                    class="save-dot failure"
+                                ></button>
+
+                                <button
+                                    class="save-dot failure"
+                                ></button>
+
+                                <button
+                                    class="save-dot failure"
+                                ></button>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- MAIN SECTIONS -->
+
+            <section class="main-menu">
+
+                <button
+                    class="main-menu-button"
+                    onclick="openSection('abilities')"
+                >
+
+                    <span class="main-menu-icon">
                         ⚔️
-                    </div>
-                </div>
+                    </span>
 
-                <div class="character-info">
-                    <h2>Your Character</h2>
-                    <p>Paladin · Level 13</p>
+                    <span>
+                        Abilities
+                    </span>
 
-                    <div class="quick-stats">
-                        <div class="stat">
-                            <span class="stat-label">HP</span>
-                            <span class="stat-value">100 / 100</span>
-                        </div>
+                    <span class="main-menu-arrow">
+                        ›
+                    </span>
 
-                        <div class="stat">
-                            <span class="stat-label">AC</span>
-                            <span class="stat-value">20</span>
-                        </div>
-                    </div>
-                </div>
-
-            </section>
-
-
-            <!-- QUICK MENU -->
-            <section class="quick-menu">
-
-<button class="menu-button" onclick="showSpells()">
-    <span class="menu-icon">✨</span>
-    <span>Spells</span>
-</button>
-
-                <button class="menu-button">
-                    <span class="menu-icon">⚔️</span>
-                    <span>Abilities</span>
                 </button>
 
-                <button class="menu-button">
-                    <span class="menu-icon">🎒</span>
-                    <span>Inventory</span>
+
+                <button
+                    class="main-menu-button"
+                    onclick="openSection('inventory')"
+                >
+
+                    <span class="main-menu-icon">
+                        🎒
+                    </span>
+
+                    <span>
+                        Inventory
+                    </span>
+
+                    <span class="main-menu-arrow">
+                        ›
+                    </span>
+
                 </button>
 
-                <button class="menu-button">
-                    <span class="menu-icon">🛡️</span>
-                    <span>Equipment</span>
+
+                <button
+                    class="main-menu-button"
+                    onclick="openSection('spells')"
+                >
+
+                    <span class="main-menu-icon">
+                        ✨
+                    </span>
+
+                    <span>
+                        Spells
+                    </span>
+
+                    <span class="main-menu-arrow">
+                        ›
+                    </span>
+
                 </button>
-
-                <button class="menu-button">
-                    <span class="menu-icon">🧬</span>
-                    <span>Traits</span>
-                </button>
-
-                <button class="menu-button">
-                    <span class="menu-icon">📜</span>
-                    <span>Character</span>
-                </button>
-
-            </section>
-
-
-            <!-- RESOURCES -->
-            <section class="resources-section">
-
-                <h2>Resources</h2>
-
-                <div class="resource-list">
-
-                    <div class="resource-card">
-                        <div>
-                            <h3>Channel Divinity</h3>
-                            <p>Long Rest</p>
-                        </div>
-
-                        <strong>1 / 1</strong>
-                    </div>
-
-                    <div class="resource-card">
-                        <div>
-                            <h3>Divine Sense</h3>
-                            <p>Long Rest</p>
-                        </div>
-
-                        <strong>5 / 5</strong>
-                    </div>
-
-                    <div class="resource-card">
-                        <div>
-                            <h3>Lay on Hands</h3>
-                            <p>Long Rest</p>
-                        </div>
-
-                        <strong>65 / 65</strong>
-                    </div>
-
-                </div>
 
             </section>
 
@@ -133,4 +393,5 @@
     <script src="app.js"></script>
 
 </body>
+
 </html>

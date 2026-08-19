@@ -1449,3 +1449,473 @@ button {
     }
 
 }
+
+/* ========================================
+   INVENTORY - BASIC UI
+   ======================================== */
+
+
+/* ---------- Inventory Main Navigation ---------- */
+
+.inventory-navigation {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+
+.inventory-navigation-button {
+    width: 100%;
+    min-height: 82px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    background: #1f1f1f;
+    border: 1px solid #3a3733;
+    border-radius: 18px;
+
+    color: #f2f0eb;
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+
+.inventory-navigation-button:active {
+    transform: scale(0.99);
+}
+
+
+.inventory-navigation-button:hover {
+    border-color: #b9934c;
+    background: #242321;
+}
+
+
+.inventory-navigation-icon {
+    width: 48px;
+    min-width: 48px;
+
+    font-size: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 14px;
+}
+
+
+.inventory-navigation-info {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+
+.inventory-navigation-info strong {
+    font-size: 21px;
+    font-weight: 600;
+
+    color: #f2f0eb;
+}
+
+
+.inventory-navigation-info span {
+    font-size: 14px;
+
+    color: #aaa59d;
+
+    line-height: 1.3;
+}
+
+
+.inventory-arrow {
+    margin-left: 12px;
+
+    font-size: 28px;
+
+    color: #aaa59d;
+}
+
+
+/* ---------- Currency Summary ---------- */
+
+.currency-section {
+    margin-top: 8px;
+}
+
+
+.currency-summary {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    padding: 18px 20px;
+
+    background: #1f1f1f;
+    border: 1px solid #3a3733;
+    border-radius: 18px;
+
+    color: #f2f0eb;
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
+}
+
+
+.currency-summary:hover {
+    border-color: #b9934c;
+    background: #242321;
+}
+
+
+.currency-summary-icon {
+    width: 46px;
+    min-width: 46px;
+
+    font-size: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 14px;
+}
+
+
+.currency-summary-info {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.currency-summary-info > span {
+    font-size: 20px;
+    font-weight: 600;
+
+    color: #f2f0eb;
+}
+
+
+.currency-physical {
+    font-size: 14px;
+
+    color: #aaa59d;
+}
+
+
+.currency-summary-info strong {
+    font-size: 15px;
+
+    color: #c9a45a;
+}
+
+
+/* ========================================
+   EQUIPMENT / MISCELLANEOUS
+   ======================================== */
+
+
+.inventory-category {
+    margin-bottom: 26px;
+}
+
+
+.inventory-category h3 {
+    display: flex;
+    align-items: center;
+
+    margin: 0 0 12px;
+
+    font-size: 22px;
+    font-weight: 600;
+
+    color: #f2f0eb;
+}
+
+
+.inventory-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+/* ---------- Inventory Item ---------- */
+
+.inventory-item-card {
+    width: 100%;
+
+    display: flex;
+    align-items: center;
+
+    padding: 16px 18px;
+
+    background: #1f1f1f;
+    border: 1px solid #3a3733;
+    border-radius: 16px;
+
+    color: #f2f0eb;
+    text-align: left;
+
+    cursor: pointer;
+
+    transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
+}
+
+
+.inventory-item-card:hover {
+    border-color: #b9934c;
+    background: #242321;
+}
+
+
+.inventory-item-card:active {
+    transform: scale(0.99);
+}
+
+
+.inventory-item-icon {
+    width: 42px;
+    min-width: 42px;
+
+    font-size: 26px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-right: 14px;
+}
+
+
+.inventory-item-info {
+    flex: 1;
+
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+
+.inventory-item-top {
+    display: flex;
+    align-items: center;
+
+    gap: 8px;
+}
+
+
+.inventory-item-top h3 {
+    margin: 0;
+
+    font-size: 18px;
+    font-weight: 600;
+
+    color: #f2f0eb;
+}
+
+
+.inventory-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    font-size: 13px;
+
+    color: #aaa59d;
+}
+
+
+.inventory-tags {
+    display: flex;
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    margin-top: 2px;
+}
+
+
+.inventory-tag {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 4px 8px;
+
+    border-radius: 999px;
+
+    background: #292723;
+    border: 1px solid #403c35;
+
+    font-size: 12px;
+
+    color: #c9a45a;
+}
+
+
+.inventory-weight {
+    display: block;
+
+    margin-top: 3px;
+
+    font-size: 12px;
+
+    color: #88837b;
+}
+
+
+/* ========================================
+   CURRENCY DETAILS
+   ======================================== */
+
+
+.currency-summary + * {
+    box-sizing: border-box;
+}
+
+
+.currency-section {
+    margin-top: 12px;
+}
+
+
+/* Currency detail rows */
+
+.currency-row {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 14px;
+}
+
+
+.currency-row input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 44px;
+
+    padding: 0 12px;
+
+    background: #1f1f1f;
+
+    border: 1px solid #3a3733;
+    border-radius: 10px;
+
+    color: #f2f0eb;
+
+    font-size: 17px;
+}
+
+
+.currency-row button {
+    width: 42px;
+    height: 42px;
+
+    border-radius: 50%;
+
+    background: #1f1f1f;
+    border: 1px solid #3a3733;
+
+    color: #c9a45a;
+
+    font-size: 22px;
+
+    cursor: pointer;
+}
+
+
+.currency-row button:hover {
+    border-color: #b9934c;
+}
+
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 600px) {
+
+    .inventory-navigation-button {
+        min-height: 76px;
+
+        padding: 16px;
+    }
+
+
+    .inventory-navigation-icon {
+        width: 42px;
+        min-width: 42px;
+
+        font-size: 27px;
+
+        margin-right: 10px;
+    }
+
+
+    .inventory-navigation-info strong {
+        font-size: 19px;
+    }
+
+
+    .inventory-navigation-info span {
+        font-size: 13px;
+    }
+
+
+    .currency-summary {
+        padding: 16px;
+    }
+
+
+    .currency-summary-icon {
+        width: 42px;
+        min-width: 42px;
+
+        font-size: 27px;
+
+        margin-right: 10px;
+    }
+
+
+    .inventory-item-card {
+        padding: 14px;
+    }
+
+
+    .inventory-item-top h3 {
+        font-size: 17px;
+    }
+
+}

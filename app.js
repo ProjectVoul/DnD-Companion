@@ -140,9 +140,19 @@ function openSection(section) {
         return;
     }
 
+    if (section === "rest") {
+        openRestMenu();
+        return;
+    }
+
     alert("This section is coming soon.");
 
 }
+
+
+// ========================================
+// SPELLS
+// ========================================
 
 
 // ---------- Spells Page ----------
@@ -303,13 +313,13 @@ function toggleSpellSlot(level, index) {
 
     if (index < slot.current) {
 
-        // Use one spell slot
         slot.current--;
 
     } else {
 
-        // Restore one spell slot
-        slot.current++;
+        if (slot.current < slot.maximum) {
+            slot.current++;
+        }
 
     }
 
@@ -668,6 +678,10 @@ function toggleConcentration() {
             "concentration-toggle"
         );
 
+    if (!button) {
+        return;
+    }
+
     if (concentrating) {
 
         button.textContent = "ON";
@@ -700,6 +714,10 @@ function toggleStatusMenu() {
         document.getElementById(
             "status-menu"
         );
+
+    if (!menu) {
+        return;
+    }
 
     menu.classList.toggle(
         "hidden"
@@ -764,6 +782,7 @@ function updateStatusDisplay() {
         );
 
         return;
+
     }
 
 
@@ -793,10 +812,83 @@ function updateStatusDisplay() {
 }
 
 
-// ---------- HP ----------
+// ========================================
+// HP
+// ========================================
+
 
 let currentHP = 100;
 const maximumHP = 100;
+
+
+// ---------- Build HP Slider ----------
+
+function setupHPSlider() {
+
+    const controls =
+        document.querySelector(
+            ".hp-controls"
+        );
+
+    if (!controls) {
+        return;
+    }
+
+
+    controls.innerHTML = `
+
+        <div class="hp-slider-container">
+
+            <div class="hp-slider-value">
+
+                <span id="current-hp">
+                    ${currentHP}
+                </span>
+
+                <span class="hp-divider">
+                    /
+                </span>
+
+                <span id="maximum-hp">
+                    ${maximumHP}
+                </span>
+
+            </div>
+
+
+            <input
+                id="hp-slider"
+                class="hp-slider"
+                type="range"
+                min="0"
+                max="${maximumHP}"
+                value="${currentHP}"
+                step="1"
+                oninput="setHPFromSlider(this.value)"
+                aria-label="Hit Points"
+            >
+
+        </div>
+
+    `;
+
+}
+
+
+function setHPFromSlider(value) {
+
+    currentHP =
+        Math.max(
+            0,
+            Math.min(
+                maximumHP,
+                Number(value)
+            )
+        );
+
+    updateHP();
+
+}
 
 
 function changeHP(amount) {
@@ -827,10 +919,23 @@ function updateHP() {
         hp.textContent = currentHP;
     }
 
+
+    const slider =
+        document.getElementById(
+            "hp-slider"
+        );
+
+    if (slider) {
+        slider.value = currentHP;
+    }
+
 }
 
 
-// ---------- Hit Dice ----------
+// ========================================
+// HIT DICE
+// ========================================
+
 
 let currentHitDice = 5;
 const maximumHitDice = 5;
@@ -870,7 +975,10 @@ function updateHitDice() {
 }
 
 
-// ---------- Death Saves ----------
+// ========================================
+// DEATH SAVES
+// ========================================
+
 
 let deathSaves = {
 
@@ -952,9 +1060,24 @@ function resetDeathSaves() {
 }
 
 
-// ---------- Rest ----------
+// ========================================
+// REST
+// ========================================
+
+
+// ---------- Open Rest Menu ----------
 
 function openRestMenu() {
+
+    const existing =
+        document.querySelector(
+            ".rest-overlay"
+        );
+
+    if (existing) {
+        return;
+    }
+
 
     const menu =
         document.createElement("div");
@@ -1007,7 +1130,7 @@ function openRestMenu() {
 
             <button
                 class="rest-option"
-                onclick="shortRest()"
+                onclick="openShortRestDiceSelection()"
             >
 
                 <span>
@@ -1037,6 +1160,8 @@ function openRestMenu() {
 }
 
 
+// ---------- Close Rest Menu ----------
+
 function closeRestMenu() {
 
     const menu =
@@ -1051,7 +1176,10 @@ function closeRestMenu() {
 }
 
 
-// ---------- Long Rest ----------
+// ========================================
+// LONG REST
+// ========================================
+
 
 function longRest() {
 
@@ -1068,12 +1196,14 @@ function longRest() {
             Math.ceil(maximumHitDice / 2)
         );
 
+
     for (let level = 1; level <= 5; level++) {
 
         spellSlots[level].current =
             spellSlots[level].maximum;
 
     }
+
 
     saveSpellSlots();
 
@@ -1082,74 +1212,340 @@ function longRest() {
     updateHP();
     updateHitDice();
 
+
+    const concentrationButton =
+        document.getElementById(
+            "concentration-toggle"
+        );
+
+    if (concentrationButton) {
+
+        concentrationButton.textContent =
+            "OFF";
+
+        concentrationButton.classList.remove(
+            "active"
+        );
+
+    }
+
 }
 
 
-// ---------- Short Rest ----------
+// ========================================
+// SHORT REST
+// ========================================
 
-function shortRest() {
 
-    closeRestMenu();
+// ---------- Step 1: Choose Hit Dice ----------
 
-    const diceSpent =
-        prompt(
-            `Hit Dice available: ${currentHitDice}\n\nHow many Hit Dice did you spend?`
+function openShortRestDiceSelection() {
+
+    const modal =
+        document.querySelector(
+            ".rest-modal"
         );
 
-    if (diceSpent === null) {
+    if (!modal) {
         return;
     }
 
-    const spent =
-        parseInt(diceSpent);
 
-    if (
-        isNaN(spent) ||
-        spent < 0 ||
-        spent > currentHitDice
+    let diceButtons = "";
+
+    for (
+        let dice = 1;
+        dice <= currentHitDice;
+        dice++
     ) {
 
-        alert("Invalid number of Hit Dice.");
+        diceButtons += `
+
+            <button
+                class="rest-option rest-dice-option"
+                onclick="selectShortRestDice(${dice})"
+            >
+
+                <span>
+                    🎲
+                </span>
+
+                <div>
+
+                    <strong>
+                        ${dice} Hit ${dice === 1 ? "Die" : "Dice"}
+                    </strong>
+
+                    <small>
+                        Spend ${dice} ${dice === 1 ? "die" : "dice"}
+                    </small>
+
+                </div>
+
+            </button>
+
+        `;
+
+    }
+
+
+    if (currentHitDice === 0) {
+
+        modal.innerHTML = `
+
+            <button
+                class="rest-close"
+                onclick="closeRestMenu()"
+            >
+                ×
+            </button>
+
+            <h2>
+                Short Rest
+            </h2>
+
+            <p>
+                You have no Hit Dice available.
+            </p>
+
+            <button
+                class="rest-option"
+                onclick="closeRestMenu()"
+            >
+
+                <span>
+                    ←
+                </span>
+
+                <div>
+                    <strong>
+                        Back
+                    </strong>
+                </div>
+
+            </button>
+
+        `;
 
         return;
 
+    }
+
+
+    modal.innerHTML = `
+
+        <button
+            class="rest-close"
+            onclick="closeRestMenu()"
+        >
+            ×
+        </button>
+
+        <h2>
+            Short Rest
+        </h2>
+
+        <p>
+            You have <strong>${currentHitDice}</strong>
+            Hit Dice available.
+            How many do you want to spend?
+        </p>
+
+        <div class="rest-dice-grid">
+
+            ${diceButtons}
+
+        </div>
+
+        <button
+            class="rest-back-button"
+            onclick="openRestMenuFromShortRest()"
+        >
+            ← Back
+        </button>
+
+    `;
+
+}
+
+
+// ---------- Return to Rest Selection ----------
+
+function openRestMenuFromShortRest() {
+
+    closeRestMenu();
+
+    openRestMenu();
+
+}
+
+
+// ---------- Step 2: Confirm Dice Spent ----------
+
+function selectShortRestDice(diceSpent) {
+
+    const modal =
+        document.querySelector(
+            ".rest-modal"
+        );
+
+    if (!modal) {
+        return;
+    }
+
+
+    modal.innerHTML = `
+
+        <button
+            class="rest-close"
+            onclick="closeRestMenu()"
+        >
+            ×
+        </button>
+
+        <h2>
+            Short Rest
+        </h2>
+
+        <p>
+            You are spending
+            <strong>
+                ${diceSpent}
+            </strong>
+            ${diceSpent === 1 ? "Hit Die" : "Hit Dice"}.
+        </p>
+
+        <div class="rest-roll-message">
+
+            <span>
+                🎲
+            </span>
+
+            <strong>
+                Roll your Hit Dice
+            </strong>
+
+            <small>
+                Roll ${diceSpent} physical
+                ${diceSpent === 1 ? "die" : "dice"},
+                then enter the total HP recovered.
+            </small>
+
+        </div>
+
+
+        <label
+            class="rest-input-label"
+            for="short-rest-hp"
+        >
+            HP recovered
+        </label>
+
+
+        <input
+            id="short-rest-hp"
+            class="rest-input"
+            type="number"
+            min="0"
+            inputmode="numeric"
+            placeholder="0"
+        >
+
+
+        <button
+            class="rest-confirm-button"
+            onclick="confirmShortRest(${diceSpent})"
+        >
+            Recover HP
+        </button>
+
+
+        <button
+            class="rest-back-button"
+            onclick="openShortRestDiceSelection()"
+        >
+            ← Change Hit Dice
+        </button>
+
+    `;
+
+
+    const input =
+        document.getElementById(
+            "short-rest-hp"
+        );
+
+    if (input) {
+        input.focus();
+    }
+
+}
+
+
+// ---------- Step 3: Apply Short Rest ----------
+
+function confirmShortRest(diceSpent) {
+
+    const input =
+        document.getElementById(
+            "short-rest-hp"
+        );
+
+    if (!input) {
+        return;
     }
 
 
     const hpRecovered =
-        prompt(
-            "How many HP did you recover from your physical dice rolls?"
-        );
+        Number(input.value);
 
-    if (hpRecovered === null) {
-        return;
-    }
-
-    const recovered =
-        parseInt(hpRecovered);
 
     if (
-        isNaN(recovered) ||
-        recovered < 0
+        !Number.isFinite(hpRecovered) ||
+        hpRecovered < 0
     ) {
 
-        alert("Invalid HP amount.");
+        input.focus();
 
         return;
 
     }
 
 
-    currentHitDice -= spent;
+    currentHitDice -= diceSpent;
+
 
     currentHP =
         Math.min(
             maximumHP,
-            currentHP + recovered
+            currentHP + hpRecovered
         );
+
 
     updateHP();
     updateHitDice();
+
+    closeRestMenu();
+
+}
+
+
+// ========================================
+// HOME INITIALIZATION
+// ========================================
+
+
+function initializeHome() {
+
+    setupHPSlider();
+
+    updateHP();
+
+    updateHitDice();
+
+    updateDeathSaves();
+
+    updateStatusDisplay();
 
 }
 
@@ -1159,6 +1555,7 @@ function shortRest() {
 const menuButtons =
     document.querySelectorAll(".menu-button");
 
+
 menuButtons.forEach(button => {
 
     button.addEventListener("click", () => {
@@ -1166,16 +1563,32 @@ menuButtons.forEach(button => {
         const text =
             button.innerText.toLowerCase();
 
+
         if (text.includes("spells")) {
 
             openSection("spells");
 
-        } else {
+        }
 
-            alert("This section is coming soon.");
+        else if (text.includes("rest")) {
+
+            openSection("rest");
+
+        }
+
+        else {
+
+            alert(
+                "This section is coming soon."
+            );
 
         }
 
     });
 
 });
+
+
+// ---------- Initialize ----------
+
+initializeHome();

@@ -3238,74 +3238,41 @@ function showInventorySection(section) {
 // EQUIPMENT
 // ========================================
 
-
 function renderEquipment() {
 
     let html = "";
 
+    equipmentCategories.forEach(category => {
 
-    equipmentCategories.forEach(
-        category => {
+        const items = inventoryItems.filter(item =>
+            item.location === "equipment" &&
+            item.category === category.id
+        );
 
-            const items =
-                inventoryItems.filter(
-                    item =>
-                        item.location ===
-                            "equipment"
-                        &&
-                        item.category ===
-                            category.id
-                );
+        if (items.length === 0) return;
 
-
-            if (
-                items.length === 0
-            ) {
-
-                return;
-
-            }
-
-
-            html += `
-
-                <div class="inventory-category">
-
-                    <h3>
-
-                        ${category.icon}
-
-                        ${category.name}
-
-                    </h3>
-
-
-                    <div class="inventory-list">
-
-                        ${items
-                            .map(
-                                renderInventoryItem
-                            )
-                            .join("")}
-
-                    </div>
-
+        html += `
+            <div class="inventory-category">
+                <h3>${category.icon} ${category.name}</h3>
+                <div class="inventory-list">
+                    ${items.map(renderInventoryItem).join("")}
                 </div>
+            </div>
+        `;
+    });
 
-            `;
+    html += `
+        <button class="inventory-add-button" onclick="openAddItemForm()">
+            ＋ Add Item
+        </button>
+    `;
 
-        }
-    );
-
+    if (html === "") {
+        return `<p class="empty-message">No equipment.</p>`;
+    }
 
     return html;
-
 }
-
-
-// ========================================
-// MISCELLANEOUS
-// ========================================
 
 
 // ========================================
@@ -3314,56 +3281,86 @@ function renderEquipment() {
 
 function renderMiscellaneous() {
 
-    const items =
-        inventoryItems.filter(
-            item =>
-                item.location ===
-                "miscellaneous"
-        );
-
+    const items = inventoryItems.filter(
+        item => item.location === "miscellaneous"
+    );
 
     let html = `
-
-        <button
-            class="inventory-add-button"
-            onclick="openAddItemForm()"
-        >
+        <button class="inventory-add-button" onclick="openAddItemForm()">
             ＋ Add Item
         </button>
-
     `;
 
-
     if (items.length === 0) {
-
         html += `
-
             <p class="empty-message">
                 No miscellaneous items.
             </p>
-
         `;
-
         return html;
-
     }
 
-
     html += `
-
         <div class="inventory-list">
-
-            ${items
-                .map(renderInventoryItem)
-                .join("")}
-
+            ${items.map(renderInventoryItem).join("")}
         </div>
-
     `;
 
-
     return html;
+}
 
+
+// ========================================
+// INVENTORY HELPERS
+// ========================================
+
+function hasQuickConsumeTag(item) {
+
+    return Array.isArray(item.tags) && item.tags.some(tag =>
+        ["Consumable", "Ammunition", "Spell Component"].includes(tag)
+    );
+}
+
+
+function getEquipmentTag(item) {
+
+    if (!Array.isArray(item.tags)) return null;
+
+    const equipmentTag = item.tags.find(tag =>
+        ["Armor", "Weapon", "Shield", "Focus", "Ammunition", "Accessory"].includes(tag)
+    );
+
+    return equipmentTag || null;
+}
+
+
+function hasEquipmentTag(item) {
+    return !!getEquipmentTag(item);
+}
+
+
+function getCategoryFromEquipmentTag(item) {
+
+    const tag = getEquipmentTag(item);
+
+    const categoryMap = {
+        Armor: "armor",
+        Weapon: "weapons",
+        Shield: "shield",
+        Focus: "focus",
+        Ammunition: "ammunition",
+        Accessory: "accessories"
+    };
+
+    return categoryMap[tag] || null;
+}
+
+
+function getEquipmentConflictCategory(category) {
+
+    return ["armor", "weapons", "shield", "focus"].includes(category)
+        ? category
+        : null;
 }
 
 
@@ -3374,304 +3371,78 @@ function renderMiscellaneous() {
 function renderInventoryItem(item) {
 
     const weightText =
-        item.weight !== null
+        item.weight !== null && item.weight !== undefined
             ? `${item.weight} kg`
             : "Weight not set";
 
+    const quantityText = `× ${item.quantity}`;
 
-    const quantityText =
-        `× ${item.quantity}`;
+    const equippedText = item.equipped ? "Equipped" : "";
 
-
-    const equippedText =
-        item.equipped
-            ? "Equipped"
-            : "";
-
-
-    const canQuickConsume =
-        hasQuickConsumeTag(item);
-
-
-    const unavailable =
-        item.quantity <= 0 &&
-        canQuickConsume;
-
+    const canQuickConsume = hasQuickConsumeTag(item);
+    const unavailable = item.quantity <= 0 && canQuickConsume;
+    const canEquip = item.location === "equipment" || hasEquipmentTag(item);
 
     return `
-
         <div
             class="inventory-item-card"
             onclick="showInventoryItem('${item.id}')"
         >
-
             <div class="inventory-item-icon">
-                ${item.icon}
+                ${item.icon || "📦"}
             </div>
 
-
             <div class="inventory-item-info">
-
                 <div class="inventory-item-top">
-
-                    <h3>
-                        ${item.name}
-                    </h3>
-
-                    <span class="inventory-arrow">
-                        ›
-                    </span>
-
+                    <h3>${item.name}</h3>
+                    <span class="inventory-arrow">›</span>
                 </div>
-
 
                 <div class="inventory-item-meta">
-
                     ${quantityText}
-
                     ${equippedText}
-
-                    ${
-                        item.magical
-                            ? "✨ Magical"
-                            : ""
-                    }
-
+                    ${item.magical ? "✨ Magical" : ""}
                 </div>
 
+                ${unavailable ? `
+                    <div class="inventory-unavailable">
+                        ⚠️ Unavailable
+                    </div>
+                ` : ""}
 
-                ${
-                    unavailable
-                        ? `
-                            <div class="inventory-unavailable">
-                                ⚠️ Unavailable
-                            </div>
-                        `
-                        : ""
-                }
-
-
-                ${
-                    item.tags.length > 0
-                        ? `
-
-                            <div class="inventory-tags">
-
-                                ${item.tags
-                                    .map(
-                                        tag => `
-
-                                            <span
-                                                class="inventory-tag"
-                                            >
-                                                ${tag}
-                                            </span>
-
-                                        `
-                                    )
-                                    .join("")}
-
-                            </div>
-
-                        `
-                        : ""
-                }
-
+                ${item.tags && item.tags.length > 0 ? `
+                    <div class="inventory-tags">
+                        ${item.tags.map(tag => `
+                            <span class="inventory-tag">${tag}</span>
+                        `).join("")}
+                    </div>
+                ` : ""}
 
                 <span class="inventory-weight">
                     ⚖️ ${weightText}
                 </span>
 
+                ${canQuickConsume ? `
+                    <button
+                        class="inventory-consume-button"
+                        onclick="event.stopPropagation(); consumeInventoryItem('${item.id}')"
+                        ${unavailable ? "disabled" : ""}
+                    >
+                        Consume 1
+                    </button>
+                ` : ""}
 
-                ${
-                    canQuickConsume
-                        ? `
-
-                            <button
-                                class="inventory-consume-button"
-                                onclick="
-                                    event.stopPropagation();
-                                    consumeInventoryItem('${item.id}')
-                                "
-                                ${unavailable ? "disabled" : ""}
-                            >
-                                Consume 1
-                            </button>
-
-                        `
-                        : ""
-                }
-
-
-                ${
-                    item.location === "equipment"
-                        ? `
-
-                            <button
-                                class="inventory-equip-button"
-                                onclick="
-                                    event.stopPropagation();
-                                    toggleEquipment('${item.id}')
-                                "
-                            >
-                                ${item.equipped
-                                    ? "Unequip"
-                                    : "Equip"}
-                            </button>
-
-                        `
-                        : hasEquipmentTag(item)
-                            ? `
-
-                                <button
-                                    class="inventory-equip-button"
-                                    onclick="
-                                        event.stopPropagation();
-                                        toggleEquipment('${item.id}')
-                                    "
-                                >
-                                    Equip
-                                </button>
-
-                            `
-                            : ""
-                }
-
+                ${canEquip ? `
+                    <button
+                        class="inventory-equip-button"
+                        onclick="event.stopPropagation(); toggleEquipment('${item.id}')"
+                    >
+                        ${item.equipped ? "Unequip" : "Equip"}
+                    </button>
+                ` : ""}
             </div>
-
         </div>
-
     `;
-
-}
-
-
-// ========================================
-// INVENTORY ITEM CARD
-// ========================================
-
-
-function renderInventoryItem(
-    item
-) {
-
-    const weightText =
-        item.weight !== null
-
-            ? `${item.weight} kg`
-
-            : "Weight not set";
-
-
-    const quantityText =
-        item.quantity > 1
-
-            ? `× ${item.quantity}`
-
-            : "";
-
-
-    const equippedText =
-        item.equipped
-
-            ? "Equipped"
-
-            : "";
-
-
-    return `
-
-        <button
-            class="inventory-item-card"
-            onclick="showInventoryItem('${item.id}')"
-        >
-
-
-            <div class="inventory-item-icon">
-
-                ${item.icon}
-
-            </div>
-
-
-            <div class="inventory-item-info">
-
-
-                <div class="inventory-item-top">
-
-                    <h3>
-                        ${item.name}
-                    </h3>
-
-
-                    <span class="inventory-arrow">
-                        ›
-                    </span>
-
-                </div>
-
-
-                <div class="inventory-item-meta">
-
-                    ${quantityText}
-
-
-                    ${equippedText}
-
-
-                    ${
-                        item.magical
-                            ? "✨ Magical"
-                            : ""
-                    }
-
-                </div>
-
-
-                ${
-                    item.tags.length > 0
-
-                        ? `
-
-                            <div class="inventory-tags">
-
-                                ${item.tags
-                                    .map(
-                                        tag => `
-
-                                            <span
-                                                class="inventory-tag"
-                                            >
-                                                ${tag}
-                                            </span>
-
-                                        `
-                                    )
-                                    .join("")}
-
-                            </div>
-
-                        `
-
-                        : ""
-
-                }
-
-
-                <span class="inventory-weight">
-
-                    ⚖️ ${weightText}
-
-                </span>
-
-
-            </div>
-
-
-        </button>
-
-    `;
-
 }
 
 
@@ -3679,325 +3450,368 @@ function renderInventoryItem(
 // ITEM DETAILS
 // ========================================
 
+function showInventoryItem(itemId) {
 
-function showInventoryItem(
-    itemId
-) {
+    const item = inventoryItems.find(item => item.id === itemId);
 
-    const item =
-        inventoryItems.find(
-            item =>
-                item.id ===
-                itemId
-        );
+    if (!item) return;
 
-
-    if (!item) {
-
-        return;
-
-    }
-
-
-    const app =
-        document.getElementById(
-            "app"
-        );
-
-
-    const locationName =
-        item.location ===
-            "equipment"
-
-            ? "Equipment"
-
-            : "Miscellaneous";
-
+    const app = document.getElementById("app");
+    const locationName = item.location === "equipment" ? "Equipment" : "Miscellaneous";
 
     let propertiesHTML = "";
 
-
-    if (
-        item.properties &&
-        item.properties.length > 0
-    ) {
-
+    if (item.properties && item.properties.length > 0) {
         propertiesHTML = `
-
             <div class="inventory-details-properties">
-
-                <h2>
-                    Properties
-                </h2>
-
-
+                <h2>Properties</h2>
                 <div>
-
-                    ${item.properties
-                        .map(
-                            property => `
-
-                                <span
-                                    class="inventory-property"
-                                >
-                                    ${property}
-                                </span>
-
-                            `
-                        )
-                        .join("")}
-
+                    ${item.properties.map(property => `
+                        <span class="inventory-property">${property}</span>
+                    `).join("")}
                 </div>
-
             </div>
-
         `;
-
     }
-
 
     let tagsHTML = "";
 
-
-    if (
-        item.tags &&
-        item.tags.length > 0
-    ) {
-
+    if (item.tags && item.tags.length > 0) {
         tagsHTML = `
-
             <div class="inventory-details-properties">
-
-                <h2>
-                    Tags
-                </h2>
-
-
+                <h2>Tags</h2>
                 <div>
-
-                    ${item.tags
-                        .map(
-                            tag => `
-
-                                <span
-                                    class="inventory-tag"
-                                >
-                                    ${tag}
-                                </span>
-
-                            `
-                        )
-                        .join("")}
-
+                    ${item.tags.map(tag => `
+                        <span class="inventory-tag">${tag}</span>
+                    `).join("")}
                 </div>
-
             </div>
-
         `;
-
     }
-
 
     let linkedAbilityHTML = "";
 
-
-    if (
-        item.linkedAbility
-    ) {
-
-        const ability =
-            abilities.find(
-                ability =>
-                    ability.id ===
-                    item.linkedAbility
-            );
-
+    if (item.linkedAbility) {
+        const ability = abilities.find(ability => ability.id === item.linkedAbility);
 
         if (ability) {
-
             linkedAbilityHTML = `
-
                 <button
                     class="linked-ability-card"
                     onclick="showAbilityDetails('${ability.id}')"
                 >
-
                     <div>
-
-                        <span>
-                            Linked Ability
-                        </span>
-
-                        <strong>
-                            ${ability.icon}
-                            ${ability.name}
-                        </strong>
-
+                        <span>Linked Ability</span>
+                        <strong>${ability.icon} ${ability.name}</strong>
                     </div>
-
-
-                    <span>
-                        ›
-                    </span>
-
+                    <span>›</span>
                 </button>
-
             `;
-
         }
-
     }
 
+    app.innerHTML = `
+        <header class="app-header">
+            <button class="back-button" onclick="showInventorySection('${item.location}')">
+                ← ${locationName}
+            </button>
+
+            <h1>${item.icon || "📦"} ${item.name}</h1>
+            <p>${locationName}</p>
+        </header>
+
+        <main>
+            <section class="inventory-details">
+
+                <div class="inventory-detail-summary">
+                    <div class="inventory-detail-stat">
+                        <span>QUANTITY</span>
+                        <strong>${item.quantity}</strong>
+                    </div>
+
+                    <div class="inventory-detail-stat">
+                        <span>WEIGHT</span>
+                        <strong>${item.weight !== null && item.weight !== undefined ? `${item.weight} kg` : "—"}</strong>
+                    </div>
+
+                    <div class="inventory-detail-stat">
+                        <span>STATUS</span>
+                        <strong>${item.equipped ? "Equipped" : "Carried"}</strong>
+                    </div>
+                </div>
+
+                <div class="inventory-description">
+                    <h2>Description</h2>
+                    <p>${item.description || "No description."}</p>
+                </div>
+
+                ${propertiesHTML}
+                ${tagsHTML}
+                ${linkedAbilityHTML}
+
+                <div class="inventory-detail-actions">
+                    ${item.location === "equipment" || hasEquipmentTag(item) ? `
+                        <button
+                            class="inventory-action-button"
+                            onclick="toggleEquipment('${item.id}')"
+                        >
+                            ${item.equipped ? "Unequip" : "Equip"}
+                        </button>
+                    ` : ""}
+
+                    ${hasQuickConsumeTag(item) ? `
+                        <button
+                            class="inventory-action-button"
+                            onclick="consumeInventoryItem('${item.id}')"
+                            ${item.quantity <= 0 ? "disabled" : ""}
+                        >
+                            Consume 1
+                        </button>
+                    ` : ""}
+
+                    <button
+                        class="inventory-action-button"
+                        onclick="openEditItemForm('${item.id}')"
+                    >
+                        Edit Item
+                    </button>
+
+                    <button
+                        class="inventory-action-button"
+                        onclick="deleteInventoryItem('${item.id}')"
+                    >
+                        Delete Item
+                    </button>
+                </div>
+
+            </section>
+        </main>
+    `;
+}
+
+
+// ========================================
+// ADD / EDIT ITEM
+// ========================================
+
+function getItemFormTags(selectedTags = []) {
+
+    return inventoryTags.map(tag => `
+        <label class="inventory-form-tag">
+            <input
+                type="checkbox"
+                name="item-tag"
+                value="${tag}"
+                ${selectedTags.includes(tag) ? "checked" : ""}
+            >
+            <span>${tag}</span>
+        </label>
+    `).join("");
+}
+
+
+function openAddItemForm() {
+
+    openInventoryItemForm(null);
+}
+
+
+function openEditItemForm(itemId) {
+
+    const item = inventoryItems.find(item => item.id === itemId);
+
+    if (!item) return;
+
+    openInventoryItemForm(item);
+}
+
+
+function openInventoryItemForm(item = null) {
+
+    const isEdit = !!item;
+    const title = isEdit ? "Edit Item" : "Add Item";
+
+    const values = item || {
+        name: "",
+        description: "",
+        quantity: 1,
+        weight: "",
+        icon: "📦",
+        magical: false,
+        tags: [],
+        properties: []
+    };
+
+    const app = document.getElementById("app");
 
     app.innerHTML = `
-
         <header class="app-header">
-
-
             <button
                 class="back-button"
-                onclick="showInventory()"
+                onclick="${isEdit ? `showInventoryItem('${item.id}')` : `showInventory()`}"
             >
                 ← Inventory
             </button>
-
-
-            <h1>
-
-                ${item.icon}
-
-                ${item.name}
-
-            </h1>
-
-
-            <p>
-                ${locationName}
-            </p>
-
-
+            <h1>${title}</h1>
         </header>
 
-
         <main>
-
-
             <section class="inventory-details">
+                <div class="inventory-form">
+                    <label>Name</label>
+                    <input id="item-name" class="inventory-input" value="${values.name}">
 
+                    <label>Description</label>
+                    <textarea id="item-description" class="inventory-input">${values.description}</textarea>
 
-                <div class="inventory-detail-summary">
+                    <label>Icon</label>
+                    <input id="item-icon" class="inventory-input" value="${values.icon || "📦"}">
 
+                    <label>Quantity</label>
+                    <input id="item-quantity" class="inventory-input" type="number" min="0" value="${values.quantity}">
 
-                    <div class="inventory-detail-stat">
+                    <label>Weight (kg)</label>
+                    <input id="item-weight" class="inventory-input" type="number" min="0" step="0.01" value="${values.weight ?? ""}">
 
-                        <span>
-                            QUANTITY
-                        </span>
+                    <label>Properties</label>
+                    <input id="item-properties" class="inventory-input" value="${(values.properties || []).join(", ")}">
 
-                        <strong>
-                            ${item.quantity}
-                        </strong>
+                    <label class="inventory-form-tag">
+                        <input id="item-magical" type="checkbox" ${values.magical ? "checked" : ""}>
+                        <span>Magical item</span>
+                    </label>
 
+                    <h2>Tags</h2>
+                    <div class="inventory-form-tags">
+                        ${getItemFormTags(values.tags || [])}
                     </div>
 
-
-                    <div class="inventory-detail-stat">
-
-                        <span>
-                            WEIGHT
-                        </span>
-
-                        <strong>
-
-                            ${
-                                item.weight !== null
-                                    ? `${item.weight} kg`
-                                    : "—"
-                            }
-
-                        </strong>
-
-                    </div>
-
-
-                    <div class="inventory-detail-stat">
-
-                        <span>
-                            STATUS
-                        </span>
-
-                        <strong>
-
-                            ${
-                                item.equipped
-                                    ? "Equipped"
-                                    : "Carried"
-                            }
-
-                        </strong>
-
-                    </div>
-
-
+                    <button
+                        class="inventory-action-button"
+                        onclick="saveInventoryItemFromForm(${isEdit ? `'${item.id}'` : "null"})"
+                    >
+                        ${isEdit ? "Save Changes" : "Add Item"}
+                    </button>
                 </div>
-
-
-                <div class="inventory-description">
-
-                    <h2>
-                        Description
-                    </h2>
-
-
-                    <p>
-                        ${item.description}
-                    </p>
-
-                </div>
-
-
-                ${propertiesHTML}
-
-
-                ${tagsHTML}
-
-
-                ${linkedAbilityHTML}
-
-
-                ${
-                    item.location ===
-                    "equipment"
-
-                        ? `
-
-                            <button
-                                class="inventory-action-button"
-                                onclick="toggleEquipment('${item.id}')"
-                            >
-
-                                ${
-                                    item.equipped
-                                        ? "Unequip"
-                                        : "Equip"
-                                }
-
-                            </button>
-
-                        `
-
-                        : ""
-
-                }
-
-
             </section>
-
-
         </main>
-
     `;
+}
 
+
+function saveInventoryItemFromForm(itemId) {
+
+    const name = document.getElementById("item-name").value.trim();
+    const description = document.getElementById("item-description").value.trim();
+    const icon = document.getElementById("item-icon").value.trim() || "📦";
+    const quantity = Math.max(0, Math.floor(Number(document.getElementById("item-quantity").value)));
+    const weightValue = document.getElementById("item-weight").value;
+    const weight = weightValue === "" ? null : Math.max(0, Number(weightValue));
+    const magical = document.getElementById("item-magical").checked;
+    const tags = Array.from(document.querySelectorAll('input[name="item-tag"]:checked')).map(input => input.value);
+    const properties = document.getElementById("item-properties").value
+        .split(",")
+        .map(value => value.trim())
+        .filter(Boolean);
+
+    if (!name) {
+        alert("Please enter an item name.");
+        return;
+    }
+
+    const equipmentCategory = getCategoryFromEquipmentTag({ tags });
+
+    if (itemId) {
+        const item = inventoryItems.find(item => item.id === itemId);
+        if (!item) return;
+
+        item.name = name;
+        item.description = description;
+        item.icon = icon;
+        item.quantity = quantity;
+        item.weight = weight;
+        item.magical = magical;
+        item.tags = tags;
+        item.properties = properties;
+
+        if (equipmentCategory && item.location === "equipment") {
+            item.category = equipmentCategory;
+        }
+
+        saveInventory();
+        showInventoryItem(item.id);
+        return;
+    }
+
+    const newItem = {
+        id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name,
+        category: equipmentCategory || "miscellaneous",
+        location: "miscellaneous",
+        icon,
+        description,
+        quantity,
+        weight,
+        equipped: false,
+        magical,
+        properties,
+        tags
+    };
+
+    inventoryItems.push(newItem);
+    saveInventory();
+    showInventorySection("miscellaneous");
+}
+
+
+// ========================================
+// CONSUME ITEM
+// ========================================
+
+function consumeInventoryItem(itemId) {
+
+    const item = inventoryItems.find(item => item.id === itemId);
+
+    if (!item || !hasQuickConsumeTag(item)) return;
+
+    if (item.quantity <= 0) {
+        return;
+    }
+
+    item.quantity -= 1;
+
+    saveInventory();
+
+    if (document.querySelector(".inventory-details")) {
+        showInventoryItem(item.id);
+    } else {
+        showInventorySection(item.location);
+    }
+}
+
+
+// ========================================
+// DELETE ITEM
+// ========================================
+
+function deleteInventoryItem(itemId) {
+
+    const item = inventoryItems.find(item => item.id === itemId);
+
+    if (!item) return;
+
+    if (!confirm(`Delete "${item.name}" from your inventory?`)) {
+        return;
+    }
+
+    const index = inventoryItems.findIndex(item => item.id === itemId);
+
+    if (index !== -1) {
+        inventoryItems.splice(index, 1);
+    }
+
+    saveInventory();
+    showInventorySection(item.location);
 }
 
 
@@ -4005,51 +3819,47 @@ function showInventoryItem(
 // EQUIP / UNEQUIP
 // ========================================
 
+function toggleEquipment(itemId) {
 
-function toggleEquipment(
-    itemId
-) {
+    const item = inventoryItems.find(item => item.id === itemId);
 
-    const item =
-        inventoryItems.find(
-            item =>
-                item.id ===
-                itemId
-        );
+    if (!item) return;
 
-
-    if (!item) {
-
+    if (item.equipped) {
+        item.equipped = false;
+        item.location = "miscellaneous";
+        saveInventory();
+        showInventorySection("miscellaneous");
         return;
-
     }
 
+    const category = getCategoryFromEquipmentTag(item) || item.category;
 
-    item.equipped =
-        !item.equipped;
+    if (!category) return;
 
+    const exclusiveCategory = getEquipmentConflictCategory(category);
 
-    if (
-        item.equipped
-    ) {
-
-        item.location =
-            "equipment";
-
+    if (exclusiveCategory) {
+        inventoryItems.forEach(other => {
+            if (
+                other.id !== item.id &&
+                other.equipped &&
+                other.category === exclusiveCategory
+            ) {
+                other.equipped = false;
+                other.location = "miscellaneous";
+            }
+        });
     }
 
+    item.category = category;
+    item.equipped = true;
+    item.location = "equipment";
 
-    else {
-
-        item.location =
-            "miscellaneous";
-
-    }
-
-
+    saveInventory();
     showInventory();
-
 }
+
 
 
 // ========================================
@@ -4283,6 +4093,8 @@ function setCurrency(
             amount
         );
 
+
+    saveCurrency();
 
     showCurrencyDetails();
 

@@ -2705,152 +2705,126 @@ menuButtons.forEach(
 // ========================================
 
 
+// ========================================
+// INVENTORY DATA
+// ========================================
+
+
 // ---------- Currency ----------
 
-const currency = {
+const defaultCurrency = {
 
     copper: 30,
-
     silver: 11,
-
     gold: 24,
-
     platinum: 3
 
 };
 
 
+const savedCurrency =
+    JSON.parse(
+        localStorage.getItem("inventoryCurrency")
+    );
+
+
+const currency =
+    savedCurrency || defaultCurrency;
+
+
 // ---------- Inventory Items ----------
 
-const inventoryItems = [
+const defaultInventoryItems = [
 
     // ---------- Equipment ----------
 
     {
         id: "plate-armor",
-
         name: "Plate Armor",
-
         category: "armor",
-
         location: "equipment",
-
         icon: "🛡️",
-
         description:
             "Heavy armor consisting of shaped metal plates covering most of the body.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: true,
-
         magical: false,
-
         properties: [
             "Heavy Armor",
             "+7 AC"
         ],
-
-        tags: []
-
+        tags: [
+            "Armor"
+        ]
     },
 
 
     {
         id: "golden-choice-sword",
-
         name: "Sword of the Golden Choice",
-
         category: "weapons",
-
         location: "equipment",
-
         icon: "⚔️",
-
         description:
             "A magical sword carrying the power of the Dragon.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: true,
-
         magical: true,
-
         properties: [
             "Magical Weapon",
             "Dragon's Judgment"
         ],
-
-        linkedAbility: "dragons-judgment",
-
-        tags: []
-
+        linkedAbility:
+            "dragons-judgment",
+        tags: [
+            "Weapon",
+            "Magical"
+        ]
     },
 
 
     {
         id: "bahamut-shield",
-
         name: "Shield of Bahamut",
-
         category: "shield",
-
         location: "equipment",
-
         icon: "🛡️",
-
         description:
             "A magical shield bearing the symbol of Bahamut.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: true,
-
         magical: true,
-
         properties: [
             "+4 AC"
         ],
-
-        tags: []
-
+        tags: [
+            "Shield",
+            "Magical"
+        ]
     },
 
 
     {
         id: "bahamut-symbol",
-
         name: "Symbol of Bahamut",
-
         category: "focus",
-
         location: "equipment",
-
         icon: "✝️",
-
         description:
             "A simple holy symbol of Bahamut used as a divine spellcasting focus.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: true,
-
         magical: false,
-
         properties: [
             "Divine Focus"
         ],
-
-        tags: []
-
+        tags: [
+            "Focus"
+        ]
     },
 
 
@@ -2858,76 +2832,84 @@ const inventoryItems = [
 
     {
         id: "healing-potion",
-
         name: "Simple Healing Potion",
-
         category: "miscellaneous",
-
         location: "miscellaneous",
-
         icon: "🧪",
-
         description:
             "A simple potion made from red berries. Restores 1d6 hit points.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: false,
-
         magical: false,
-
         properties: [
             "Restores 1d6 HP"
         ],
-
         tags: [
             "Consumable",
             "Potion"
         ]
-
     },
 
 
     {
         id: "silver-rings",
-
         name: "Silver Rings",
-
         category: "miscellaneous",
-
         location: "miscellaneous",
-
         icon: "💍",
-
         description:
             "A pair of silver rings that can be used for magic or as a symbol of a bond between two people.",
-
         quantity: 1,
-
         weight: null,
-
         equipped: false,
-
         magical: false,
-
         properties: [
             "Pair of rings"
         ],
-
         tags: [
             "Accessory",
             "Treasure",
             "Spell Component"
         ]
-
     }
 
 ];
 
 
-// ---------- Inventory Categories ----------
+const savedInventory =
+    JSON.parse(
+        localStorage.getItem("inventoryItems")
+    );
+
+
+const inventoryItems =
+    savedInventory || defaultInventoryItems;
+
+
+// ---------- Save Inventory ----------
+
+function saveInventory() {
+
+    localStorage.setItem(
+        "inventoryItems",
+        JSON.stringify(inventoryItems)
+    );
+
+}
+
+
+function saveCurrency() {
+
+    localStorage.setItem(
+        "inventoryCurrency",
+        JSON.stringify(currency)
+    );
+
+}
+
+
+// ---------- Equipment Categories ----------
 
 const equipmentCategories = [
 
@@ -2970,32 +2952,32 @@ const equipmentCategories = [
 ];
 
 
-// ---------- Miscellaneous Tags ----------
+// ---------- Inventory Tags ----------
 
 const inventoryTags = [
 
-    "Consumable",
+    // Equipment tags
 
-    "Potion",
-
-    "Treasure",
-
-    "Common",
-
-    "Quest Item",
-
-    "Spell Component",
-
+    "Armor",
+    "Weapon",
+    "Shield",
+    "Focus",
+    "Ammunition",
     "Accessory",
 
+    // Behaviour tags
+
+    "Consumable",
+    "Potion",
+    "Treasure",
+    "Common",
+    "Quest Item",
+    "Spell Component",
     "Magical",
-
     "Material",
-
     "Utility"
 
 ];
-
 
 // ---------- Currency Conversion ----------
 
@@ -3326,6 +3308,10 @@ function renderEquipment() {
 // ========================================
 
 
+// ========================================
+// MISCELLANEOUS
+// ========================================
+
 function renderMiscellaneous() {
 
     const items =
@@ -3336,32 +3322,222 @@ function renderMiscellaneous() {
         );
 
 
-    if (
-        items.length === 0
-    ) {
+    let html = `
 
-        return `
+        <button
+            class="inventory-add-button"
+            onclick="openAddItemForm()"
+        >
+            ＋ Add Item
+        </button>
+
+    `;
+
+
+    if (items.length === 0) {
+
+        html += `
 
             <p class="empty-message">
-
                 No miscellaneous items.
-
             </p>
 
         `;
 
+        return html;
+
     }
 
 
-    return `
+    html += `
 
         <div class="inventory-list">
 
             ${items
-                .map(
-                    renderInventoryItem
-                )
+                .map(renderInventoryItem)
                 .join("")}
+
+        </div>
+
+    `;
+
+
+    return html;
+
+}
+
+
+// ========================================
+// INVENTORY ITEM CARD
+// ========================================
+
+function renderInventoryItem(item) {
+
+    const weightText =
+        item.weight !== null
+            ? `${item.weight} kg`
+            : "Weight not set";
+
+
+    const quantityText =
+        `× ${item.quantity}`;
+
+
+    const equippedText =
+        item.equipped
+            ? "Equipped"
+            : "";
+
+
+    const canQuickConsume =
+        hasQuickConsumeTag(item);
+
+
+    const unavailable =
+        item.quantity <= 0 &&
+        canQuickConsume;
+
+
+    return `
+
+        <div
+            class="inventory-item-card"
+            onclick="showInventoryItem('${item.id}')"
+        >
+
+            <div class="inventory-item-icon">
+                ${item.icon}
+            </div>
+
+
+            <div class="inventory-item-info">
+
+                <div class="inventory-item-top">
+
+                    <h3>
+                        ${item.name}
+                    </h3>
+
+                    <span class="inventory-arrow">
+                        ›
+                    </span>
+
+                </div>
+
+
+                <div class="inventory-item-meta">
+
+                    ${quantityText}
+
+                    ${equippedText}
+
+                    ${
+                        item.magical
+                            ? "✨ Magical"
+                            : ""
+                    }
+
+                </div>
+
+
+                ${
+                    unavailable
+                        ? `
+                            <div class="inventory-unavailable">
+                                ⚠️ Unavailable
+                            </div>
+                        `
+                        : ""
+                }
+
+
+                ${
+                    item.tags.length > 0
+                        ? `
+
+                            <div class="inventory-tags">
+
+                                ${item.tags
+                                    .map(
+                                        tag => `
+
+                                            <span
+                                                class="inventory-tag"
+                                            >
+                                                ${tag}
+                                            </span>
+
+                                        `
+                                    )
+                                    .join("")}
+
+                            </div>
+
+                        `
+                        : ""
+                }
+
+
+                <span class="inventory-weight">
+                    ⚖️ ${weightText}
+                </span>
+
+
+                ${
+                    canQuickConsume
+                        ? `
+
+                            <button
+                                class="inventory-consume-button"
+                                onclick="
+                                    event.stopPropagation();
+                                    consumeInventoryItem('${item.id}')
+                                "
+                                ${unavailable ? "disabled" : ""}
+                            >
+                                Consume 1
+                            </button>
+
+                        `
+                        : ""
+                }
+
+
+                ${
+                    item.location === "equipment"
+                        ? `
+
+                            <button
+                                class="inventory-equip-button"
+                                onclick="
+                                    event.stopPropagation();
+                                    toggleEquipment('${item.id}')
+                                "
+                            >
+                                ${item.equipped
+                                    ? "Unequip"
+                                    : "Equip"}
+                            </button>
+
+                        `
+                        : hasEquipmentTag(item)
+                            ? `
+
+                                <button
+                                    class="inventory-equip-button"
+                                    onclick="
+                                        event.stopPropagation();
+                                        toggleEquipment('${item.id}')
+                                    "
+                                >
+                                    Equip
+                                </button>
+
+                            `
+                            : ""
+                }
+
+            </div>
 
         </div>
 

@@ -649,34 +649,8 @@ function getOrdinal(number) {
 }
 
 
-// ---------- Home Menu ----------
-
-const menuButtons =
-    document.querySelectorAll(".menu-button");
-
-menuButtons.forEach(button => {
-
-    button.addEventListener("click", () => {
-
-        const text =
-            button.innerText.toLowerCase();
-
-        if (text.includes("spells")) {
-
-            openSection("spells");
-
-        } else {
-
-            alert("This section is coming soon.");
-
-        }
-
-    });
-
-});
-
 // ========================================
-// HOME STATUS
+// CHARACTER RESOURCES
 // ========================================
 
 
@@ -715,7 +689,7 @@ function toggleConcentration() {
 }
 
 
-// ---------- Status Menu ----------
+// ---------- Status ----------
 
 let conditions = [];
 
@@ -734,15 +708,17 @@ function toggleStatusMenu() {
 }
 
 
-// ---------- Conditions ----------
-
 function toggleCondition(checkbox) {
 
     if (checkbox.checked) {
 
-        conditions.push(
-            checkbox.value
-        );
+        if (!conditions.includes(checkbox.value)) {
+
+            conditions.push(
+                checkbox.value
+            );
+
+        }
 
     } else {
 
@@ -759,8 +735,6 @@ function toggleCondition(checkbox) {
 }
 
 
-// ---------- Status Display ----------
-
 function updateStatusDisplay() {
 
     const button =
@@ -768,25 +742,440 @@ function updateStatusDisplay() {
             "status-selector"
         );
 
+    const container =
+        document.getElementById(
+            "active-conditions"
+        );
+
+    if (!button || !container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+
     if (conditions.length === 0) {
 
         button.textContent =
             "Normal ▾";
 
-        return;
-    }
-
-
-    if (conditions.length === 1) {
-
-        button.textContent =
-            `${conditions[0]} ▾`;
+        container.classList.add(
+            "hidden"
+        );
 
         return;
     }
 
 
     button.textContent =
-        `${conditions.length} Conditions ▾`;
+        "Edit ▾";
+
+    container.classList.remove(
+        "hidden"
+    );
+
+
+    conditions.forEach(condition => {
+
+        const badge =
+            document.createElement("span");
+
+        badge.className =
+            "condition-badge";
+
+        badge.textContent =
+            condition;
+
+        container.appendChild(badge);
+
+    });
 
 }
+
+
+// ---------- HP ----------
+
+let currentHP = 100;
+const maximumHP = 100;
+
+
+function changeHP(amount) {
+
+    currentHP += amount;
+
+    if (currentHP < 0) {
+        currentHP = 0;
+    }
+
+    if (currentHP > maximumHP) {
+        currentHP = maximumHP;
+    }
+
+    updateHP();
+
+}
+
+
+function updateHP() {
+
+    const hp =
+        document.getElementById(
+            "current-hp"
+        );
+
+    if (hp) {
+        hp.textContent = currentHP;
+    }
+
+}
+
+
+// ---------- Hit Dice ----------
+
+let currentHitDice = 5;
+const maximumHitDice = 5;
+
+
+function changeHitDice(amount) {
+
+    currentHitDice += amount;
+
+    if (currentHitDice < 0) {
+        currentHitDice = 0;
+    }
+
+    if (currentHitDice > maximumHitDice) {
+        currentHitDice = maximumHitDice;
+    }
+
+    updateHitDice();
+
+}
+
+
+function updateHitDice() {
+
+    const element =
+        document.getElementById(
+            "hit-dice-value"
+        );
+
+    if (element) {
+
+        element.textContent =
+            `${currentHitDice} / ${maximumHitDice}`;
+
+    }
+
+}
+
+
+// ---------- Death Saves ----------
+
+let deathSaves = {
+
+    successes: 0,
+
+    failures: 0
+
+};
+
+
+function toggleDeathSave(type, index) {
+
+    if (type === "success") {
+
+        deathSaves.successes =
+            deathSaves.successes === index + 1
+                ? index
+                : index + 1;
+
+    }
+
+
+    if (type === "failure") {
+
+        deathSaves.failures =
+            deathSaves.failures === index + 1
+                ? index
+                : index + 1;
+
+    }
+
+    updateDeathSaves();
+
+}
+
+
+function updateDeathSaves() {
+
+    const successDots =
+        document.querySelectorAll(
+            ".save-dot:not(.failure)"
+        );
+
+    const failureDots =
+        document.querySelectorAll(
+            ".save-dot.failure"
+        );
+
+
+    successDots.forEach((dot, index) => {
+
+        dot.classList.toggle(
+            "active",
+            index < deathSaves.successes
+        );
+
+    });
+
+
+    failureDots.forEach((dot, index) => {
+
+        dot.classList.toggle(
+            "active",
+            index < deathSaves.failures
+        );
+
+    });
+
+}
+
+
+function resetDeathSaves() {
+
+    deathSaves.successes = 0;
+    deathSaves.failures = 0;
+
+    updateDeathSaves();
+
+}
+
+
+// ---------- Rest ----------
+
+function openRestMenu() {
+
+    const menu =
+        document.createElement("div");
+
+    menu.className =
+        "rest-overlay";
+
+    menu.innerHTML = `
+
+        <div class="rest-modal">
+
+            <button
+                class="rest-close"
+                onclick="closeRestMenu()"
+            >
+                ×
+            </button>
+
+            <h2>
+                Rest
+            </h2>
+
+            <p>
+                Choose your type of rest.
+            </p>
+
+            <button
+                class="rest-option"
+                onclick="longRest()"
+            >
+
+                <span>
+                    🌙
+                </span>
+
+                <div>
+
+                    <strong>
+                        Long Rest
+                    </strong>
+
+                    <small>
+                        Restore your major resources
+                    </small>
+
+                </div>
+
+            </button>
+
+
+            <button
+                class="rest-option"
+                onclick="shortRest()"
+            >
+
+                <span>
+                    ☕
+                </span>
+
+                <div>
+
+                    <strong>
+                        Short Rest
+                    </strong>
+
+                    <small>
+                        Spend Hit Dice to recover HP
+                    </small>
+
+                </div>
+
+            </button>
+
+        </div>
+
+    `;
+
+    document.body.appendChild(menu);
+
+}
+
+
+function closeRestMenu() {
+
+    const menu =
+        document.querySelector(
+            ".rest-overlay"
+        );
+
+    if (menu) {
+        menu.remove();
+    }
+
+}
+
+
+// ---------- Long Rest ----------
+
+function longRest() {
+
+    currentHP = maximumHP;
+
+    resetDeathSaves();
+
+    concentrating = false;
+
+    currentHitDice =
+        Math.min(
+            maximumHitDice,
+            currentHitDice +
+            Math.ceil(maximumHitDice / 2)
+        );
+
+    for (let level = 1; level <= 5; level++) {
+
+        spellSlots[level].current =
+            spellSlots[level].maximum;
+
+    }
+
+    saveSpellSlots();
+
+    closeRestMenu();
+
+    updateHP();
+    updateHitDice();
+
+}
+
+
+// ---------- Short Rest ----------
+
+function shortRest() {
+
+    closeRestMenu();
+
+    const diceSpent =
+        prompt(
+            `Hit Dice available: ${currentHitDice}\n\nHow many Hit Dice did you spend?`
+        );
+
+    if (diceSpent === null) {
+        return;
+    }
+
+    const spent =
+        parseInt(diceSpent);
+
+    if (
+        isNaN(spent) ||
+        spent < 0 ||
+        spent > currentHitDice
+    ) {
+
+        alert("Invalid number of Hit Dice.");
+
+        return;
+
+    }
+
+
+    const hpRecovered =
+        prompt(
+            "How many HP did you recover from your physical dice rolls?"
+        );
+
+    if (hpRecovered === null) {
+        return;
+    }
+
+    const recovered =
+        parseInt(hpRecovered);
+
+    if (
+        isNaN(recovered) ||
+        recovered < 0
+    ) {
+
+        alert("Invalid HP amount.");
+
+        return;
+
+    }
+
+
+    currentHitDice -= spent;
+
+    currentHP =
+        Math.min(
+            maximumHP,
+            currentHP + recovered
+        );
+
+    updateHP();
+    updateHitDice();
+
+}
+
+
+// ---------- Home Menu ----------
+
+const menuButtons =
+    document.querySelectorAll(".menu-button");
+
+menuButtons.forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        const text =
+            button.innerText.toLowerCase();
+
+        if (text.includes("spells")) {
+
+            openSection("spells");
+
+        } else {
+
+            alert("This section is coming soon.");
+
+        }
+
+    });
+
+});

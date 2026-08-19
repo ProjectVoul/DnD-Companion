@@ -3867,11 +3867,10 @@ function openInventoryItemForm(
             : [];
 
 
-    const selectedCategory =
+       const selectedTags =
         existingItem
-            ? existingItem.category
-            : "miscellaneous";
-
+            ? existingItem.tags || []
+            : [];
 
     const form =
         document.createElement(
@@ -4332,13 +4331,6 @@ function saveInventoryItemForm(
                 checkbox.value
         );
 
-
-    const propertiesText =
-        document.getElementById(
-            "inventory-form-properties"
-        ).value;
-
-
     const properties =
         propertiesText
             .split(",")
@@ -4352,9 +4344,7 @@ function saveInventoryItemForm(
 
 
     const selectedCategory =
-        document.getElementById(
-            "inventory-form-category"
-        ).value;
+    "miscellaneous";
 
 
     const equipmentCategory =
@@ -4502,8 +4492,10 @@ function saveInventoryItemForm(
                 : selectedCategory,
 
 
-        location:
-            "miscellaneous",
+                location:
+            isEquipmentItem
+                ? "equipment"
+                : "miscellaneous",
 
 
         icon:

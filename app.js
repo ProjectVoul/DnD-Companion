@@ -140,6 +140,11 @@ function openSection(section) {
         return;
     }
 
+    if (section === "abilities") {
+        showAbilities();
+        return;
+    }
+
     if (section === "rest") {
         openRestMenu();
         return;
@@ -660,6 +665,863 @@ function getOrdinal(number) {
 
 
 // ========================================
+// ABILITIES
+// ========================================
+
+
+const abilities = [
+
+    // ---------- Racial ----------
+
+    {
+        id: "dragon-breath",
+
+        name: "Dragon Breath",
+
+        category: "racial",
+
+        icon: "🐉",
+
+        description:
+            "You exhale a destructive breath that deals 4d6 damage. The target must make a saving throw against your Dragon Breath DC.",
+
+        details: [
+            {
+                label: "Save DC",
+                value: "8 + Constitution modifier + proficiency bonus"
+            },
+            {
+                label: "Damage",
+                value: "4d6"
+            }
+        ],
+
+        resource: {
+            type: "uses",
+            current: 2,
+            maximum: 2,
+            recovery: "longRest"
+        },
+
+        actions: [
+            "Action"
+        ]
+
+    },
+
+
+    // ---------- Class ----------
+
+    {
+        id: "lay-on-hands",
+
+        name: "Lay on Hands",
+
+        category: "class",
+
+        icon: "✋",
+
+        description:
+            "Your blessed touch can heal wounds. You have a pool of healing power that replenishes when you take a long rest.",
+
+        details: [
+            {
+                label: "Healing Pool",
+                value: "5 × Paladin level"
+            },
+            {
+                label: "Current Pool",
+                value: "65 HP"
+            },
+            {
+                label: "Special",
+                value: "Spend 5 HP from the pool to cure a disease or neutralize a poison."
+            }
+        ],
+
+        resource: {
+            type: "pool",
+            current: 65,
+            maximum: 65,
+            unit: "HP",
+            recovery: "longRest"
+        },
+
+        actions: [
+            "Action"
+        ]
+
+    },
+
+
+    // ---------- Feat ----------
+
+    {
+        id: "shield-master",
+
+        name: "Shield Master",
+
+        category: "feat",
+
+        icon: "🛡️",
+
+        description:
+            "You have mastered the use of your shield to defend yourself and control the battlefield.",
+
+        details: [
+            {
+                label: "Dexterity Saves",
+                value: "Add the AC bonus from your shield to Dexterity saving throws."
+            },
+            {
+                label: "Reaction",
+                value: "When an effect allows you to make a Dexterity saving throw to take only half damage on a success, you can use your reaction to take no damage instead."
+            },
+            {
+                label: "Bonus Action",
+                value: "After attacking, you can use a bonus action to shove a creature up to 5 feet away."
+            }
+        ],
+
+        resource: {
+            type: "none",
+            recovery: null
+        },
+
+        actions: [
+            "Passive",
+            "Reaction",
+            "Bonus Action"
+        ]
+
+    },
+
+
+    // ---------- Additional / Magic Weapon ----------
+
+    {
+        id: "dragons-judgment",
+
+        name: "Dragon's Judgment",
+
+        category: "additional",
+
+        icon: "⚔️",
+
+        description:
+            "When you hit a creature with the Sword of the Golden Choice, you can force the target to make a Wisdom saving throw.",
+
+        details: [
+            {
+                label: "On Failure",
+                value: "Choose one of the two effects below."
+            },
+            {
+                label: "Prone",
+                value: "The target falls prone and can stand only at the end of its turn, without using additional movement."
+            },
+            {
+                label: "Silenced",
+                value: "The target becomes unable to speak or cast spells with verbal components until the end of its next turn."
+            }
+        ],
+
+        resource: {
+            type: "uses",
+            current: 3,
+            maximum: 3,
+            recovery: "longRest"
+        },
+
+        actions: [
+            "Special"
+        ]
+
+    },
+
+
+    // ---------- Additional / Magic Item ----------
+
+    {
+        id: "dragon-licorice",
+
+        name: "Dragon Licorice",
+
+        category: "additional",
+
+        icon: "🍬",
+
+        description:
+            "This magical item grants you one additional use of Dragon Breath per long rest.",
+
+        details: [
+            {
+                label: "Effect",
+                value: "+1 Dragon Breath use per Long Rest."
+            }
+        ],
+
+        resource: {
+            type: "none",
+            recovery: null
+        },
+
+        actions: [
+            "Passive"
+        ]
+
+    }
+
+];
+
+
+// ---------- Ability Resource State ----------
+
+abilities.forEach(ability => {
+
+    if (!ability.resource) {
+        return;
+    }
+
+    const saved =
+        JSON.parse(
+            localStorage.getItem(
+                `ability-${ability.id}`
+            )
+        );
+
+    if (saved !== null) {
+
+        ability.resource.current =
+            saved;
+
+    }
+
+});
+
+
+// ---------- Save Ability Resource ----------
+
+function saveAbilityResource(ability) {
+
+    if (
+        !ability.resource ||
+        ability.resource.type === "none"
+    ) {
+        return;
+    }
+
+    localStorage.setItem(
+        `ability-${ability.id}`,
+        JSON.stringify(
+            ability.resource.current
+        )
+    );
+
+}
+
+
+// ---------- Ability Category Names ----------
+
+function getAbilityCategoryName(category) {
+
+    const names = {
+
+        racial: "Racial",
+
+        class: "Class",
+
+        feat: "Feats",
+
+        additional: "Additional"
+
+    };
+
+    return names[category] || category;
+
+}
+
+
+// ---------- Render Ability Resource ----------
+
+function renderAbilityResource(ability) {
+
+    const resource =
+        ability.resource;
+
+    if (
+        !resource ||
+        resource.type === "none"
+    ) {
+
+        return `
+
+            <div class="ability-passive-label">
+
+                Passive
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (resource.type === "uses") {
+
+        let dots = "";
+
+        for (
+            let i = 0;
+            i < resource.maximum;
+            i++
+        ) {
+
+            const filled =
+                i < resource.current;
+
+            dots += `
+
+                <button
+                    class="ability-dot ${filled ? "filled" : "empty"}"
+                    onclick="event.stopPropagation(); toggleAbilityUse('${ability.id}', ${i})"
+                    aria-label="${filled ? "Use" : "Restore"} ability use"
+                ></button>
+
+            `;
+
+        }
+
+
+        return `
+
+            <div class="ability-resource uses-resource">
+
+                <div class="ability-resource-dots">
+
+                    ${dots}
+
+                </div>
+
+                <span>
+                    ${resource.current} / ${resource.maximum}
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    if (resource.type === "pool") {
+
+        const percentage =
+            resource.maximum > 0
+                ? (
+                    resource.current /
+                    resource.maximum
+                ) * 100
+                : 0;
+
+
+        return `
+
+            <div
+                class="ability-resource pool-resource"
+                onclick="event.stopPropagation()"
+            >
+
+                <div class="ability-pool-value">
+
+                    <span>
+                        ${resource.current}
+                    </span>
+
+                    <span class="ability-pool-divider">
+                        /
+                    </span>
+
+                    <span class="ability-pool-max">
+                        ${resource.maximum}
+                        ${resource.unit || ""}
+                    </span>
+
+                </div>
+
+
+                <input
+                    class="ability-pool-slider"
+                    type="range"
+                    min="0"
+                    max="${resource.maximum}"
+                    value="${resource.current}"
+                    style="--pool-progress: ${percentage}%"
+                    oninput="setAbilityPool('${ability.id}', this.value)"
+                    aria-label="${ability.name} resource"
+                >
+
+            </div>
+
+        `;
+
+    }
+
+
+    return "";
+
+}
+
+
+// ---------- Render Ability Card ----------
+
+function renderAbilityCard(ability) {
+
+    const categoryName =
+        getAbilityCategoryName(
+            ability.category
+        );
+
+
+    return `
+
+        <button
+            class="ability-card"
+            onclick="showAbilityDetails('${ability.id}')"
+        >
+
+            <div class="ability-icon">
+
+                ${ability.icon}
+
+            </div>
+
+
+            <div class="ability-card-content">
+
+                <div class="ability-card-top">
+
+                    <div>
+
+                        <h3>
+                            ${ability.name}
+                        </h3>
+
+                        <p class="ability-category-label">
+                            ${categoryName}
+                        </p>
+
+                    </div>
+
+                    <span class="ability-arrow">
+                        ›
+                    </span>
+
+                </div>
+
+
+                ${renderAbilityResource(ability)}
+
+            </div>
+
+        </button>
+
+    `;
+
+}
+
+
+// ---------- Render Ability Section ----------
+
+function renderAbilitySection(
+    category,
+    abilitiesInCategory
+) {
+
+    if (
+        abilitiesInCategory.length === 0
+    ) {
+
+        return "";
+
+    }
+
+
+    return `
+
+        <section class="ability-section">
+
+            <div class="ability-section-title">
+
+                <h2>
+                    ${getAbilityCategoryName(category)}
+                </h2>
+
+            </div>
+
+
+            <div class="ability-list">
+
+                ${abilitiesInCategory
+                    .map(renderAbilityCard)
+                    .join("")}
+
+            </div>
+
+        </section>
+
+    `;
+
+}
+
+
+// ---------- Abilities Page ----------
+
+function showAbilities() {
+
+    const app =
+        document.getElementById("app");
+
+
+    const categories = [
+        "racial",
+        "class",
+        "feat",
+        "additional"
+    ];
+
+
+    let html = "";
+
+
+    categories.forEach(category => {
+
+        const categoryAbilities =
+            abilities.filter(
+                ability =>
+                    ability.category === category
+            );
+
+
+        html += renderAbilitySection(
+            category,
+            categoryAbilities
+        );
+
+    });
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="goHome()"
+            >
+                ← Back
+            </button>
+
+            <h1>
+                Abilities
+            </h1>
+
+            <p>
+                Your abilities, feats and special features
+            </p>
+
+        </header>
+
+
+        <main>
+
+            ${html}
+
+        </main>
+
+    `;
+
+}
+
+
+// ---------- Toggle Ability Use ----------
+
+function toggleAbilityUse(
+    abilityId,
+    index
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id === abilityId
+        );
+
+
+    if (
+        !ability ||
+        ability.resource.type !== "uses"
+    ) {
+
+        return;
+
+    }
+
+
+    if (index < ability.resource.current) {
+
+        ability.resource.current--;
+
+    } else {
+
+        if (
+            ability.resource.current <
+            ability.resource.maximum
+        ) {
+
+            ability.resource.current++;
+
+        }
+
+    }
+
+
+    saveAbilityResource(
+        ability
+    );
+
+
+    showAbilities();
+
+}
+
+
+// ---------- Set Ability Pool ----------
+
+function setAbilityPool(
+    abilityId,
+    value
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id === abilityId
+        );
+
+
+    if (
+        !ability ||
+        ability.resource.type !== "pool"
+    ) {
+
+        return;
+
+    }
+
+
+    ability.resource.current =
+        Math.max(
+            0,
+            Math.min(
+                ability.resource.maximum,
+                Number(value)
+            )
+        );
+
+
+    saveAbilityResource(
+        ability
+    );
+
+
+    const slider =
+        document.querySelector(
+            `.ability-pool-slider[aria-label="${ability.name} resource"]`
+        );
+
+
+    if (slider) {
+
+        const percentage =
+            (
+                ability.resource.current /
+                ability.resource.maximum
+            ) * 100;
+
+        slider.style
+            .setProperty(
+                "--pool-progress",
+                `${percentage}%`
+            );
+
+    }
+
+
+    const valueElement =
+        document.querySelector(
+            ".ability-pool-value span:first-child"
+        );
+
+
+    if (valueElement) {
+
+        valueElement.textContent =
+            ability.resource.current;
+
+    }
+
+}
+
+
+// ---------- Ability Details ----------
+
+function showAbilityDetails(
+    abilityId
+) {
+
+    const ability =
+        abilities.find(
+            ability =>
+                ability.id === abilityId
+        );
+
+
+    if (!ability) {
+
+        return;
+
+    }
+
+
+    const app =
+        document.getElementById("app");
+
+
+    const categoryName =
+        getAbilityCategoryName(
+            ability.category
+        );
+
+
+    let detailsHTML = "";
+
+
+    if (
+        ability.details &&
+        ability.details.length > 0
+    ) {
+
+        detailsHTML = `
+
+            <div class="ability-details-list">
+
+                ${ability.details
+                    .map(detail => `
+
+                        <div class="ability-detail-row">
+
+                            <span>
+                                ${detail.label}
+                            </span>
+
+                            <strong>
+                                ${detail.value}
+                            </strong>
+
+                        </div>
+
+                    `)
+                    .join("")}
+
+            </div>
+
+        `;
+
+    }
+
+
+    let actionsHTML = "";
+
+
+    if (
+        ability.actions &&
+        ability.actions.length > 0
+    ) {
+
+        actionsHTML = `
+
+            <div class="ability-actions">
+
+                <span>
+                    ${ability.actions.join(" · ")}
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    app.innerHTML = `
+
+        <header class="app-header">
+
+            <button
+                class="back-button"
+                onclick="showAbilities()"
+            >
+                ← Abilities
+            </button>
+
+            <h1>
+                ${ability.icon}
+                ${ability.name}
+            </h1>
+
+            <p>
+                ${categoryName}
+            </p>
+
+        </header>
+
+
+        <main>
+
+            <section class="ability-details">
+
+                ${renderAbilityResource(ability)}
+
+
+                ${actionsHTML}
+
+
+                <div class="ability-description">
+
+                    <h2>
+                        Description
+                    </h2>
+
+                    <p>
+                        ${ability.description}
+                    </p>
+
+                </div>
+
+
+                ${detailsHTML}
+
+            </section>
+
+        </main>
+
+    `;
+
+}
+
+
+// ========================================
 // CHARACTER RESOURCES
 // ========================================
 
@@ -682,9 +1544,11 @@ function toggleConcentration() {
         return;
     }
 
+
     if (concentrating) {
 
-        button.textContent = "ON";
+        button.textContent =
+            "ON";
 
         button.classList.add(
             "active"
@@ -692,7 +1556,8 @@ function toggleConcentration() {
 
     } else {
 
-        button.textContent = "OFF";
+        button.textContent =
+            "OFF";
 
         button.classList.remove(
             "active"
@@ -726,11 +1591,17 @@ function toggleStatusMenu() {
 }
 
 
-function toggleCondition(checkbox) {
+function toggleCondition(
+    checkbox
+) {
 
     if (checkbox.checked) {
 
-        if (!conditions.includes(checkbox.value)) {
+        if (
+            !conditions.includes(
+                checkbox.value
+            )
+        ) {
 
             conditions.push(
                 checkbox.value
@@ -748,6 +1619,7 @@ function toggleCondition(checkbox) {
 
     }
 
+
     updateStatusDisplay();
 
 }
@@ -760,19 +1632,29 @@ function updateStatusDisplay() {
             "status-selector"
         );
 
+
     const container =
         document.getElementById(
             "active-conditions"
         );
 
-    if (!button || !container) {
+
+    if (
+        !button ||
+        !container
+    ) {
+
         return;
+
     }
+
 
     container.innerHTML = "";
 
 
-    if (conditions.length === 0) {
+    if (
+        conditions.length === 0
+    ) {
 
         button.textContent =
             "Normal ▾";
@@ -794,20 +1676,29 @@ function updateStatusDisplay() {
     );
 
 
-    conditions.forEach(condition => {
+    conditions.forEach(
+        condition => {
 
-        const badge =
-            document.createElement("span");
+            const badge =
+                document.createElement(
+                    "span"
+                );
 
-        badge.className =
-            "condition-badge";
 
-        badge.textContent =
-            condition;
+            badge.className =
+                "condition-badge";
 
-        container.appendChild(badge);
 
-    });
+            badge.textContent =
+                condition;
+
+
+            container.appendChild(
+                badge
+            );
+
+        }
+    );
 
 }
 
@@ -818,6 +1709,7 @@ function updateStatusDisplay() {
 
 
 let currentHP = 100;
+
 const maximumHP = 100;
 
 
@@ -830,8 +1722,11 @@ function setupHPSlider() {
             ".hp-controls"
         );
 
+
     if (!controls) {
+
         return;
+
     }
 
 
@@ -875,7 +1770,9 @@ function setupHPSlider() {
 }
 
 
-function setHPFromSlider(value) {
+function setHPFromSlider(
+    value
+) {
 
     currentHP =
         Math.max(
@@ -886,22 +1783,37 @@ function setHPFromSlider(value) {
             )
         );
 
+
     updateHP();
 
 }
 
 
-function changeHP(amount) {
+function changeHP(
+    amount
+) {
 
     currentHP += amount;
 
-    if (currentHP < 0) {
+
+    if (
+        currentHP < 0
+    ) {
+
         currentHP = 0;
+
     }
 
-    if (currentHP > maximumHP) {
-        currentHP = maximumHP;
+
+    if (
+        currentHP > maximumHP
+    ) {
+
+        currentHP =
+            maximumHP;
+
     }
+
 
     updateHP();
 
@@ -915,8 +1827,12 @@ function updateHP() {
             "current-hp"
         );
 
+
     if (hp) {
-        hp.textContent = currentHP;
+
+        hp.textContent =
+            currentHP;
+
     }
 
 
@@ -925,8 +1841,12 @@ function updateHP() {
             "hp-slider"
         );
 
+
     if (slider) {
-        slider.value = currentHP;
+
+        slider.value =
+            currentHP;
+
     }
 
 }
@@ -938,20 +1858,35 @@ function updateHP() {
 
 
 let currentHitDice = 5;
+
 const maximumHitDice = 5;
 
 
-function changeHitDice(amount) {
+function changeHitDice(
+    amount
+) {
 
     currentHitDice += amount;
 
-    if (currentHitDice < 0) {
+
+    if (
+        currentHitDice < 0
+    ) {
+
         currentHitDice = 0;
+
     }
 
-    if (currentHitDice > maximumHitDice) {
-        currentHitDice = maximumHitDice;
+
+    if (
+        currentHitDice > maximumHitDice
+    ) {
+
+        currentHitDice =
+            maximumHitDice;
+
     }
+
 
     updateHitDice();
 
@@ -964,6 +1899,7 @@ function updateHitDice() {
         document.getElementById(
             "hit-dice-value"
         );
+
 
     if (element) {
 
@@ -989,26 +1925,40 @@ let deathSaves = {
 };
 
 
-function toggleDeathSave(type, index) {
+function toggleDeathSave(
+    type,
+    index
+) {
 
-    if (type === "success") {
+    if (
+        type === "success"
+    ) {
 
         deathSaves.successes =
-            deathSaves.successes === index + 1
+            deathSaves.successes ===
+            index + 1
+
                 ? index
+
                 : index + 1;
 
     }
 
 
-    if (type === "failure") {
+    if (
+        type === "failure"
+    ) {
 
         deathSaves.failures =
-            deathSaves.failures === index + 1
+            deathSaves.failures ===
+            index + 1
+
                 ? index
+
                 : index + 1;
 
     }
+
 
     updateDeathSaves();
 
@@ -1022,30 +1972,37 @@ function updateDeathSaves() {
             ".save-dot:not(.failure)"
         );
 
+
     const failureDots =
         document.querySelectorAll(
             ".save-dot.failure"
         );
 
 
-    successDots.forEach((dot, index) => {
+    successDots.forEach(
+        (dot, index) => {
 
-        dot.classList.toggle(
-            "active",
-            index < deathSaves.successes
-        );
+            dot.classList.toggle(
+                "active",
+                index <
+                deathSaves.successes
+            );
 
-    });
+        }
+    );
 
 
-    failureDots.forEach((dot, index) => {
+    failureDots.forEach(
+        (dot, index) => {
 
-        dot.classList.toggle(
-            "active",
-            index < deathSaves.failures
-        );
+            dot.classList.toggle(
+                "active",
+                index <
+                deathSaves.failures
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -1053,6 +2010,7 @@ function updateDeathSaves() {
 function resetDeathSaves() {
 
     deathSaves.successes = 0;
+
     deathSaves.failures = 0;
 
     updateDeathSaves();
@@ -1074,16 +2032,23 @@ function openRestMenu() {
             ".rest-overlay"
         );
 
+
     if (existing) {
+
         return;
+
     }
 
 
     const menu =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
+
 
     menu.className =
         "rest-overlay";
+
 
     menu.innerHTML = `
 
@@ -1103,6 +2068,7 @@ function openRestMenu() {
             <p>
                 Choose your type of rest.
             </p>
+
 
             <button
                 class="rest-option"
@@ -1155,7 +2121,10 @@ function openRestMenu() {
 
     `;
 
-    document.body.appendChild(menu);
+
+    document.body.appendChild(
+        menu
+    );
 
 }
 
@@ -1169,8 +2138,11 @@ function closeRestMenu() {
             ".rest-overlay"
         );
 
+
     if (menu) {
+
         menu.remove();
+
     }
 
 }
@@ -1183,21 +2155,32 @@ function closeRestMenu() {
 
 function longRest() {
 
-    currentHP = maximumHP;
+    currentHP =
+        maximumHP;
+
 
     resetDeathSaves();
 
-    concentrating = false;
+
+    concentrating =
+        false;
+
 
     currentHitDice =
         Math.min(
             maximumHitDice,
             currentHitDice +
-            Math.ceil(maximumHitDice / 2)
+            Math.ceil(
+                maximumHitDice / 2
+            )
         );
 
 
-    for (let level = 1; level <= 5; level++) {
+    for (
+        let level = 1;
+        level <= 5;
+        level++
+    ) {
 
         spellSlots[level].current =
             spellSlots[level].maximum;
@@ -1207,9 +2190,35 @@ function longRest() {
 
     saveSpellSlots();
 
+
+    // Reset ability resources
+    abilities.forEach(
+        ability => {
+
+            if (
+                ability.resource &&
+                ability.resource.recovery ===
+                "longRest"
+            ) {
+
+                ability.resource.current =
+                    ability.resource.maximum;
+
+                saveAbilityResource(
+                    ability
+                );
+
+            }
+
+        }
+    );
+
+
     closeRestMenu();
 
+
     updateHP();
+
     updateHitDice();
 
 
@@ -1218,7 +2227,10 @@ function longRest() {
             "concentration-toggle"
         );
 
-    if (concentrationButton) {
+
+    if (
+        concentrationButton
+    ) {
 
         concentrationButton.textContent =
             "OFF";
@@ -1246,12 +2258,17 @@ function openShortRestDiceSelection() {
             ".rest-modal"
         );
 
+
     if (!modal) {
+
         return;
+
     }
 
 
-    let diceButtons = "";
+    let diceButtons =
+        "";
+
 
     for (
         let dice = 1;
@@ -1273,11 +2290,19 @@ function openShortRestDiceSelection() {
                 <div>
 
                     <strong>
-                        ${dice} Hit ${dice === 1 ? "Die" : "Dice"}
+                        ${dice}
+                        Hit
+                        ${dice === 1
+                            ? "Die"
+                            : "Dice"}
                     </strong>
 
                     <small>
-                        Spend ${dice} ${dice === 1 ? "die" : "dice"}
+                        Spend
+                        ${dice}
+                        ${dice === 1
+                            ? "die"
+                            : "dice"}
                     </small>
 
                 </div>
@@ -1289,7 +2314,9 @@ function openShortRestDiceSelection() {
     }
 
 
-    if (currentHitDice === 0) {
+    if (
+        currentHitDice === 0
+    ) {
 
         modal.innerHTML = `
 
@@ -1308,6 +2335,7 @@ function openShortRestDiceSelection() {
                 You have no Hit Dice available.
             </p>
 
+
             <button
                 class="rest-option"
                 onclick="closeRestMenu()"
@@ -1318,9 +2346,11 @@ function openShortRestDiceSelection() {
                 </span>
 
                 <div>
+
                     <strong>
                         Back
                     </strong>
+
                 </div>
 
             </button>
@@ -1346,16 +2376,21 @@ function openShortRestDiceSelection() {
         </h2>
 
         <p>
-            You have <strong>${currentHitDice}</strong>
+            You have
+            <strong>
+                ${currentHitDice}
+            </strong>
             Hit Dice available.
             How many do you want to spend?
         </p>
+
 
         <div class="rest-dice-grid">
 
             ${diceButtons}
 
         </div>
+
 
         <button
             class="rest-back-button"
@@ -1382,15 +2417,20 @@ function openRestMenuFromShortRest() {
 
 // ---------- Step 2: Confirm Dice Spent ----------
 
-function selectShortRestDice(diceSpent) {
+function selectShortRestDice(
+    diceSpent
+) {
 
     const modal =
         document.querySelector(
             ".rest-modal"
         );
 
+
     if (!modal) {
+
         return;
+
     }
 
 
@@ -1403,17 +2443,22 @@ function selectShortRestDice(diceSpent) {
             ×
         </button>
 
+
         <h2>
             Short Rest
         </h2>
+
 
         <p>
             You are spending
             <strong>
                 ${diceSpent}
             </strong>
-            ${diceSpent === 1 ? "Hit Die" : "Hit Dice"}.
+            ${diceSpent === 1
+                ? "Hit Die"
+                : "Hit Dice"}.
         </p>
+
 
         <div class="rest-roll-message">
 
@@ -1426,8 +2471,12 @@ function selectShortRestDice(diceSpent) {
             </strong>
 
             <small>
-                Roll ${diceSpent} physical
-                ${diceSpent === 1 ? "die" : "dice"},
+                Roll
+                ${diceSpent}
+                physical
+                ${diceSpent === 1
+                    ? "die"
+                    : "dice"},
                 then enter the total HP recovered.
             </small>
 
@@ -1475,8 +2524,11 @@ function selectShortRestDice(diceSpent) {
             "short-rest-hp"
         );
 
+
     if (input) {
+
         input.focus();
+
     }
 
 }
@@ -1484,15 +2536,20 @@ function selectShortRestDice(diceSpent) {
 
 // ---------- Step 3: Apply Short Rest ----------
 
-function confirmShortRest(diceSpent) {
+function confirmShortRest(
+    diceSpent
+) {
 
     const input =
         document.getElementById(
             "short-rest-hp"
         );
 
+
     if (!input) {
+
         return;
+
     }
 
 
@@ -1501,7 +2558,9 @@ function confirmShortRest(diceSpent) {
 
 
     if (
-        !Number.isFinite(hpRecovered) ||
+        !Number.isFinite(
+            hpRecovered
+        ) ||
         hpRecovered < 0
     ) {
 
@@ -1512,18 +2571,22 @@ function confirmShortRest(diceSpent) {
     }
 
 
-    currentHitDice -= diceSpent;
+    currentHitDice -=
+        diceSpent;
 
 
     currentHP =
         Math.min(
             maximumHP,
-            currentHP + hpRecovered
+            currentHP +
+            hpRecovered
         );
 
 
     updateHP();
+
     updateHitDice();
+
 
     closeRestMenu();
 
@@ -1553,40 +2616,72 @@ function initializeHome() {
 // ---------- Home Menu ----------
 
 const menuButtons =
-    document.querySelectorAll(".menu-button");
+    document.querySelectorAll(
+        ".menu-button"
+    );
 
 
-menuButtons.forEach(button => {
+menuButtons.forEach(
+    button => {
 
-    button.addEventListener("click", () => {
+        button.addEventListener(
+            "click",
+            () => {
 
-        const text =
-            button.innerText.toLowerCase();
+                const text =
+                    button.innerText
+                        .toLowerCase();
 
 
-        if (text.includes("spells")) {
+                if (
+                    text.includes(
+                        "spells"
+                    )
+                ) {
 
-            openSection("spells");
+                    openSection(
+                        "spells"
+                    );
 
-        }
+                }
 
-        else if (text.includes("rest")) {
+                else if (
+                    text.includes(
+                        "abilit"
+                    )
+                ) {
 
-            openSection("rest");
+                    openSection(
+                        "abilities"
+                    );
 
-        }
+                }
 
-        else {
+                else if (
+                    text.includes(
+                        "rest"
+                    )
+                ) {
 
-            alert(
-                "This section is coming soon."
-            );
+                    openSection(
+                        "rest"
+                    );
 
-        }
+                }
 
-    });
+                else {
 
-});
+                    alert(
+                        "This section is coming soon."
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
 
 
 // ---------- Initialize ----------

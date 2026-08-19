@@ -674,3 +674,119 @@ menuButtons.forEach(button => {
     });
 
 });
+
+// ========================================
+// HOME STATUS
+// ========================================
+
+
+// ---------- Concentration ----------
+
+let concentrating = false;
+
+
+function toggleConcentration() {
+
+    concentrating = !concentrating;
+
+    const button =
+        document.getElementById(
+            "concentration-toggle"
+        );
+
+    if (concentrating) {
+
+        button.textContent = "ON";
+
+        button.classList.add(
+            "active"
+        );
+
+    } else {
+
+        button.textContent = "OFF";
+
+        button.classList.remove(
+            "active"
+        );
+
+    }
+
+}
+
+
+// ---------- Status Menu ----------
+
+let conditions = [];
+
+
+function toggleStatusMenu() {
+
+    const menu =
+        document.getElementById(
+            "status-menu"
+        );
+
+    menu.classList.toggle(
+        "hidden"
+    );
+
+}
+
+
+// ---------- Conditions ----------
+
+function toggleCondition(checkbox) {
+
+    if (checkbox.checked) {
+
+        conditions.push(
+            checkbox.value
+        );
+
+    } else {
+
+        conditions =
+            conditions.filter(
+                condition =>
+                    condition !== checkbox.value
+            );
+
+    }
+
+    updateStatusDisplay();
+
+}
+
+
+// ---------- Status Display ----------
+
+function updateStatusDisplay() {
+
+    const button =
+        document.getElementById(
+            "status-selector"
+        );
+
+    if (conditions.length === 0) {
+
+        button.textContent =
+            "Normal ▾";
+
+        return;
+    }
+
+
+    if (conditions.length === 1) {
+
+        button.textContent =
+            `${conditions[0]} ▾`;
+
+        return;
+    }
+
+
+    button.textContent =
+        `${conditions.length} Conditions ▾`;
+
+}

@@ -5,8 +5,6 @@
     // ---------- Dragon Breath ----------
     const dragonBreath = abilities.find(a => a.id === "dragons-breath");
     if (dragonBreath) {
-        // Dragon Licorice adds a second available use. The new bonus is
-        // granted immediately once on this page load.
         const hasLicorice = inventoryItems.some(item =>
             (item.id === "dragon-licorice" ||
              String(item.name || "").trim().toLowerCase() === "dragon licorice") &&
@@ -20,63 +18,63 @@
         }
     }
 
-    // ---------- HP: the bar itself is the control ----------
+    // ---------- Shared slider painting ----------
     function paintRange(range, value, maximum) {
         if (!range) return;
+
         const percentage = maximum > 0
             ? Math.max(0, Math.min(100, (value / maximum) * 100))
             : 0;
+
         range.style.background =
             `linear-gradient(to right, var(--accent) ${percentage}%, var(--surface-light) ${percentage}%)`;
     }
 
+    // ---------- HP: one real slider, no duplicate bars ----------
     function installHPControl() {
         const section = document.querySelector(".status-hp");
         if (!section) return;
 
-        let bar = document.getElementById("hp-bar-fill")?.parentElement;
-        let range = document.getElementById("hp-slider");
+        // p1-recovery.js used to create a visual fill bar. Remove every
+        // previous/generated HP bar before installing the actual control.
+        section.querySelectorAll(".hp-bar").forEach(el => el.remove());
+        section.querySelectorAll(".hp-slider").forEach(el => el.remove());
 
-        if (!bar) {
-            bar = document.createElement("div");
-            bar.className = "hp-bar";
-            const controls = section.querySelector(".hp-controls");
-            if (controls) section.insertBefore(bar, controls);
-            else section.appendChild(bar);
-        }
+        // The +/- buttons are no longer part of the HP UI.
+        section.querySelectorAll(".hp-button").forEach(button => button.remove());
 
-        if (!range) {
-            bar.innerHTML = `
-                <input
-                    id="hp-slider"
-                    class="hp-slider"
-                    type="range"
-                    min="0"
-                    max="${maximumHP}"
-                    value="${currentHP}"
-                    aria-label="Current hit points"
-                >
-            `;
-            range = document.getElementById("hp-slider");
-        }
+        const controls = section.querySelector(".hp-controls");
+        if (!controls) return;
 
-        // The +/- buttons are intentionally removed from the active UI:
-        // HP is now controlled directly by the bar.
-        section.querySelectorAll(".hp-button").forEach(button => {
-            button.remove();
-        });
+        const bar = document.createElement("div");
+        bar.className = "hp-bar";
+
+        const range = document.createElement("input");
+        range.id = "hp-slider";
+        range.className = "hp-slider";
+        range.type = "range";
+        range.min = "0";
+        range.max = String(maximumHP);
+        range.step = "1";
+        range.value = String(currentHP);
+        range.setAttribute("aria-label", "Current hit points");
+
+        bar.appendChild(range);
+        section.insertBefore(bar, controls);
 
         if (!range.dataset.bound) {
             range.dataset.bound = "true";
             range.addEventListener("input", function () {
                 currentHP = Number(this.value);
+
                 const current = document.getElementById("current-hp");
                 if (current) current.textContent = currentHP;
+
                 paintRange(this, currentHP, maximumHP);
+                localStorage.setItem("currentHP", String(currentHP));
             });
         }
 
-        range.value = currentHP;
         paintRange(range, currentHP, maximumHP);
     }
 
@@ -95,6 +93,13 @@
         const usage = document.querySelector(".ability-detail-usage");
         if (!usage || ability.usageType !== "pool") return;
 
+        // Remove any old/original range control that was rendered elsewhere
+        // in the ability detail page. The usage block below owns the one
+        // interactive slider now.
+        document.querySelectorAll(".ability-details input[type='range'], .ability-details .ability-pool-slider").forEach(el => {
+            if (!usage.contains(el)) el.remove();
+        });
+
         usage.innerHTML = `
             <div class="live-pool-control">
                 <div class="live-pool-header">
@@ -104,15 +109,18 @@
                     </strong>
                 </div>
 
-                <input
-                    id="ability-pool-slider"
-                    class="ability-pool-slider"
-                    type="range"
-                    min="0"
-                    max="${ability.maximumPool}"
-                    value="${ability.currentPool}"
-                    aria-label="${ability.name} pool"
-                >
+                <div class="pool-slider-wrap">
+                    <input
+                        id="ability-pool-slider"
+                        class="ability-pool-slider"
+                        type="range"
+                        min="0"
+                        max="${ability.maximumPool}"
+                        step="1"
+                        value="${ability.currentPool}"
+                        aria-label="${ability.name} pool"
+                    >
+                </div>
             </div>
         `;
 
@@ -128,10 +136,12 @@
 
         range.addEventListener("input", function () {
             ability.currentPool = Number(this.value);
+
             if (value) {
                 value.textContent =
                     `${ability.currentPool} / ${ability.maximumPool}`;
             }
+
             paint();
             saveAbilityState();
         });
@@ -165,7 +175,12 @@
             liveValue.textContent =
                 `${ability.currentPool} / ${ability.maximumPool}`;
         }
-        paintRange(range, ability.currentPool, ability.maximumPool);
+
+        if (range) {
+            range.value = String(ability.currentPool);
+            paintRange(range, ability.currentPool, ability.maximumPool);
+        }
+
         saveAbilityState();
     };
 
@@ -245,56 +260,88 @@
     style.id = "p1-interaction-style";
     style.textContent = `
         .hp-bar {
+            position: relative;
             width: 100%;
-            height: 14px;
+            height: 28px;
             margin: 8px 0 16px;
+            padding: 0;
             border: 1px solid var(--border);
             border-radius: 999px;
-            overflow: hidden;
-            background: var(--surface-light);
+            overflow: visible;
+            background: transparent;
         }
 
         .hp-slider,
         .ability-pool-slider {
             display: block;
             width: 100%;
-            height: 14px;
+            height: 28px;
             margin: 0;
             padding: 0;
             appearance: none;
             -webkit-appearance: none;
+            border: 0;
             border-radius: 999px;
+            background: var(--surface-light);
             cursor: pointer;
+            touch-action: pan-x;
+        }
+
+        .hp-slider:focus,
+        .ability-pool-slider:focus {
+            outline: none;
         }
 
         .hp-slider::-webkit-slider-runnable-track,
         .ability-pool-slider::-webkit-slider-runnable-track {
             height: 14px;
+            margin-top: 7px;
             background: transparent;
             border-radius: 999px;
         }
 
         .hp-slider::-webkit-slider-thumb,
         .ability-pool-slider::-webkit-slider-thumb {
-            width: 0;
-            height: 0;
+            width: 22px;
+            height: 22px;
+            margin-top: -4px;
             appearance: none;
             -webkit-appearance: none;
+            border: 2px solid var(--accent-light);
+            border-radius: 50%;
+            background: var(--surface);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+            cursor: grab;
+        }
+
+        .hp-slider::-webkit-slider-thumb:active,
+        .ability-pool-slider::-webkit-slider-thumb:active {
+            cursor: grabbing;
         }
 
         .hp-slider::-moz-range-track,
         .ability-pool-slider::-moz-range-track {
             height: 14px;
             background: transparent;
+            border: 0;
+            border-radius: 999px;
+        }
+
+        .hp-slider::-moz-range-progress,
+        .ability-pool-slider::-moz-range-progress {
+            height: 14px;
+            background: var(--accent);
             border-radius: 999px;
         }
 
         .hp-slider::-moz-range-thumb,
         .ability-pool-slider::-moz-range-thumb {
-            width: 0;
-            height: 0;
-            border: 0;
-            background: transparent;
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--accent-light);
+            border-radius: 50%;
+            background: var(--surface);
+            cursor: grab;
         }
 
         .hp-controls {
@@ -319,6 +366,10 @@
 
         .live-pool-header strong {
             font-size: 18px;
+        }
+
+        .pool-slider-wrap {
+            width: 100%;
         }
 
         .short-rest-overlay {

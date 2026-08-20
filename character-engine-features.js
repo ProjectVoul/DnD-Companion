@@ -1,27 +1,17 @@
-/*
- * D&D Companion — Character Features & Proficiencies
- * Ruleset: D&D 5e 2014
- *
- * Features are data, not hard-coded calculator exceptions.
- */
-
+/* D&D Companion — Character Features & Proficiencies | D&D 5e 2014 */
 (() => {
     'use strict';
 
     const engine = window.DnDCharacterEngine;
-    if (!engine) {
-        console.error('Character Features: Character Engine is not loaded.');
-        return;
-    }
+    if (!engine) return;
 
-    // Snapshot the base calculator before this layer replaces any methods.
-    const baseCalculator = { ...engine.calculator };
+    // Keep the original calculator intact underneath this feature layer.
+    const base = { ...engine.calculator };
     const ABILITIES = engine.abilities;
     const PROFICIENCY_TYPES = ['skill', 'savingThrow', 'weapon', 'armor', 'tool', 'language'];
     const FEATURE_TYPES = ['class', 'subclass', 'race', 'background', 'feat', 'other'];
     const ACTION_TYPES = ['action', 'bonusAction', 'reaction', 'free', 'passive', 'onHit', 'onDamage', 'onSave', 'triggered'];
-
-    const clone = (value) => JSON.parse(JSON.stringify(value));
+    const clone = (v) => JSON.parse(JSON.stringify(v));
 
     function createProficiency(overrides = {}) {
         return { type: null, value: null, rank: 'proficient', source: null, ...clone(overrides) };
@@ -48,14 +38,10 @@
         return { id: '', source: null, target: '', mode: 'add', value: 0, condition: null, ...clone(overrides) };
     }
 
-    function featureIsActive(feature, character) {
-        if (!feature || feature.active === false) return false;
-        return (Number(character.identity?.level) || 1) >= (Number(feature.level) || 1);
-    }
-
     function getCharacterFeatures(character) {
-        return (character.features || character.abilities || [])
-            .filter((feature) => featureIsActive(feature, character));
+        return (character.features || character.abilities || []).filter((feature) => {
+            return feature && feature.active !== false && (Number(character.identity?.level) || 1) >= (Number(feature.level) || 1);
+        });
     }
 
     function getFeatureProficiencies(character) {
@@ -75,153 +61,134 @@
     function getSkillRank(character, skill) {
         const explicit = character.proficiencies?.skills?.[skill];
         let rank = explicit?.expertise ? 'expertise' : explicit?.proficiency ? 'proficient' : 'none';
-        getFeatureProficiencies(character)
-            .filter((entry) => entry.type === 'skill' && entry.value === skill)
-            .forEach((entry) => {
-                if (entry.rank === 'expertise') rank = 'expertise';
-                else if (rank === 'none') rank = 'proficient';
-            });
+        getFeatureProficiencies(character).filter((p) => p.type === 'skill' && p.value === skill).forEach((p) => {
+            if (p.rank === 'expertise') rank = 'expertise';
+            else if (rank === 'none') rank = 'proficient';
+        });
         return rank;
     }
 
     function hasProficiency(character, type, value) {
         if (type === 'skill') return getSkillRank(character, value) !== 'none';
-        const base = {
+        const baseList = {
             savingThrow: character.proficiencies?.savingThrows || [],
             weapon: character.proficiencies?.weapons || [],
             armor: character.proficiencies?.armor || [],
             tool: character.proficiencies?.tools || [],
             language: character.proficiencies?.languages || []
         }[type] || [];
-        return base.includes(value) || getFeatureProficiencies(character).some((entry) => entry.type === type && entry.value === value);
+        return baseList.includes(value) || getFeatureProficiencies(character).some((p) => p.type === type && p.value === value);
     }
 
     function getFeatureModifiers(character) {
         const result = [];
         getCharacterFeatures(character).forEach((feature) => {
-            (feature.modifiers || []).forEach((modifier) => {
-                result.push({
-                    ...createFeatureModifier(modifier),
-                    source: modifier.source || { type: 'feature', id: feature.id, name: feature.name },
-                    sourceName: modifier.sourceName || feature.name
-                });
-            });
+            (feature.modifiers || []).forEach((modifier) => result.push({
+                ...createFeatureModifier(modifier),
+                source: modifier.source || { type: 'feature', id: feature.id, name: feature.name },
+                sourceName: modifier.sourceName || feature.name
+            }));
         });
         return result;
     }
 
-    function isWearingArmor(character) {
+    function wearingArmor(character) {
         return (character.items || []).some((item) => item?.equipment?.equipped && item?.mechanics?.type === 'armor');
     }
 
-    function hasShield(character) {
-        return (character.items || []).some((item) => item?.equipment?.equipped && item?.mechanics?.type === 'shield');
+    function conscious(character) {
+        return character.status?.conscious !== false && !character.status?.unconscious;
     }
 
-    function conditionIsMet(character, condition) {
+    function conditionMet(character, condition) {
         if (!condition) return true;
-        switch (condition.type) {
-            case 'wearingArmor': return isWearingArmor(character);
-            case 'conscious': return character.status?.conscious !== false && !character.status?.unconscious;
-            case 'hasShield': return hasShield(character);
-            default: return false;
-        }
+        if (condition.type === 'wearingArmor') return wearingArmor(character);
+        if (condition.type === 'conscious') return conscious(character);
+        if (condition.type === 'hasShield') return (character.items || []).some((item) => item?.equipment?.equipped && item?.mechanics?.type === 'shield');
+        return false;
     }
 
-    function resolveModifierValue(character, value) {
+    function resolveValue(character, value, target) {
         if (typeof value !== 'string') return Number(value) || 0;
-        const map = {
-            charismaModifier: 'charisma', strengthModifier: 'strength', dexterityModifier: 'dexterity',
-            constitutionModifier: 'constitution', intelligenceModifier: 'intelligence', wisdomModifier: 'wisdom'
-        };
-        return map[value] ? baseCalculator.getAbilityModifier(character, map[value]) : 0;
+        const ability = {
+            strengthModifier: 'strength', dexterityModifier: 'dexterity', constitutionModifier: 'constitution',
+            intelligenceModifier: 'intelligence', wisdomModifier: 'wisdom'
+        }[value];
+        if (ability) return base.getAbilityModifier(character, ability);
+        if (value === 'charismaModifier') {
+            const mod = base.getAbilityModifier(character, 'charisma');
+            return target === 'savingThrow' ? Math.max(1, mod) : mod;
+        }
+        return 0;
     }
 
-    function getApplicableFeatureModifiers(character, target = null) {
+    function applicableModifiers(character, target) {
         return getFeatureModifiers(character).filter((modifier) => {
-            if (target && modifier.target !== target) return false;
-            return conditionIsMet(character, modifier.condition);
+            return (!target || modifier.target === target) && conditionMet(character, modifier.condition);
         });
     }
 
-    function withFeatureEffects(character) {
+    function asActiveEffects(character) {
         const derived = clone(character);
         derived.activeEffects = [
             ...(derived.activeEffects || []),
-            ...getApplicableFeatureModifiers(character)
+            ...applicableModifiers(character)
                 .filter((modifier) => modifier.target !== 'savingThrow' && modifier.target !== 'conditionImmunity')
                 .map((modifier) => ({
-                    id: modifier.id,
-                    name: modifier.sourceName,
-                    source: modifier.source,
-                    target: modifier.target,
-                    mode: modifier.mode,
-                    value: resolveModifierValue(character, modifier.value),
-                    condition: null,
-                    active: true
+                    id: modifier.id, name: modifier.sourceName, source: modifier.source,
+                    target: modifier.target, mode: modifier.mode,
+                    value: resolveValue(character, modifier.value, modifier.target),
+                    condition: null, active: true
                 }))
         ];
         return derived;
     }
 
-    function getSavingThrowModifier(character, ability) {
-        const base = baseCalculator.getAbilityModifier(character, ability);
-        const proficient = hasProficiency(character, 'savingThrow', ability);
-        let result = base + (proficient ? baseCalculator.getProficiencyBonus(character.identity.level) : 0);
-        getApplicableFeatureModifiers(character, 'savingThrow').forEach((modifier) => {
-            const amount = resolveModifierValue(character, modifier.value);
-            if (modifier.mode === 'subtract') result -= amount;
-            else if (modifier.mode === 'set') result = amount;
-            else if (modifier.mode === 'multiply') result *= amount;
-            else result += amount;
-        });
-        return result;
+    function applyModifier(value, modifier) {
+        const amount = resolveValue(modifier.character, modifier.value, modifier.target);
+        if (modifier.mode === 'subtract') return value - amount;
+        if (modifier.mode === 'multiply') return value * amount;
+        if (modifier.mode === 'set') return amount;
+        return value + amount;
     }
 
     function getSkillModifier(character, skill) {
         const ability = engine.skills[skill];
         if (!ability) return 0;
-        const base = baseCalculator.getAbilityModifier(character, ability);
+        const scoreModifier = base.getAbilityModifier(character, ability);
+        const proficiency = base.getProficiencyBonus(character.identity.level);
         const rank = getSkillRank(character, skill);
-        if (rank === 'expertise') return base + baseCalculator.getProficiencyBonus(character.identity.level) * 2;
-        if (rank === 'proficient') return base + baseCalculator.getProficiencyBonus(character.identity.level);
-        return base;
+        if (rank === 'expertise') return scoreModifier + proficiency * 2;
+        if (rank === 'proficient') return scoreModifier + proficiency;
+        return scoreModifier;
     }
 
-    function getArmorClass(character) {
-        return baseCalculator.getArmorClass(withFeatureEffects(character));
+    function getSavingThrowModifier(character, ability) {
+        let result = base.getAbilityModifier(character, ability);
+        if (hasProficiency(character, 'savingThrow', ability)) result += base.getProficiencyBonus(character.identity.level);
+        applicableModifiers(character, 'savingThrow').forEach((modifier) => {
+            result = applyModifier(result, { ...modifier, character, target: 'savingThrow' });
+        });
+        return result;
     }
 
-    function getSpeed(character) {
-        return baseCalculator.getSpeed(withFeatureEffects(character));
-    }
-
-    function getInitiative(character) {
-        return baseCalculator.getInitiative(withFeatureEffects(character));
-    }
-
-    function getSpellAttackBonus(character) {
-        return baseCalculator.getSpellAttackBonus(withFeatureEffects(character));
-    }
-
-    function getSpellSaveDC(character) {
-        return baseCalculator.getSpellSaveDC(withFeatureEffects(character));
-    }
-
-    function getWeaponAttackBonus(character, item) {
-        return baseCalculator.getWeaponAttackBonus(withFeatureEffects(character), item);
-    }
+    function getArmorClass(character) { return base.getArmorClass(asActiveEffects(character)); }
+    function getSpeed(character) { return base.getSpeed(asActiveEffects(character)); }
+    function getInitiative(character) { return base.getInitiative(asActiveEffects(character)); }
+    function getSpellAttackBonus(character) { return base.getSpellAttackBonus(asActiveEffects(character)); }
+    function getSpellSaveDC(character) { return base.getSpellSaveDC(asActiveEffects(character)); }
+    function getWeaponAttackBonus(character, item) { return base.getWeaponAttackBonus(asActiveEffects(character), item); }
 
     function getWeaponDamage(character, item) {
-        const result = baseCalculator.getWeaponDamage(withFeatureEffects(character), item);
+        const damage = base.getWeaponDamage(asActiveEffects(character), item);
         const improved = getCharacterFeatures(character).find((feature) => feature.id === 'improved-divine-smite');
         if (improved && item?.mechanics?.type === 'weapon' && item.mechanics.attack?.type !== 'ranged') {
-            result.push({
+            damage.push({
                 dice: { count: 1, die: 'd8' }, type: 'radiant', ability: null, modifier: 0,
                 source: { type: 'feature', id: improved.id, name: improved.name }
             });
         }
-        return result;
+        return damage;
     }
 
     function getFeatureResources(character) {
@@ -229,9 +196,9 @@
         getCharacterFeatures(character).forEach((feature) => {
             (feature.resources || []).forEach((resource) => {
                 const entry = { ...createFeatureResource(resource), source: { type: 'feature', id: feature.id, name: feature.name } };
-                if (entry.formula === '1 + charismaModifier') entry.maximum = 1 + Math.max(0, baseCalculator.getAbilityModifier(character, 'charisma'));
+                if (entry.formula === '1 + charismaModifier') entry.maximum = Math.max(0, 1 + base.getAbilityModifier(character, 'charisma'));
                 if (entry.formula === '5 * paladinLevel') entry.maximum = 5 * (Number(character.identity?.level) || 0);
-                if (entry.formula === 'max(1, charismaModifier)') entry.maximum = Math.max(1, baseCalculator.getAbilityModifier(character, 'charisma'));
+                if (entry.formula === 'max(1, charismaModifier)') entry.maximum = Math.max(1, base.getAbilityModifier(character, 'charisma'));
                 entry.current = Math.min(Number(entry.current) || entry.maximum, entry.maximum);
                 result.push(entry);
             });
@@ -257,16 +224,13 @@
     }
 
     function getDerivedData(character) {
-        const base = baseCalculator.getDerivedData(withFeatureEffects(character));
-        const skills = {};
-        Object.keys(engine.skills).forEach((skill) => { skills[skill] = getSkillModifier(character, skill); });
-        const savingThrows = {};
-        ABILITIES.forEach((ability) => { savingThrows[ability] = getSavingThrowModifier(character, ability); });
+        const derived = base.getDerivedData(asActiveEffects(character));
+        const skills = Object.fromEntries(Object.keys(engine.skills).map((skill) => [skill, getSkillModifier(character, skill)]));
+        const savingThrows = Object.fromEntries(ABILITIES.map((ability) => [ability, getSavingThrowModifier(character, ability)]));
         const featureProficiencies = getFeatureProficiencies(character);
-        const mergeList = (baseList, type) => [...new Set([...(baseList || []), ...featureProficiencies.filter((entry) => entry.type === type).map((entry) => entry.value)])];
-
+        const mergeList = (list, type) => [...new Set([...(list || []), ...featureProficiencies.filter((p) => p.type === type).map((p) => p.value)])];
         return {
-            ...base,
+            ...derived,
             skills,
             savingThrows,
             armorClass: getArmorClass(character),
@@ -278,7 +242,7 @@
             features: getCharacterFeatures(character),
             featureResources: getFeatureResources(character),
             featureActions: getFeatureActions(character),
-            featureModifiers: getApplicableFeatureModifiers(character),
+            featureModifiers: applicableModifiers(character),
             proficiencies: {
                 skills: Object.fromEntries(Object.keys(engine.skills).map((skill) => [skill, getSkillRank(character, skill)])),
                 savingThrows: ABILITIES.filter((ability) => hasProficiency(character, 'savingThrow', ability)),
@@ -290,6 +254,7 @@
         };
     }
 
+    // Core Paladin definitions from the supplied 2014 Player's Handbook.
     const OFFICIAL_5E_2014 = {
         paladin: {
             fightingStyles: {
@@ -297,58 +262,20 @@
                     id: 'fighting-style-defense', name: 'Defense', type: 'class', level: 2,
                     modifiers: [createFeatureModifier({ id: 'defense-ac', target: 'armorClass', mode: 'add', value: 1, condition: { type: 'wearingArmor' } })]
                 }),
-                dueling: createFeature({
-                    id: 'fighting-style-dueling', name: 'Dueling', type: 'class', level: 2,
-                    mechanics: { damageBonus: 2, condition: { type: 'oneHandedMeleeWeapon', otherHandFree: true } }
-                }),
-                protection: createFeature({
-                    id: 'fighting-style-protection', name: 'Protection', type: 'class', level: 2,
-                    actions: [{ type: 'reaction', requires: ['shield'], effect: 'imposeDisadvantageOnAttackAgainstNearbyAlly' }]
-                }),
-                greatWeaponFighting: createFeature({
-                    id: 'fighting-style-great-weapon-fighting', name: 'Great Weapon Fighting', type: 'class', level: 2,
-                    mechanics: { rerollDamageDice: [1, 2], requires: ['twoHanded', 'versatileTwoHanded'] }
-                })
+                dueling: createFeature({ id: 'fighting-style-dueling', name: 'Dueling', type: 'class', level: 2, mechanics: { damageBonus: 2, condition: { type: 'oneHandedMeleeWeapon', otherHandFree: true } } }),
+                protection: createFeature({ id: 'fighting-style-protection', name: 'Protection', type: 'class', level: 2, actions: [{ type: 'reaction', requires: ['shield'], effect: 'imposeDisadvantageOnAttackAgainstNearbyAlly' }] }),
+                greatWeaponFighting: createFeature({ id: 'fighting-style-great-weapon-fighting', name: 'Great Weapon Fighting', type: 'class', level: 2, mechanics: { rerollDamageDice: [1, 2], requires: ['twoHanded', 'versatileTwoHanded'] } })
             },
             coreFeatures: {
-                divineSense: createFeature({
-                    id: 'divine-sense', name: 'Divine Sense', type: 'class', level: 1,
-                    resources: [createFeatureResource({ id: 'divine-sense', name: 'Divine Sense', recovery: 'longRest', formula: '1 + charismaModifier' })],
-                    actions: [{ type: 'action' }]
-                }),
-                layOnHands: createFeature({
-                    id: 'lay-on-hands', name: 'Lay on Hands', type: 'class', level: 1,
-                    resources: [createFeatureResource({ id: 'lay-on-hands', name: 'Lay on Hands', recovery: 'longRest', formula: '5 * paladinLevel' })],
-                    actions: [{ type: 'action' }],
-                    mechanics: { healingPool: '5 * paladinLevel', cureCost: 5 }
-                }),
-                divineSmite: createFeature({
-                    id: 'divine-smite', name: 'Divine Smite', type: 'class', level: 2,
-                    actions: [{ type: 'onHit' }],
-                    mechanics: { requires: ['meleeWeaponHit', 'spellSlot'], damage: { diceBySlot: { 1: '2d8', 2: '3d8', 3: '4d8', 4: '5d8', 5: '5d8' }, type: 'radiant', undeadOrFiendExtraDie: true } }
-                }),
-                divineHealth: createFeature({
-                    id: 'divine-health', name: 'Divine Health', type: 'class', level: 3,
-                    modifiers: [createFeatureModifier({ id: 'disease-immunity', target: 'conditionImmunity', mode: 'add', value: 'disease' })]
-                }),
+                divineSense: createFeature({ id: 'divine-sense', name: 'Divine Sense', type: 'class', level: 1, resources: [createFeatureResource({ id: 'divine-sense', name: 'Divine Sense', recovery: 'longRest', formula: '1 + charismaModifier' })], actions: [{ type: 'action' }] }),
+                layOnHands: createFeature({ id: 'lay-on-hands', name: 'Lay on Hands', type: 'class', level: 1, resources: [createFeatureResource({ id: 'lay-on-hands', name: 'Lay on Hands', recovery: 'longRest', formula: '5 * paladinLevel' })], actions: [{ type: 'action' }], mechanics: { healingPool: '5 * paladinLevel', cureCost: 5 } }),
+                divineSmite: createFeature({ id: 'divine-smite', name: 'Divine Smite', type: 'class', level: 2, actions: [{ type: 'onHit' }], mechanics: { requires: ['meleeWeaponHit', 'spellSlot'], damage: { diceBySlot: { 1: '2d8', 2: '3d8', 3: '4d8', 4: '5d8', 5: '5d8' }, type: 'radiant', undeadOrFiendExtraDie: true } } }),
+                divineHealth: createFeature({ id: 'divine-health', name: 'Divine Health', type: 'class', level: 3, modifiers: [createFeatureModifier({ id: 'disease-immunity', target: 'conditionImmunity', mode: 'add', value: 'disease' })] }),
                 extraAttack: createFeature({ id: 'extra-attack', name: 'Extra Attack', type: 'class', level: 5, mechanics: { attacksPerAttackAction: 2 } }),
-                auraOfProtection: createFeature({
-                    id: 'aura-of-protection', name: 'Aura of Protection', type: 'class', level: 6,
-                    modifiers: [createFeatureModifier({ id: 'aura-save', target: 'savingThrow', mode: 'add', value: 'charismaModifier', condition: { type: 'conscious', rangeFeet: 10 } })]
-                }),
-                auraOfCourage: createFeature({
-                    id: 'aura-of-courage', name: 'Aura of Courage', type: 'class', level: 10,
-                    modifiers: [createFeatureModifier({ id: 'fear-immunity', target: 'conditionImmunity', mode: 'add', value: 'frightened', condition: { type: 'conscious', rangeFeet: 10 } })]
-                }),
-                improvedDivineSmite: createFeature({
-                    id: 'improved-divine-smite', name: 'Improved Divine Smite', type: 'class', level: 11,
-                    mechanics: { extraMeleeWeaponDamage: { dice: '1d8', type: 'radiant' } }
-                }),
-                cleansingTouch: createFeature({
-                    id: 'cleansing-touch', name: 'Cleansing Touch', type: 'class', level: 14,
-                    resources: [createFeatureResource({ id: 'cleansing-touch', name: 'Cleansing Touch', recovery: 'longRest', formula: 'max(1, charismaModifier)' })],
-                    actions: [{ type: 'action' }]
-                })
+                auraOfProtection: createFeature({ id: 'aura-of-protection', name: 'Aura of Protection', type: 'class', level: 6, modifiers: [createFeatureModifier({ id: 'aura-save', target: 'savingThrow', mode: 'add', value: 'charismaModifier', condition: { type: 'conscious', rangeFeet: 10 } })] }),
+                auraOfCourage: createFeature({ id: 'aura-of-courage', name: 'Aura of Courage', type: 'class', level: 10, modifiers: [createFeatureModifier({ id: 'fear-immunity', target: 'conditionImmunity', mode: 'add', value: 'frightened', condition: { type: 'conscious', rangeFeet: 10 } })] }),
+                improvedDivineSmite: createFeature({ id: 'improved-divine-smite', name: 'Improved Divine Smite', type: 'class', level: 11, mechanics: { extraMeleeWeaponDamage: { dice: '1d8', type: 'radiant' } } }),
+                cleansingTouch: createFeature({ id: 'cleansing-touch', name: 'Cleansing Touch', type: 'class', level: 14, resources: [createFeatureResource({ id: 'cleansing-touch', name: 'Cleansing Touch', recovery: 'longRest', formula: 'max(1, charismaModifier)' })], actions: [{ type: 'action' }] })
             }
         }
     };
@@ -364,7 +291,7 @@
     engine.getCharacterFeatures = getCharacterFeatures;
     engine.getFeatureProficiencies = getFeatureProficiencies;
     engine.getFeatureModifiers = getFeatureModifiers;
-    engine.getApplicableFeatureModifiers = getApplicableFeatureModifiers;
+    engine.getApplicableFeatureModifiers = applicableModifiers;
     engine.getFeatureResources = getFeatureResources;
     engine.getFeatureActions = getFeatureActions;
     engine.hasProficiency = hasProficiency;

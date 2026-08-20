@@ -1,13 +1,14 @@
 /* D&D Companion — structured inventory mechanics editor | D&D 5e 2014 */
 (() => {
     'use strict';
-    const engine=window.DnDCharacterEngine;
-    if(!engine)return;
+    const engine=window.DnDCharacterEngine;if(!engine)return;
     const TAGS=['Armor','Weapon','Shield','Focus','Ammunition','Accessory','Consumable','Potion','Treasure','Common','Quest Item','Spell Component','Magical','Material','Utility'];
     const ABILITIES={strength:'Strength',dexterity:'Dexterity',constitution:'Constitution',intelligence:'Intelligence',wisdom:'Wisdom',charisma:'Charisma'};
     const DAMAGE=engine.damageTypes||['acid','bludgeoning','cold','fire','force','lightning','necrotic','piercing','poison','psychic','radiant','slashing','thunder'];
     const esc=v=>typeof escapeHTML==='function'?escapeHTML(String(v??'')):String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const legacyType=item=>item?.mechanics?.type||({Armor:'armor',Weapon:'weapon',Shield:'shield',Focus:'focus',Accessory:'accessory'}[(item?.tags||[]).find(t=>['Armor','Weapon','Shield','Focus','Accessory'].includes(t))])||'other';
+    const category={weapon:'weapons',armor:'armor',shield:'shield',focus:'focus',accessory:'accessories'};
+    const typeTag={weapon:'Weapon',armor:'Armor',shield:'Shield',focus:'Focus',accessory:'Accessory'};
 
     function mechanics(type,item){
         if(type==='weapon')return engine.createWeaponMechanics(item?.mechanics?.type==='weapon'?item.mechanics:{});
@@ -21,12 +22,12 @@
             const a=m.attack||{},d=(m.damage||[])[0]||engine.createDamageComponent({});
             return `<div class="engine-item-mechanics"><h3>Weapon mechanics</h3>
                 <label>Attack type<select id="ce-attack-type"><option value="melee" ${a.type==='melee'?'selected':''}>Melee</option><option value="ranged" ${a.type==='ranged'?'selected':''}>Ranged</option></select></label>
-                <label>Weapon proficiency category<select id="ce-prof-category"><option value="none">Specific weapon / none</option><option value="simple" ${item?.proficiency?.type==='simple'?'selected':''}>Simple weapon</option><option value="martial" ${item?.proficiency?.type==='martial'?'selected':''}>Martial weapon</option></select></label>
-                <p class="engine-item-help">Proficiency belongs to the character. This describes what proficiency category the weapon requires.</p>
+                <label>Weapon proficiency category<select id="ce-prof-category"><option value="none" ${item?.proficiency?.type!=='simple'&&item?.proficiency?.type!=='martial'?'selected':''}>Specific weapon / none</option><option value="simple" ${item?.proficiency?.type==='simple'?'selected':''}>Simple weapon</option><option value="martial" ${item?.proficiency?.type==='martial'?'selected':''}>Martial weapon</option></select></label>
+                <p class="engine-item-help">Proficiency belongs to the character. This describes the weapon's proficiency category.</p>
                 <label>Attack ability<select id="ce-attack-ability"><option value="auto" ${!a.ability?'selected':''}>Automatic</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${a.ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
                 <label>Damage dice<div class="engine-inline-fields"><input id="ce-damage-count" type="number" min="0" step="1" value="${Number(d.dice?.count)||0}"><select id="ce-damage-die">${['d4','d6','d8','d10','d12'].map(x=>`<option value="${x}" ${d.dice?.die===x?'selected':''}>${x}</option>`).join('')}</select></div></label>
                 <label>Damage type<select id="ce-damage-type">${DAMAGE.map(x=>`<option value="${x}" ${d.type===x?'selected':''}>${x[0].toUpperCase()+x.slice(1)}</option>`).join('')}</select></label>
-                <label>Damage ability<select id="ce-damage-ability"><option value="">Same as attack</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${d.ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
+                <label>Damage ability<select id="ce-damage-ability"><option value="" ${!d.ability?'selected':''}>Same as attack</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${d.ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
                 <label>Weapon properties<input id="ce-properties" type="text" value="${esc((m.properties||[]).join(', '))}" placeholder="Finesse, Versatile, Heavy, ..."></label></div>`;
         }
         if(type==='armor'){
@@ -40,51 +41,39 @@
                 <label class="engine-check-row"><input id="ce-armor-stealth" type="checkbox" ${m.stealthDisadvantage?'checked':''}> Stealth disadvantage</label></div>`;
         }
         if(type==='shield')return `<div class="engine-item-mechanics"><h3>Shield mechanics</h3><label>AC bonus<input id="ce-shield-ac" type="number" min="0" step="1" value="${Number(m.armorBonus)||0}"></label><p class="engine-item-help">A normal shield grants +2 AC; magical or special shields may differ.</p></div>`;
-        return `<div class="engine-item-mechanics"><h3>Effects & modifiers</h3><p class="engine-item-help">Structured modifiers/effects will be connected here after the core equipment model is tested.</p></div>`;
+        return `<div class="engine-item-mechanics"><h3>Effects & modifiers</h3><p class="engine-item-help">Structured modifiers and temporary effects will be connected here after the core equipment model is tested.</p></div>`;
     }
     function collect(type,old){
         if(type==='weapon'){
-            const aa=document.getElementById('ce-attack-ability')?.value||'auto';
-            const props=(document.getElementById('ce-properties')?.value||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+            const aa=document.getElementById('ce-attack-ability')?.value||'auto',props=(document.getElementById('ce-properties')?.value||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
             return {mechanics:engine.createWeaponMechanics({attack:{type:document.getElementById('ce-attack-type')?.value||'melee',ability:aa==='auto'?null:aa,proficient:true,bonus:0},damage:[engine.createDamageComponent({dice:{count:Math.max(0,Number(document.getElementById('ce-damage-count')?.value)||0),die:document.getElementById('ce-damage-die')?.value||'d8'},type:document.getElementById('ce-damage-type')?.value||'slashing',ability:document.getElementById('ce-damage-ability')?.value||null})],properties:props}),proficiency:{type:document.getElementById('ce-prof-category')?.value||'none'}};
         }
         if(type==='armor'){
-            const mode=document.getElementById('ce-armor-dex')?.value||'none';
-            return {mechanics:engine.createArmorMechanics({category:document.getElementById('ce-armor-category')?.value||'light',armorClass:Math.max(0,Number(document.getElementById('ce-armor-ac')?.value)||0),dexterity:{applies:mode!=='none',maximum:mode==='capped'?Math.max(0,Number(document.getElementById('ce-armor-dex-cap')?.value)||0):null},strengthRequirement:Math.max(0,Number(document.getElementById('ce-armor-str')?.value)||0),stealthDisadvantage:Boolean(document.getElementById('ce-armor-stealth')?.checked)})};
+            const mode=document.getElementById('ce-armor-dex')?.value||'none';return{mechanics:engine.createArmorMechanics({category:document.getElementById('ce-armor-category')?.value||'light',armorClass:Math.max(0,Number(document.getElementById('ce-armor-ac')?.value)||0),dexterity:{applies:mode!=='none',maximum:mode==='capped'?Math.max(0,Number(document.getElementById('ce-armor-dex-cap')?.value)||0):null},strengthRequirement:Math.max(0,Number(document.getElementById('ce-armor-str')?.value)||0),stealthDisadvantage:Boolean(document.getElementById('ce-armor-stealth')?.checked)})};
         }
-        if(type==='shield')return {mechanics:engine.createShieldMechanics({armorBonus:Math.max(0,Number(document.getElementById('ce-shield-ac')?.value)||0)})};
-        return {mechanics:old?.mechanics||{}};
+        if(type==='shield')return{mechanics:engine.createShieldMechanics({armorBonus:Math.max(0,Number(document.getElementById('ce-shield-ac')?.value)||0)})};
+        return{mechanics:old?.mechanics||{}};
     }
     function open(existing=null){
-        const type=legacyType(existing); window.__ceEditingItem=existing||null;
-        const selected=existing?.tags||[]; const overlay=document.createElement('div'); overlay.className='inventory-form-overlay';
+        const type=legacyType(existing),selected=existing?.tags||[],overlay=document.createElement('div');overlay.className='inventory-form-overlay';window.__ceEditingItem=existing||null;
         overlay.innerHTML=`<div class="inventory-form-modal engine-item-modal"><button class="rest-close" onclick="this.closest('.inventory-form-overlay').remove()">×</button><h2>${existing?'Edit Item':'Add Item'}</h2>
-            <label>Name<input id="inventory-form-name" value="${esc(existing?.name||'')}" placeholder="Item name"></label>
-            <label>Icon<input id="inventory-form-icon" value="${esc(existing?.icon||'📦')}" maxlength="4"></label>
-            <label>Description<textarea id="inventory-form-description" placeholder="Describe the item...">${esc(existing?.description||'')}</textarea></label>
+            <label>Name<input id="inventory-form-name" value="${esc(existing?.name||'')}" placeholder="Item name"></label><label>Icon<input id="inventory-form-icon" value="${esc(existing?.icon||'📦')}" maxlength="4"></label><label>Description<textarea id="inventory-form-description" placeholder="Describe the item...">${esc(existing?.description||'')}</textarea></label>
             <div class="engine-form-grid"><label>Quantity<input id="inventory-form-quantity" type="number" min="0" step="1" value="${existing?.quantity??1}"></label><label>Weight (kg)<input id="inventory-form-weight" type="number" min="0" step="0.01" value="${existing?.weight??''}"></label></div>
-            <label>Item type<select id="ce-type"><option value="other" ${type==='other'?'selected':''}>Other</option><option value="weapon" ${type==='weapon'?'selected':''}>Weapon</option><option value="armor" ${type==='armor'?'selected':''}>Armor</option><option value="shield" ${type==='shield'?'selected':''}>Shield</option><option value="focus" ${type==='focus'?'selected':''}>Focus</option><option value="accessory" ${type==='accessory'?'selected':''}>Accessory</option></select></label>
-            <div id="ce-mechanics"></div>
-            <label>Properties (display text)<input id="inventory-form-properties" value="${esc(existing?.properties?.join(', ')||'')}" placeholder="Separate properties with commas"></label>
-            <label class="inventory-checkbox-label"><input id="inventory-form-magical" type="checkbox" ${existing?.magical?'checked':''}> Magical item</label>
+            <label>Item type<select id="ce-type"><option value="other" ${type==='other'?'selected':''}>Other</option><option value="weapon" ${type==='weapon'?'selected':''}>Weapon</option><option value="armor" ${type==='armor'?'selected':''}>Armor</option><option value="shield" ${type==='shield'?'selected':''}>Shield</option><option value="focus" ${type==='focus'?'selected':''}>Focus</option><option value="accessory" ${type==='accessory'?'selected':''}>Accessory</option></select></label><div id="ce-mechanics"></div>
+            <label>Properties (display text)<input id="inventory-form-properties" value="${esc(existing?.properties?.join(', ')||'')}" placeholder="Separate properties with commas"></label><label class="inventory-checkbox-label"><input id="inventory-form-magical" type="checkbox" ${existing?.magical?'checked':''}> Magical item</label>
             <div class="inventory-form-tags"><strong>Tags</strong><small>Choose up to 3</small><div class="inventory-tag-options">${TAGS.map(t=>`<label><input type="checkbox" class="inventory-tag-checkbox" value="${esc(t)}" ${selected.includes(t)?'checked':''} onchange="limitInventoryTags(this)">${esc(t)}</label>`).join('')}</div></div>
             <button class="inventory-form-submit" onclick="saveCharacterEngineInventoryItem('${esc(existing?.id||'')}')">${existing?'Save Changes':'Add Item'}</button></div>`;
-        document.body.appendChild(overlay);
-        const typeSelect=document.getElementById('ce-type'), box=document.getElementById('ce-mechanics');
-        const render=()=>{box.innerHTML=mechanicsHTML(typeSelect.value,existing);const mode=document.getElementById('ce-armor-dex'),row=document.getElementById('ce-dex-cap-row');if(row)row.style.display=mode?.value==='capped'?'':'none';mode?.addEventListener('change',()=>{if(row)row.style.display=mode.value==='capped'?'':'none';});};
-        typeSelect.addEventListener('change',render); render();
+        document.body.appendChild(overlay);const typeSelect=document.getElementById('ce-type'),box=document.getElementById('ce-mechanics');const render=()=>{box.innerHTML=mechanicsHTML(typeSelect.value,existing);const mode=document.getElementById('ce-armor-dex'),row=document.getElementById('ce-dex-cap-row');if(row)row.style.display=mode?.value==='capped'?'':'none';mode?.addEventListener('change',()=>{if(row)row.style.display=mode.value==='capped'?'':'none';});};typeSelect.addEventListener('change',render);render();
     }
     window.saveCharacterEngineInventoryItem=function(id=''){
-        const existing=id?inventoryItems.find(i=>i.id===id):null, name=document.getElementById('inventory-form-name')?.value.trim();
-        const quantity=Number(document.getElementById('inventory-form-quantity')?.value), weightField=document.getElementById('inventory-form-weight')?.value, weight=weightField===''?null:Number(weightField);
-        if(!name){alert('Please enter an item name.');return;} if(!Number.isFinite(quantity)||quantity<0){alert('Quantity must be 0 or greater.');return;} if(weight!==null&&(!Number.isFinite(weight)||weight<0)){alert('Weight must be 0 or greater.');return;}
-        const type=document.getElementById('ce-type')?.value||'other', item=existing||{id:'item-'+Date.now(),quantity:1,equipped:false,location:'miscellaneous',category:'miscellaneous',originalLocation:'miscellaneous'};
-        const data=collect(type,existing), tags=Array.from(document.querySelectorAll('.inventory-tag-checkbox:checked')).map(c=>c.value);
-        item.name=name; item.icon=document.getElementById('inventory-form-icon')?.value||'📦'; item.description=document.getElementById('inventory-form-description')?.value.trim()||''; item.quantity=Math.floor(quantity); item.weight=weight; item.properties=(document.getElementById('inventory-form-properties')?.value||'').split(',').map(x=>x.trim()).filter(Boolean); item.magical=Boolean(document.getElementById('inventory-form-magical')?.checked); item.tags=tags; item.mechanics=data.mechanics; item.equipment={type:type==='other'?null:type,equipped:Boolean(item.equipped)}; item.inventorySection=item.location||'miscellaneous';
+        const existing=id?inventoryItems.find(i=>i.id===id):null,name=document.getElementById('inventory-form-name')?.value.trim(),quantity=Number(document.getElementById('inventory-form-quantity')?.value),weightField=document.getElementById('inventory-form-weight')?.value,weight=weightField===''?null:Number(weightField);
+        if(!name){alert('Please enter an item name.');return;}if(!Number.isFinite(quantity)||quantity<0){alert('Quantity must be 0 or greater.');return;}if(weight!==null&&(!Number.isFinite(weight)||weight<0)){alert('Weight must be 0 or greater.');return;}
+        const type=document.getElementById('ce-type')?.value||'other',item=existing||{id:'item-'+Date.now(),quantity:1,equipped:false,location:'miscellaneous',category:'miscellaneous',originalLocation:'miscellaneous'},data=collect(type,existing);let tags=Array.from(document.querySelectorAll('.inventory-tag-checkbox:checked')).map(c=>c.value);
+        if(type!=='other'){const tag=typeTag[type];if(tag&&!tags.includes(tag)){if(tags.length>=3)tags=tags.slice(0,2);tags.push(tag);}}
+        item.name=name;item.icon=document.getElementById('inventory-form-icon')?.value||'📦';item.description=document.getElementById('inventory-form-description')?.value.trim()||'';item.quantity=Math.floor(quantity);item.weight=weight;item.properties=(document.getElementById('inventory-form-properties')?.value||'').split(',').map(x=>x.trim()).filter(Boolean);item.magical=Boolean(document.getElementById('inventory-form-magical')?.checked);item.tags=tags;item.mechanics=data.mechanics;item.equipment={type:type==='other'?null:type,equipped:Boolean(item.equipped)};item.inventorySection=item.location||'miscellaneous';
         if(type==='weapon')item.proficiency=data.proficiency;else delete item.proficiency;
-        if(type!=='other'){const cat={weapon:'weapons',armor:'armor',shield:'shield',focus:'focus',accessory:'accessories'}[type];item.category=cat;item.location=item.equipped?'equipment':(item.location==='equipment'?'equipment':'miscellaneous');item.inventorySection=item.location;}else if(!item.equipped){item.category='miscellaneous';item.location='miscellaneous';item.inventorySection='miscellaneous';}
-        if(!existing)inventoryItems.push(item); saveInventory(); overlayRemove(); showInventorySection(item.location||'miscellaneous');
+        if(type!=='other'){item.category=category[type];item.location=item.equipped?'equipment':'equipment';item.inventorySection='equipment';}else if(!item.equipped){item.category='miscellaneous';item.location='miscellaneous';item.inventorySection='miscellaneous';}
+        if(!existing)inventoryItems.push(item);saveInventory();document.querySelector('.inventory-form-overlay')?.remove();window.__ceEditingItem=null;showInventorySection(item.location||'miscellaneous');
     };
-    function overlayRemove(){document.querySelector('.inventory-form-overlay')?.remove();window.__ceEditingItem=null;}
-    window.openInventoryItemForm=open; window.openAddItemForm=()=>open(null); window.openEditItemForm=id=>{const item=inventoryItems.find(i=>i.id===id);if(item)open(item);};
+    window.openInventoryItemForm=open;window.openAddItemForm=()=>open(null);window.openEditItemForm=id=>{const item=inventoryItems.find(i=>i.id===id);if(item)open(item);};
 })();

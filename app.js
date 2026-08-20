@@ -3905,11 +3905,6 @@ function openInventoryItemForm(
             : [];
 
 
-       const selectedTags =
-        existingItem
-            ? existingItem.tags || []
-            : [];
-
     const form =
         document.createElement(
             "div"
@@ -4315,7 +4310,9 @@ function saveInventoryItemForm(
         );
 
     const properties =
-        propertiesText
+        document.getElementById(
+            "inventory-form-properties"
+        ).value
             .split(",")
             .map(
                 property =>
@@ -5055,4 +5052,4 @@ function escapeHTML(
 
 // ---------- Initialize ----------
 
-initializeHome();
+// Home is rendered by index.html; no JS initializer is required.

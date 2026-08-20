@@ -24,6 +24,21 @@
 
     const script=document.createElement('script');
     script.src='character-sheet.js';
-    script.defer=true;
+    script.onload=()=>{
+        const heading=document.querySelector('.character-summary h1');
+        if(heading && typeof window.showCharacterSheet==='function'){
+            heading.classList.add('character-sheet-link');
+            heading.setAttribute('role','button');
+            heading.setAttribute('tabindex','0');
+            heading.setAttribute('title','Open Character Sheet');
+            heading.onclick=window.showCharacterSheet;
+            heading.onkeydown=event=>{
+                if(event.key==='Enter'||event.key===' '){
+                    event.preventDefault();
+                    window.showCharacterSheet();
+                }
+            };
+        }
+    };
     document.body.appendChild(script);
 })();

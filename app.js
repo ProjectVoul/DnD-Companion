@@ -1244,6 +1244,43 @@ const abilities = [
 
 ];
 
+// ---------- Dragon's Breath / Dragon Licorice ----------
+
+function updateDragonBreathUses() {
+
+    const dragonBreath =
+        abilities.find(
+            ability =>
+                ability.id === "dragons-breath"
+        );
+
+    const dragonLicorice =
+        inventoryItems.find(
+            item =>
+                item.id === "dragon-licorice" &&
+                item.quantity > 0
+        );
+
+    if (!dragonBreath) {
+        return;
+    }
+
+    const baseUses = 1;
+
+    const bonusUses =
+        dragonLicorice ? 1 : 0;
+
+    dragonBreath.maximumUses =
+        baseUses + bonusUses;
+
+    if (
+        dragonBreath.currentUses >
+        dragonBreath.maximumUses
+    ) {
+        dragonBreath.currentUses =
+            dragonBreath.maximumUses;
+    }
+}
 
 // ---------- Saved Ability State ----------
 
@@ -2414,6 +2451,7 @@ const inventoryItems =
     savedInventory ||
     defaultInventoryItems;
 
+updateDragonBreathUses();
 
 // ---------- Save Inventory ----------
 

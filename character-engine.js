@@ -1,16 +1,15 @@
 /*
- * D&D Companion — Character Engine foundation
+ * D&D Companion — Character Engine
  * Ruleset: D&D 5e 2014
  *
- * This module is intentionally independent from the existing UI/app.js.
- * It provides the first stable data model, persistence helpers and the
- * calculation primitives that later sections will consume.
+ * Foundation for the interconnected character model.
+ * This module remains independent from the existing UI/app.js.
  */
 
 (() => {
     'use strict';
 
-    const CHARACTER_ENGINE_VERSION = 1;
+    const CHARACTER_ENGINE_VERSION = 2;
     const STORAGE_KEY = 'dndCompanionCharacterEngine';
 
     const DEFAULT_CHARACTER = {
@@ -104,6 +103,11 @@
         persuasion: 'charisma'
     };
 
+    const ABILITIES = [
+        'strength', 'dexterity', 'constitution',
+        'intelligence', 'wisdom', 'charisma'
+    ];
+
     const DAMAGE_TYPES = [
         'acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning',
         'necrotic', 'piercing', 'poison', 'psychic', 'radiant',
@@ -112,6 +116,51 @@
 
     const EQUIPMENT_TYPES = [
         'weapon', 'armor', 'shield', 'focus', 'accessory', 'other'
+    ];
+
+    const EFFECT_TRACKING_MODES = [
+        'manual',
+        'reminder',
+        'automatic'
+    ];
+
+    const DURATION_TYPES = [
+        'instant',
+        'rounds',
+        'minutes',
+        'hours',
+        'days',
+        'until-rest',
+        'until-turn',
+        'until-event',
+        'permanent'
+    ];
+
+    const REST_TYPES = [
+        'short',
+        'long'
+    ];
+
+    const MODIFIER_MODES = [
+        'add',
+        'subtract',
+        'multiply',
+        'set'
+    ];
+
+    const EFFECT_TARGETS = [
+        ...ABILITIES,
+        'armorClass',
+        'speed',
+        'initiative',
+        'carryingCapacity',
+        'hitPointMaximum',
+        'spellAttackBonus',
+        'spellSaveDC',
+        'damageResistance',
+        'damageImmunity',
+        'damageVulnerability',
+        'condition'
     ];
 
     const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -156,18 +205,112 @@
 
     function saveCharacter(character) {
         const normalized = createCharacter(character);
+        normalized.schemaVersion = CHARACTER_ENGINE_VERSION;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
         return normalized;
     }
 
-    function abilityModifier(score) {
-        const numericScore = Number(score) || 0;
-        return Math.floor((numericScore - 10) / 2);
+    function createItem(overrides = {}) {
+        return mergeDefaults({
+            id: '',
+            name: '',
+            description: '',
+            quantity: 1,
+            weight: 0,
+            tags: [],
+            inventorySection: 'miscellaneous',
+            equipment: {
+                type: null,
+                equipped: false
+            },
+            mechanics: {},
+            modifiers: [],
+            effects: [],
+            grants: {
+                abilities: []
+            }
+        }, overrides);
     }
 
-    function proficiencyBonus(level) {
-        const numericLevel = Math.max(1, Number(level) || 1);
-        return 2 + Math.floor((numericLevel - 1) / 4);
+    function createWeaponMechanics(overrides = {}) {
+        return mergeDefaults({
+            type: 'weapon',
+            attack: {
+                ability: 'strength',
+                proficient: true,
+                bonus: 0
+            },
+            damage: [],
+            properties: []
+        }, overrides);
+    }
+
+    function createArmorMechanics(overrides = {}) {
+        return mergeDefaults({
+            type: 'armor',
+            armorClass: 10,
+            dexterity: {
+                applies: false,
+                maximum: null
+            },
+            stealthDisadvantage: false
+        }, overrides);
+    }
+
+    function createShieldMechanics(overrides = {}) {
+        return mergeDefaults({
+            type: 'shield',
+            armorBonus: 2
+        }, overrides);
+    }
+
+    function createDamageComponent(overrides = {}) {
+        return mergeDefaults({
+            dice: {
+                count: 0,
+                die: null
+            },
+            type: 'slashing',
+            ability: null,
+            modifier: 0,
+            source: null
+        }, overrides);
+    }
+
+    function createModifier(overrides = {}) {
+        return mergeDefaults({
+            id: '',
+            source: null,
+            target: '',
+            mode: 'add',
+            value: 0,
+            condition: null
+        }, overrides);
+    }
+
+    function createDuration(overrides = {}) {
+        return mergeDefaults({
+            type: 'instant',
+            value: null,
+            unit: null
+        }, overrides);
+    }
+
+    function createEffect(overrides = {}) {
+        return mergeDefaults({
+            id: '',
+            source: null,
+            target: '',
+            mode: 'add',
+            value: 0,
+            condition: null,
+            duration: createDuration(),
+            tracking: {
+                mode: 'manual',
+                reminderIntervalMinutes: 5
+            },
+            active: true
+        }, overrides);
     }
 
     function getSkillDefinition(skill) {
@@ -190,6 +333,16 @@
         const base = abilityModifier(character.abilities[ability]);
         const proficient = character.proficiencies.savingThrows.includes(ability);
         return base + (proficient ? proficiencyBonus(character.identity.level) : 0);
+    }
+
+    function abilityModifier(score) {
+        const numericScore = Number(score) || 0;
+        return Math.floor((numericScore - 10) / 2);
+    }
+
+    function proficiencyBonus(level) {
+        const numericLevel = Math.max(1, Number(level) || 1);
+        return 2 + Math.floor((numericLevel - 1) / 4);
     }
 
     function getCarryingCapacity(character) {
@@ -270,10 +423,24 @@
         version: CHARACTER_ENGINE_VERSION,
         storageKey: STORAGE_KEY,
         defaults: clone(DEFAULT_CHARACTER),
+        abilities: [...ABILITIES],
         skills: clone(SKILLS),
         damageTypes: [...DAMAGE_TYPES],
         equipmentTypes: [...EQUIPMENT_TYPES],
+        modifierModes: [...MODIFIER_MODES],
+        effectTargets: [...EFFECT_TARGETS],
+        effectTrackingModes: [...EFFECT_TRACKING_MODES],
+        durationTypes: [...DURATION_TYPES],
+        restTypes: [...REST_TYPES],
         createCharacter,
+        createItem,
+        createWeaponMechanics,
+        createArmorMechanics,
+        createShieldMechanics,
+        createDamageComponent,
+        createModifier,
+        createDuration,
+        createEffect,
         loadCharacter,
         saveCharacter,
         calculator: CharacterCalculator

@@ -6,9 +6,8 @@
 
     function getLiveCharacter(){
         const character=engine.loadCharacter();
-        character.items=Array.isArray(window.inventoryItems)
-            ? window.inventoryItems
-            : character.items||[];
+        const liveItems=typeof inventoryItems!=='undefined'&&Array.isArray(inventoryItems)?inventoryItems:null;
+        character.items=liveItems||character.items||[];
         return character;
     }
 

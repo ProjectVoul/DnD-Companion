@@ -16,7 +16,8 @@
     engine.getLiveArmorClassBreakdown=()=>engine.calculator.getArmorClassBreakdown(getLiveCharacter());
 
     // Load the Character Sheet as a presentation layer without changing the
-    // existing HTML structure. This keeps the sheet isolated from app.js.
+    // existing HTML structure. The sheet owns its own initialization and
+    // event binding so the home header receives only one click handler.
     const css=document.createElement('link');
     css.rel='stylesheet';
     css.href='character-sheet.css';
@@ -24,21 +25,5 @@
 
     const script=document.createElement('script');
     script.src='character-sheet.js';
-    script.onload=()=>{
-        const heading=document.querySelector('.character-summary h1');
-        if(heading && typeof window.showCharacterSheet==='function'){
-            heading.classList.add('character-sheet-link');
-            heading.setAttribute('role','button');
-            heading.setAttribute('tabindex','0');
-            heading.setAttribute('title','Open Character Sheet');
-            heading.onclick=window.showCharacterSheet;
-            heading.onkeydown=event=>{
-                if(event.key==='Enter'||event.key===' '){
-                    event.preventDefault();
-                    window.showCharacterSheet();
-                }
-            };
-        }
-    };
     document.body.appendChild(script);
 })();

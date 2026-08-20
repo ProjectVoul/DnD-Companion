@@ -56,11 +56,21 @@
         const weaponBonus=Number(item.mechanics?.attack?.bonus)||0;
         return applyTargetModifiers(abilityBonus+proficiency+weaponBonus,character,'weaponAttackBonus');
     }
+
     function getWeaponDamage(character,item){
         if(!item||item.mechanics?.type!=='weapon')return[];
-        const ability=getWeaponAbility(character,item); if(!ability)return[];
-        const abilityMod=getAbilityModifier(character,ability);
-        return (item.mechanics.damage||[]).map(damage=>({dice:clone(damage.dice||{count:0,die:null}),type:damage.type,ability,modifier:(Number(damage.modifier)||0)+abilityMod,source:damage.source||{type:'item',id:item.id}}));
+        const attackAbility=getWeaponAbility(character,item); if(!attackAbility)return[];
+        return (item.mechanics.damage||[]).map(damage=>{
+            const damageAbility=ABILITIES.includes(damage?.ability)?damage.ability:attackAbility;
+            const abilityMod=getAbilityModifier(character,damageAbility);
+            return {
+                dice:clone(damage.dice||{count:0,die:null}),
+                type:damage.type,
+                ability:damageAbility,
+                modifier:(Number(damage.modifier)||0)+abilityMod,
+                source:damage.source||{type:'item',id:item.id}
+            };
+        });
     }
 
     function getEquippedArmor(character){return(character.items||[]).find(item=>item?.equipment?.equipped&&item?.mechanics?.type==='armor')||null;}

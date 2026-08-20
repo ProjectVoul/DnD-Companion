@@ -45,7 +45,7 @@
     }
 
     function currentCharacter() {
-        return engine.loadCharacter();
+        return engine.getLiveCharacter ? engine.getLiveCharacter() : engine.loadCharacter();
     }
 
     function save(character) {

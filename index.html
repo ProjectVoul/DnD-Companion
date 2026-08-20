@@ -1,16 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>D&D Companion</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div id="app">
-        <!-- HOME -->
         <header class="character-header">
             <div class="character-avatar">⚔️</div>
             <div class="character-summary">
@@ -20,110 +17,26 @@
                 <p>Lawful Good</p>
             </div>
         </header>
-
         <main>
-            <!-- STATUS -->
             <section class="status-section">
-                <div class="status-hp">
-                    <div class="status-label">❤️ HP</div>
-                    <div class="hp-controls">
-                        <button class="hp-button" onclick="changeHP(-1)">−</button>
-                        <div class="hp-value">
-                            <span id="current-hp">100</span>
-                            <span class="hp-divider">/</span>
-                            <span id="maximum-hp">100</span>
-                        </div>
-                        <button class="hp-button" onclick="changeHP(1)">+</button>
-                    </div>
-                </div>
-
-                <div class="status-row">
-                    <span>🧠 Concentration</span>
-                    <button id="concentration-toggle" class="status-value status-toggle" onclick="toggleConcentration()">OFF</button>
-                </div>
-
-                <div class="status-row status-row-conditions">
-                    <div class="status-name">🥀 Status</div>
-                    <button id="status-selector" class="status-value status-selector" onclick="toggleStatusMenu()">Normal ▾</button>
-                </div>
-
+                <div class="status-hp"><div class="status-label">❤️ HP</div><div class="hp-controls"><button class="hp-button" onclick="changeHP(-1)">−</button><div class="hp-value"><span id="current-hp">100</span><span class="hp-divider">/</span><span id="maximum-hp">100</span></div><button class="hp-button" onclick="changeHP(1)">+</button></div></div>
+                <div class="status-row"><span>🧠 Concentration</span><button id="concentration-toggle" class="status-value status-toggle" onclick="toggleConcentration()">OFF</button></div>
+                <div class="status-row status-row-conditions"><div class="status-name">🥀 Status</div><button id="status-selector" class="status-value status-selector" onclick="toggleStatusMenu()">Normal ▾</button></div>
                 <div id="active-conditions" class="active-conditions hidden"></div>
-
                 <div id="status-menu" class="status-menu hidden">
-                    <label><input type="checkbox" value="Blinded" onchange="toggleCondition(this)"> Blinded</label>
-                    <label><input type="checkbox" value="Charmed" onchange="toggleCondition(this)"> Charmed</label>
-                    <label><input type="checkbox" value="Deafened" onchange="toggleCondition(this)"> Deafened</label>
-                    <label><input type="checkbox" value="Frightened" onchange="toggleCondition(this)"> Frightened</label>
-                    <label><input type="checkbox" value="Grappled" onchange="toggleCondition(this)"> Grappled</label>
-                    <label><input type="checkbox" value="Incapacitated" onchange="toggleCondition(this)"> Incapacitated</label>
-                    <label><input type="checkbox" value="Invisible" onchange="toggleCondition(this)"> Invisible</label>
-                    <label><input type="checkbox" value="Paralyzed" onchange="toggleCondition(this)"> Paralyzed</label>
-                    <label><input type="checkbox" value="Petrified" onchange="toggleCondition(this)"> Petrified</label>
-                    <label><input type="checkbox" value="Poisoned" onchange="toggleCondition(this)"> Poisoned</label>
-                    <label><input type="checkbox" value="Prone" onchange="toggleCondition(this)"> Prone</label>
-                    <label><input type="checkbox" value="Restrained" onchange="toggleCondition(this)"> Restrained</label>
-                    <label><input type="checkbox" value="Stunned" onchange="toggleCondition(this)"> Stunned</label>
-                    <label><input type="checkbox" value="Unconscious" onchange="toggleCondition(this)"> Unconscious</label>
+                    <label><input type="checkbox" value="Blinded" onchange="toggleCondition(this)"> Blinded</label><label><input type="checkbox" value="Charmed" onchange="toggleCondition(this)"> Charmed</label><label><input type="checkbox" value="Deafened" onchange="toggleCondition(this)"> Deafened</label><label><input type="checkbox" value="Frightened" onchange="toggleCondition(this)"> Frightened</label><label><input type="checkbox" value="Grappled" onchange="toggleCondition(this)"> Grappled</label><label><input type="checkbox" value="Incapacitated" onchange="toggleCondition(this)"> Incapacitated</label><label><input type="checkbox" value="Invisible" onchange="toggleCondition(this)"> Invisible</label><label><input type="checkbox" value="Paralyzed" onchange="toggleCondition(this)"> Paralyzed</label><label><input type="checkbox" value="Petrified" onchange="toggleCondition(this)"> Petrified</label><label><input type="checkbox" value="Poisoned" onchange="toggleCondition(this)"> Poisoned</label><label><input type="checkbox" value="Prone" onchange="toggleCondition(this)"> Prone</label><label><input type="checkbox" value="Restrained" onchange="toggleCondition(this)"> Restrained</label><label><input type="checkbox" value="Stunned" onchange="toggleCondition(this)"> Stunned</label><label><input type="checkbox" value="Unconscious" onchange="toggleCondition(this)"> Unconscious</label>
                 </div>
-
-                <div class="status-row">
-                    <span>🎲 Hit Dice</span>
-                    <div class="resource-controls">
-                        <button onclick="changeHitDice(-1)">−</button>
-                        <span id="hit-dice-value" class="status-value">5 / 5</span>
-                        <button onclick="changeHitDice(1)">+</button>
-                    </div>
-                </div>
-
-                <div class="death-saves">
-                    <div class="death-saves-title">💀 Death Saves</div>
-                    <div class="death-saves-groups">
-                        <div>
-                            <span>Successes</span>
-                            <div class="save-dots">
-                                <button class="save-dot" onclick="toggleDeathSave('success', 0)"></button>
-                                <button class="save-dot" onclick="toggleDeathSave('success', 1)"></button>
-                                <button class="save-dot" onclick="toggleDeathSave('success', 2)"></button>
-                            </div>
-                        </div>
-                        <div>
-                            <span>Failures</span>
-                            <div class="save-dots">
-                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 0)"></button>
-                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 1)"></button>
-                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 2)"></button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <div class="status-row"><span>🎲 Hit Dice</span><div class="resource-controls"><button onclick="changeHitDice(-1)">−</button><span id="hit-dice-value" class="status-value">5 / 5</span><button onclick="changeHitDice(1)">+</button></div></div>
+                <div class="death-saves"><div class="death-saves-title">💀 Death Saves</div><div class="death-saves-groups"><div><span>Successes</span><div class="save-dots"><button class="save-dot" onclick="toggleDeathSave('success', 0)"></button><button class="save-dot" onclick="toggleDeathSave('success', 1)"></button><button class="save-dot" onclick="toggleDeathSave('success', 2)"></button></div></div><div><span>Failures</span><div class="save-dots"><button class="save-dot failure" onclick="toggleDeathSave('failure', 0)"></button><button class="save-dot failure" onclick="toggleDeathSave('failure', 1)"></button><button class="save-dot failure" onclick="toggleDeathSave('failure', 2)"></button></div></div></div></div>
             </section>
-
-            <!-- MAIN SECTIONS -->
             <section class="main-menu">
-                <button class="main-menu-button" onclick="openSection('abilities')">
-                    <span class="main-menu-icon">⚔️</span>
-                    <span>Abilities</span>
-                    <span class="main-menu-arrow">›</span>
-                </button>
-                <button class="main-menu-button" onclick="openSection('inventory')">
-                    <span class="main-menu-icon">🎒</span>
-                    <span>Inventory</span>
-                    <span class="main-menu-arrow">›</span>
-                </button>
-                <button class="main-menu-button" onclick="openSection('spells')">
-                    <span class="main-menu-icon">✨</span>
-                    <span>Spells</span>
-                    <span class="main-menu-arrow">›</span>
-                </button>
-                <button class="main-menu-button" onclick="openRestMenu()">
-                    <span class="main-menu-icon">🌙</span>
-                    <span>Rest</span>
-                    <span class="main-menu-arrow">›</span>
-                </button>
+                <button class="main-menu-button" onclick="openSection('abilities')"><span class="main-menu-icon">⚔️</span><span>Abilities</span><span class="main-menu-arrow">›</span></button>
+                <button class="main-menu-button" onclick="openSection('inventory')"><span class="main-menu-icon">🎒</span><span>Inventory</span><span class="main-menu-arrow">›</span></button>
+                <button class="main-menu-button" onclick="openSection('spells')"><span class="main-menu-icon">✨</span><span>Spells</span><span class="main-menu-arrow">›</span></button>
+                <button class="main-menu-button" onclick="openRestMenu()"><span class="main-menu-icon">🌙</span><span>Rest</span><span class="main-menu-arrow">›</span></button>
             </section>
         </main>
     </div>
-
     <script src="app.js"></script>
     <script src="p1-recovery.js"></script>
     <script src="p1-interaction.js"></script>
@@ -132,5 +45,6 @@
     <script src="character-engine-rules.js"></script>
     <script src="character-engine-breakdown.js"></script>
     <script src="character-engine-features.js"></script>
+    <script src="character-engine-inventory-v2.js"></script>
 </body>
 </html>

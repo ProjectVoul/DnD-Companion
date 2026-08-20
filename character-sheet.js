@@ -318,7 +318,7 @@
     window.showCharacterSheet = render;
     window.showCharacterHome = () => window.location.reload();
 
-    window.addEventListener('DOMContentLoaded', () => {
+    function initializeCharacterSheet() {
         const heading = document.querySelector('.character-summary h1');
         if (heading) {
             heading.classList.add('character-sheet-link');
@@ -333,5 +333,11 @@
                 }
             });
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        window.addEventListener('DOMContentLoaded', initializeCharacterSheet, { once: true });
+    } else {
+        initializeCharacterSheet();
+    }
 })();

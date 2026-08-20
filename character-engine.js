@@ -9,8 +9,37 @@
 (() => {
     'use strict';
 
-    const CHARACTER_ENGINE_VERSION = 3;
+    const CHARACTER_ENGINE_VERSION = 4;
     const STORAGE_KEY = 'dndCompanionCharacterEngine';
+
+    const ABILITIES = [
+        'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'
+    ];
+
+    const SKILLS = {
+        athletics: 'strength', acrobatics: 'dexterity', sleightOfHand: 'dexterity',
+        stealth: 'dexterity', arcana: 'intelligence', history: 'intelligence',
+        investigation: 'intelligence', nature: 'intelligence', religion: 'intelligence',
+        animalHandling: 'wisdom', insight: 'wisdom', medicine: 'wisdom',
+        perception: 'wisdom', survival: 'wisdom', deception: 'charisma',
+        intimidation: 'charisma', performance: 'charisma', persuasion: 'charisma'
+    };
+
+    const DAMAGE_TYPES = [
+        'acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning', 'necrotic',
+        'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'
+    ];
+
+    const EQUIPMENT_TYPES = ['weapon', 'armor', 'shield', 'focus', 'accessory', 'other'];
+    const EFFECT_TRACKING_MODES = ['manual', 'reminder', 'automatic'];
+    const DURATION_TYPES = ['instant', 'rounds', 'minutes', 'hours', 'days', 'until-rest', 'until-turn', 'until-event', 'permanent'];
+    const REST_TYPES = ['short', 'long'];
+    const MODIFIER_MODES = ['add', 'subtract', 'multiply', 'set'];
+    const EFFECT_TARGETS = [
+        ...ABILITIES, 'armorClass', 'speed', 'initiative', 'carryingCapacity',
+        'hitPointMaximum', 'spellAttackBonus', 'spellSaveDC',
+        'damageResistance', 'damageImmunity', 'damageVulnerability', 'condition'
+    ];
 
     const DEFAULT_CHARACTER = {
         schemaVersion: CHARACTER_ENGINE_VERSION,
@@ -19,7 +48,7 @@
             name: '', race: '', class: '', subclass: '', level: 1,
             background: '', alignment: '', size: 'Medium', appearance: ''
         },
-        abilities: {
+        abilityScores: {
             strength: 10, dexterity: 10, constitution: 10,
             intelligence: 10, wisdom: 10, charisma: 10
         },
@@ -34,45 +63,23 @@
             deathSaves: { successes: 0, failures: 0 },
             inspiration: false, abilityUses: {}, spellSlots: {}
         },
-        items: [], abilities: [], spells: [], activeEffects: []
+        items: [],
+        abilities: [],
+        spells: [],
+        activeEffects: []
     };
-
-    const SKILLS = {
-        athletics: 'strength', acrobatics: 'dexterity', sleightOfHand: 'dexterity',
-        stealth: 'dexterity', arcana: 'intelligence', history: 'intelligence',
-        investigation: 'intelligence', nature: 'intelligence', religion: 'intelligence',
-        animalHandling: 'wisdom', insight: 'wisdom', medicine: 'wisdom',
-        perception: 'wisdom', survival: 'wisdom', deception: 'charisma',
-        intimidation: 'charisma', performance: 'charisma', persuasion: 'charisma'
-    };
-
-    const ABILITIES = [
-        'strength', 'dexterity', 'constitution', 'intelligence', 'wisdom', 'charisma'
-    ];
-
-    const DAMAGE_TYPES = [
-        'acid', 'bludgeoning', 'cold', 'fire', 'force', 'lightning',
-        'necrotic', 'piercing', 'poison', 'psychic', 'radiant', 'slashing', 'thunder'
-    ];
-
-    const EQUIPMENT_TYPES = ['weapon', 'armor', 'shield', 'focus', 'accessory', 'other'];
-    const EFFECT_TRACKING_MODES = ['manual', 'reminder', 'automatic'];
-    const DURATION_TYPES = ['instant', 'rounds', 'minutes', 'hours', 'days', 'until-rest', 'until-turn', 'until-event', 'permanent'];
-    const REST_TYPES = ['short', 'long'];
-    const MODIFIER_MODES = ['add', 'subtract', 'multiply', 'set'];
-    const EFFECT_TARGETS = [
-        ...ABILITIES, 'armorClass', 'speed', 'initiative', 'carryingCapacity',
-        'hitPointMaximum', 'spellAttackBonus', 'spellSaveDC',
-        'damageResistance', 'damageImmunity', 'damageVulnerability', 'condition'
-    ];
 
     const clone = (value) => JSON.parse(JSON.stringify(value));
 
     function mergeDefaults(defaultValue, savedValue) {
-        if (Array.isArray(defaultValue)) return Array.isArray(savedValue) ? savedValue : clone(defaultValue);
+        if (Array.isArray(defaultValue)) {
+            return Array.isArray(savedValue) ? savedValue : clone(defaultValue);
+        }
         if (defaultValue && typeof defaultValue === 'object') {
             const result = {};
-            const source = savedValue && typeof savedValue === 'object' ? savedValue : {};
+            const source = savedValue && typeof savedValue === 'object' && !Array.isArray(savedValue)
+                ? savedValue
+                : {};
             Object.keys(defaultValue).forEach((key) => {
                 result[key] = mergeDefaults(defaultValue[key], source[key]);
             });
@@ -84,8 +91,27 @@
         return savedValue === undefined ? defaultValue : savedValue;
     }
 
+    function migrateCharacter(saved) {
+        const source = saved && typeof saved === 'object' ? clone(saved) : {};
+
+        // v3 accidentally used "abilities" twice in the default object.
+        // Preserve an old ability-score object if one exists, while keeping
+        // the actual feature/ability list under the separate "abilities" key.
+        if (!source.abilityScores) {
+            if (source.abilities && !Array.isArray(source.abilities) && typeof source.abilities === 'object') {
+                source.abilityScores = source.abilities;
+                source.abilities = [];
+            } else {
+                source.abilityScores = {};
+            }
+        }
+
+        source.schemaVersion = CHARACTER_ENGINE_VERSION;
+        return source;
+    }
+
     function createCharacter(overrides = {}) {
-        return mergeDefaults(DEFAULT_CHARACTER, overrides);
+        return mergeDefaults(DEFAULT_CHARACTER, migrateCharacter(overrides));
     }
 
     function loadCharacter() {
@@ -118,7 +144,7 @@
     function createWeaponMechanics(overrides = {}) {
         return mergeDefaults({
             type: 'weapon',
-            attack: { type: 'melee', ability: 'strength', proficient: true, bonus: 0 },
+            attack: { type: 'melee', ability: null, proficient: true, bonus: 0 },
             damage: [], properties: []
         }, overrides);
     }
@@ -157,8 +183,7 @@
     }
 
     function abilityModifier(score) {
-        const numericScore = Number(score) || 0;
-        return Math.floor((numericScore - 10) / 2);
+        return Math.floor(((Number(score) || 0) - 10) / 2);
     }
 
     function proficiencyBonus(level) {
@@ -166,22 +191,23 @@
         return 2 + Math.floor((numericLevel - 1) / 4);
     }
 
-    function isActiveEffect(effect) {
-        return !!effect && effect.active !== false;
-    }
-
     function getAllModifiers(character) {
         const modifiers = [];
         (character.items || []).forEach((item) => {
             if (!item?.equipment?.equipped) return;
             (item.modifiers || []).forEach((modifier) => {
-                modifiers.push({ ...modifier, source: modifier.source || { type: 'item', id: item.id } });
+                modifiers.push({
+                    ...modifier,
+                    source: modifier.source || { type: 'item', id: item.id },
+                    sourceName: modifier.sourceName || item.name || 'Item'
+                });
             });
         });
-        (character.activeEffects || []).filter(isActiveEffect).forEach((effect) => {
+        (character.activeEffects || []).filter((effect) => effect?.active !== false).forEach((effect) => {
             modifiers.push({
                 id: effect.id,
                 source: effect.source,
+                sourceName: effect.source?.name || effect.name || 'Active Effect',
                 target: effect.target,
                 mode: effect.mode,
                 value: effect.value,
@@ -196,13 +222,13 @@
     }
 
     function applyModifier(value, modifier) {
-        const modifierValue = Number(modifier.value) || 0;
+        const amount = Number(modifier.value) || 0;
         switch (modifier.mode) {
-            case 'subtract': return value - modifierValue;
-            case 'multiply': return value * modifierValue;
-            case 'set': return modifierValue;
+            case 'subtract': return value - amount;
+            case 'multiply': return value * amount;
+            case 'set': return amount;
             case 'add':
-            default: return value + modifierValue;
+            default: return value + amount;
         }
     }
 
@@ -211,7 +237,7 @@
     }
 
     function getEffectiveAbilityScore(character, ability) {
-        const base = Number(character.abilities?.[ability]) || 0;
+        const base = Number(character.abilityScores?.[ability]) || 0;
         return applyTargetModifiers(base, character, ability);
     }
 
@@ -219,12 +245,10 @@
         return abilityModifier(getEffectiveAbilityScore(character, ability));
     }
 
-    function getSkillDefinition(skill) { return SKILLS[skill] || null; }
-
     function getSkillModifier(character, skill) {
-        const ability = getSkillDefinition(skill);
+        const ability = SKILLS[skill];
         if (!ability) return 0;
-        const skillData = character.proficiencies.skills?.[skill] || {};
+        const skillData = character.proficiencies?.skills?.[skill] || {};
         const base = getAbilityModifier(character, ability);
         const proficiency = skillData.proficiency ? proficiencyBonus(character.identity.level) : 0;
         const expertise = skillData.expertise ? proficiencyBonus(character.identity.level) : 0;
@@ -233,7 +257,7 @@
 
     function getSavingThrowModifier(character, ability) {
         const base = getAbilityModifier(character, ability);
-        const proficient = character.proficiencies.savingThrows.includes(ability);
+        const proficient = (character.proficiencies?.savingThrows || []).includes(ability);
         return base + (proficient ? proficiencyBonus(character.identity.level) : 0);
     }
 
@@ -242,9 +266,7 @@
     }
 
     function getCarriedWeight(character) {
-        return (character.items || []).reduce((total, item) => {
-            return total + ((Number(item.quantity) || 0) * (Number(item.weight) || 0));
-        }, 0);
+        return (character.items || []).reduce((total, item) => total + ((Number(item.quantity) || 0) * (Number(item.weight) || 0)), 0);
     }
 
     function getEquippedArmor(character) {
@@ -267,14 +289,9 @@
             const mechanics = armor.mechanics || {};
             const armorBase = Number(mechanics.armorClass) || 10;
             const category = mechanics.category || 'light';
-            if (category === 'heavy') {
-                base = armorBase;
-            } else if (category === 'medium') {
-                const maximum = mechanics.dexterity?.maximum ?? 2;
-                base = armorBase + Math.min(dex, Number(maximum));
-            } else {
-                base = armorBase + dex;
-            }
+            if (category === 'heavy') base = armorBase;
+            else if (category === 'medium') base = armorBase + Math.min(dex, Number(mechanics.dexterity?.maximum ?? 2));
+            else base = armorBase + dex;
         }
 
         if (shield) base += Number(shield.mechanics?.armorBonus) || 0;
@@ -282,12 +299,12 @@
     }
 
     function getSpeed(character) {
-        let speed = 30;
-        speed = applyTargetModifiers(speed, character, 'speed');
+        let speed = Number(character.baseSpeed);
+        if (!Number.isFinite(speed)) speed = 30;
         const armor = getEquippedArmor(character);
         const requirement = Number(armor?.mechanics?.strengthRequirement) || 0;
         if (requirement > 0 && getEffectiveAbilityScore(character, 'strength') < requirement) speed -= 10;
-        return speed;
+        return applyTargetModifiers(speed, character, 'speed');
     }
 
     function getInitiative(character) {
@@ -300,40 +317,42 @@
 
     function getSpellAttackBonus(character) {
         const ability = getSpellcastingAbility(character);
-        if (!ability || character.abilities[ability] === undefined) return null;
+        if (!ability || character.abilityScores?.[ability] === undefined) return null;
         const base = getAbilityModifier(character, ability) + proficiencyBonus(character.identity.level);
         return applyTargetModifiers(base, character, 'spellAttackBonus');
     }
 
     function getSpellSaveDC(character) {
         const ability = getSpellcastingAbility(character);
-        if (!ability || character.abilities[ability] === undefined) return null;
+        if (!ability || character.abilityScores?.[ability] === undefined) return null;
         const base = 8 + getAbilityModifier(character, ability) + proficiencyBonus(character.identity.level);
         return applyTargetModifiers(base, character, 'spellSaveDC');
     }
 
-    function getPassiveSkill(character, skill) { return 10 + getSkillModifier(character, skill); }
+    function getPassiveSkill(character, skill) {
+        return 10 + getSkillModifier(character, skill);
+    }
 
     function getWeaponAbility(character, item) {
         const mechanics = item?.mechanics || {};
+        const attack = mechanics.attack || {};
         const properties = mechanics.properties || [];
-        const attackType = mechanics.attack?.type || 'melee';
-        const configured = mechanics.attack?.ability;
 
         if (properties.includes('finesse')) {
-            const str = getAbilityModifier(character, 'strength');
-            const dex = getAbilityModifier(character, 'dexterity');
-            return dex > str ? 'dexterity' : 'strength';
+            const configured = attack.ability || character.weaponChoices?.[item.id];
+            return configured === 'strength' || configured === 'dexterity' ? configured : null;
         }
-        if (configured) return configured;
-        return attackType === 'ranged' ? 'dexterity' : 'strength';
+
+        if (ABILITIES.includes(attack.ability)) return attack.ability;
+        return attack.type === 'ranged' ? 'dexterity' : 'strength';
     }
 
     function getWeaponAttackBonus(character, item) {
         if (!item || item.mechanics?.type !== 'weapon') return null;
         const ability = getWeaponAbility(character, item);
+        if (!ability) return null;
         const abilityBonus = getAbilityModifier(character, ability);
-        const proficient = item.mechanics?.attack?.proficient !== false;
+        const proficient = item.mechanics?.attack?.proficient === true;
         const proficiency = proficient ? proficiencyBonus(character.identity.level) : 0;
         const base = abilityBonus + proficiency + (Number(item.mechanics?.attack?.bonus) || 0);
         return applyTargetModifiers(base, character, 'weaponAttackBonus');
@@ -341,14 +360,14 @@
 
     function getWeaponDamage(character, item) {
         if (!item || item.mechanics?.type !== 'weapon') return [];
-        const mechanics = item.mechanics;
         const ability = getWeaponAbility(character, item);
+        if (!ability) return [];
         const abilityModifierValue = getAbilityModifier(character, ability);
-        return (mechanics.damage || []).map((damage) => ({
+        return (item.mechanics.damage || []).map((damage) => ({
             dice: clone(damage.dice || { count: 0, die: null }),
             type: damage.type,
-            ability: damage.ability || ability,
-            modifier: (Number(damage.modifier) || 0) + (damage.ability === null ? abilityModifierValue : 0),
+            ability,
+            modifier: (Number(damage.modifier) || 0) + (damage.ability == null ? abilityModifierValue : getAbilityModifier(character, damage.ability)),
             source: damage.source || { type: 'item', id: item.id }
         }));
     }
@@ -360,7 +379,6 @@
             vulnerabilities: [...(character.defenses?.vulnerabilities || [])],
             conditions: []
         };
-
         getAllModifiers(character).forEach((modifier) => {
             if (modifier.target === 'damageResistance' && modifier.value && !result.resistances.includes(modifier.value)) result.resistances.push(modifier.value);
             if (modifier.target === 'damageImmunity' && modifier.value && !result.immunities.includes(modifier.value)) result.immunities.push(modifier.value);
@@ -372,11 +390,13 @@
 
     function getDerivedData(character) {
         const abilityModifiers = {};
-        ABILITIES.forEach((ability) => { abilityModifiers[ability] = getAbilityModifier(character, ability); });
         const skills = {};
-        Object.keys(SKILLS).forEach((skill) => { skills[skill] = getSkillModifier(character, skill); });
         const savingThrows = {};
-        ABILITIES.forEach((ability) => { savingThrows[ability] = getSavingThrowModifier(character, ability); });
+        ABILITIES.forEach((ability) => {
+            abilityModifiers[ability] = getAbilityModifier(character, ability);
+            savingThrows[ability] = getSavingThrowModifier(character, ability);
+        });
+        Object.keys(SKILLS).forEach((skill) => { skills[skill] = getSkillModifier(character, skill); });
 
         return {
             abilityScores: Object.fromEntries(ABILITIES.map((ability) => [ability, getEffectiveAbilityScore(character, ability)])),
@@ -399,22 +419,28 @@
     }
 
     const CharacterCalculator = {
-        getAbilityModifier: getAbilityModifier,
+        getAbilityModifier,
         getProficiencyBonus: proficiencyBonus,
         getEffectiveAbilityScore,
         getSkillModifier,
         getSavingThrowModifier,
         getCarryingCapacity,
         getCarriedWeight,
+        getEquippedArmor,
+        getEquippedShield,
         getArmorClass,
         getSpeed,
         getInitiative,
+        getSpellcastingAbility,
         getSpellAttackBonus,
         getSpellSaveDC,
+        getWeaponAbility,
         getWeaponAttackBonus,
         getWeaponDamage,
         getDefenses,
-        getDerivedData
+        getDerivedData,
+        getAllModifiers,
+        getTargetModifiers
     };
 
     const CharacterEngine = {

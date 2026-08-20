@@ -14,6 +14,8 @@
         return;
     }
 
+    // Snapshot the base calculator before this layer replaces any methods.
+    const baseCalculator = { ...engine.calculator };
     const ABILITIES = engine.abilities;
     const PROFICIENCY_TYPES = ['skill', 'savingThrow', 'weapon', 'armor', 'tool', 'language'];
     const FEATURE_TYPES = ['class', 'subclass', 'race', 'background', 'feat', 'other'];
@@ -108,17 +110,21 @@
         return result;
     }
 
+    function isWearingArmor(character) {
+        return (character.items || []).some((item) => item?.equipment?.equipped && item?.mechanics?.type === 'armor');
+    }
+
+    function hasShield(character) {
+        return (character.items || []).some((item) => item?.equipment?.equipped && item?.mechanics?.type === 'shield');
+    }
+
     function conditionIsMet(character, condition) {
         if (!condition) return true;
         switch (condition.type) {
-            case 'wearingArmor':
-                return !!engine.calculator.getEquippedArmor?.(character);
-            case 'conscious':
-                return character.status?.conscious !== false && !character.status?.unconscious;
-            case 'hasShield':
-                return !!engine.calculator.getEquippedShield?.(character);
-            default:
-                return false;
+            case 'wearingArmor': return isWearingArmor(character);
+            case 'conscious': return character.status?.conscious !== false && !character.status?.unconscious;
+            case 'hasShield': return hasShield(character);
+            default: return false;
         }
     }
 
@@ -128,7 +134,7 @@
             charismaModifier: 'charisma', strengthModifier: 'strength', dexterityModifier: 'dexterity',
             constitutionModifier: 'constitution', intelligenceModifier: 'intelligence', wisdomModifier: 'wisdom'
         };
-        return map[value] ? engine.calculator.getAbilityModifier(character, map[value]) : 0;
+        return map[value] ? baseCalculator.getAbilityModifier(character, map[value]) : 0;
     }
 
     function getApplicableFeatureModifiers(character, target = null) {
@@ -159,9 +165,9 @@
     }
 
     function getSavingThrowModifier(character, ability) {
-        const base = engine.calculator.getAbilityModifier(character, ability);
+        const base = baseCalculator.getAbilityModifier(character, ability);
         const proficient = hasProficiency(character, 'savingThrow', ability);
-        let result = base + (proficient ? engine.calculator.getProficiencyBonus(character.identity.level) : 0);
+        let result = base + (proficient ? baseCalculator.getProficiencyBonus(character.identity.level) : 0);
         getApplicableFeatureModifiers(character, 'savingThrow').forEach((modifier) => {
             const amount = resolveModifierValue(character, modifier.value);
             if (modifier.mode === 'subtract') result -= amount;
@@ -175,39 +181,39 @@
     function getSkillModifier(character, skill) {
         const ability = engine.skills[skill];
         if (!ability) return 0;
-        const base = engine.calculator.getAbilityModifier(character, ability);
+        const base = baseCalculator.getAbilityModifier(character, ability);
         const rank = getSkillRank(character, skill);
-        if (rank === 'expertise') return base + engine.calculator.getProficiencyBonus(character.identity.level) * 2;
-        if (rank === 'proficient') return base + engine.calculator.getProficiencyBonus(character.identity.level);
+        if (rank === 'expertise') return base + baseCalculator.getProficiencyBonus(character.identity.level) * 2;
+        if (rank === 'proficient') return base + baseCalculator.getProficiencyBonus(character.identity.level);
         return base;
     }
 
     function getArmorClass(character) {
-        return engine.calculator.getArmorClass(withFeatureEffects(character));
+        return baseCalculator.getArmorClass(withFeatureEffects(character));
     }
 
     function getSpeed(character) {
-        return engine.calculator.getSpeed(withFeatureEffects(character));
+        return baseCalculator.getSpeed(withFeatureEffects(character));
     }
 
     function getInitiative(character) {
-        return engine.calculator.getInitiative(withFeatureEffects(character));
+        return baseCalculator.getInitiative(withFeatureEffects(character));
     }
 
     function getSpellAttackBonus(character) {
-        return engine.calculator.getSpellAttackBonus(withFeatureEffects(character));
+        return baseCalculator.getSpellAttackBonus(withFeatureEffects(character));
     }
 
     function getSpellSaveDC(character) {
-        return engine.calculator.getSpellSaveDC(withFeatureEffects(character));
+        return baseCalculator.getSpellSaveDC(withFeatureEffects(character));
     }
 
     function getWeaponAttackBonus(character, item) {
-        return engine.calculator.getWeaponAttackBonus(withFeatureEffects(character), item);
+        return baseCalculator.getWeaponAttackBonus(withFeatureEffects(character), item);
     }
 
     function getWeaponDamage(character, item) {
-        const result = engine.calculator.getWeaponDamage(withFeatureEffects(character), item);
+        const result = baseCalculator.getWeaponDamage(withFeatureEffects(character), item);
         const improved = getCharacterFeatures(character).find((feature) => feature.id === 'improved-divine-smite');
         if (improved && item?.mechanics?.type === 'weapon' && item.mechanics.attack?.type !== 'ranged') {
             result.push({
@@ -223,9 +229,9 @@
         getCharacterFeatures(character).forEach((feature) => {
             (feature.resources || []).forEach((resource) => {
                 const entry = { ...createFeatureResource(resource), source: { type: 'feature', id: feature.id, name: feature.name } };
-                if (entry.formula === '1 + charismaModifier') entry.maximum = 1 + Math.max(0, engine.calculator.getAbilityModifier(character, 'charisma'));
+                if (entry.formula === '1 + charismaModifier') entry.maximum = 1 + Math.max(0, baseCalculator.getAbilityModifier(character, 'charisma'));
                 if (entry.formula === '5 * paladinLevel') entry.maximum = 5 * (Number(character.identity?.level) || 0);
-                if (entry.formula === 'max(1, charismaModifier)') entry.maximum = Math.max(1, engine.calculator.getAbilityModifier(character, 'charisma'));
+                if (entry.formula === 'max(1, charismaModifier)') entry.maximum = Math.max(1, baseCalculator.getAbilityModifier(character, 'charisma'));
                 entry.current = Math.min(Number(entry.current) || entry.maximum, entry.maximum);
                 result.push(entry);
             });
@@ -251,7 +257,7 @@
     }
 
     function getDerivedData(character) {
-        const base = engine.calculator.getDerivedData(withFeatureEffects(character));
+        const base = baseCalculator.getDerivedData(withFeatureEffects(character));
         const skills = {};
         Object.keys(engine.skills).forEach((skill) => { skills[skill] = getSkillModifier(character, skill); });
         const savingThrows = {};

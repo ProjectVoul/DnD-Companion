@@ -1,33 +1,54 @@
 /* D&D Companion — structured inventory mechanics editor | D&D 5e 2014 */
 (() => {
     'use strict';
-    const engine=window.DnDCharacterEngine;if(!engine)return;
-    const TAGS=['Armor','Weapon','Shield','Focus','Ammunition','Accessory','Consumable','Potion','Treasure','Common','Quest Item','Spell Component','Magical','Material','Utility'];
-    const ABILITIES={strength:'Strength',dexterity:'Dexterity',constitution:'Constitution',intelligence:'Intelligence',wisdom:'Wisdom',charisma:'Charisma'};
-    const DAMAGE=engine.damageTypes||['acid','bludgeoning','cold','fire','force','lightning','necrotic','piercing','poison','psychic','radiant','slashing','thunder'];
-    const esc=v=>typeof escapeHTML==='function'?escapeHTML(String(v??'')):String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    const legacyType=item=>item?.mechanics?.type||({Armor:'armor',Weapon:'weapon',Shield:'shield',Focus:'focus',Accessory:'accessory'}[(item?.tags||[]).find(t=>['Armor','Weapon','Shield','Focus','Accessory'].includes(t))])||'other';
-    const category={weapon:'weapons',armor:'armor',shield:'shield',focus:'focus',accessory:'accessories'};
-    const typeTag={weapon:'Weapon',armor:'Armor',shield:'Shield',focus:'Focus',accessory:'Accessory'};
+
+    const engine = window.DnDCharacterEngine;
+    if (!engine) return;
+
+    const TAGS = ['Armor','Weapon','Shield','Focus','Ammunition','Accessory','Consumable','Potion','Treasure','Common','Quest Item','Spell Component','Magical','Material','Utility'];
+    const ABILITIES = { strength:'Strength', dexterity:'Dexterity', constitution:'Constitution', intelligence:'Intelligence', wisdom:'Wisdom', charisma:'Charisma' };
+    const DAMAGE = engine.damageTypes || ['acid','bludgeoning','cold','fire','force','lightning','necrotic','piercing','poison','psychic','radiant','slashing','thunder'];
+    const DICE = ['d4','d6','d8','d10','d12'];
+    const esc = v => typeof escapeHTML === 'function' ? escapeHTML(String(v ?? '')) : String(v ?? '').replace(/[&<>'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+    const legacyType = item => item?.mechanics?.type || ({Armor:'armor',Weapon:'weapon',Shield:'shield',Focus:'focus',Accessory:'accessory'}[(item?.tags||[]).find(t=>['Armor','Weapon','Shield','Focus','Accessory'].includes(t))]) || 'other';
+    const category = { weapon:'weapons', armor:'armor', shield:'shield', focus:'focus', accessory:'accessories' };
+    const typeTag = { weapon:'Weapon', armor:'Armor', shield:'Shield', focus:'Focus', accessory:'Accessory' };
 
     function mechanics(type,item){
-        if(type==='weapon')return engine.createWeaponMechanics(item?.mechanics?.type==='weapon'?item.mechanics:{});
-        if(type==='armor')return engine.createArmorMechanics(item?.mechanics?.type==='armor'?item.mechanics:{});
-        if(type==='shield')return engine.createShieldMechanics(item?.mechanics?.type==='shield'?item.mechanics:{});
-        return{};
+        if(type==='weapon') return engine.createWeaponMechanics(item?.mechanics?.type==='weapon' ? item.mechanics : {});
+        if(type==='armor') return engine.createArmorMechanics(item?.mechanics?.type==='armor' ? item.mechanics : {});
+        if(type==='shield') return engine.createShieldMechanics(item?.mechanics?.type==='shield' ? item.mechanics : {});
+        return {};
     }
+
+    function damageRowHTML(damage,index){
+        const d = damage || engine.createDamageComponent({});
+        const ability = d.ability || '';
+        return `<div class="engine-damage-row" data-damage-index="${index}">
+            <div class="engine-inline-fields engine-damage-fields">
+                <input class="ce-damage-count" type="number" min="0" step="1" value="${Number(d.dice?.count)||0}" aria-label="Damage dice count">
+                <select class="ce-damage-die" aria-label="Damage die">${DICE.map(x=>`<option value="${x}" ${d.dice?.die===x?'selected':''}>${x}</option>`).join('')}</select>
+                <select class="ce-damage-type" aria-label="Damage type">${DAMAGE.map(x=>`<option value="${x}" ${d.type===x?'selected':''}>${x[0].toUpperCase()+x.slice(1)}</option>`).join('')}</select>
+                <button type="button" class="engine-damage-remove" onclick="removeCharacterEngineDamageRow(${index})" aria-label="Remove damage component" ${index===0?'disabled':''}>−</button>
+            </div>
+            <label>Damage ability<select class="ce-damage-ability"><option value="" ${!ability?'selected':''}>Same as attack</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
+        </div>`;
+    }
+
     function mechanicsHTML(type,item){
-        const m=mechanics(type,item);
+        const m = mechanics(type,item);
         if(type==='weapon'){
-            const a=m.attack||{},d=(m.damage||[])[0]||engine.createDamageComponent({});
+            const a=m.attack||{};
+            const damages = Array.isArray(m.damage)&&m.damage.length ? m.damage : [engine.createDamageComponent({})];
             return `<div class="engine-item-mechanics"><h3>Weapon mechanics</h3>
                 <label>Attack type<select id="ce-attack-type"><option value="melee" ${a.type==='melee'?'selected':''}>Melee</option><option value="ranged" ${a.type==='ranged'?'selected':''}>Ranged</option></select></label>
                 <label>Weapon proficiency category<select id="ce-prof-category"><option value="none" ${item?.proficiency?.type!=='simple'&&item?.proficiency?.type!=='martial'?'selected':''}>Specific weapon / none</option><option value="simple" ${item?.proficiency?.type==='simple'?'selected':''}>Simple weapon</option><option value="martial" ${item?.proficiency?.type==='martial'?'selected':''}>Martial weapon</option></select></label>
-                <p class="engine-item-help">Proficiency belongs to the character. This describes the weapon's proficiency category.</p>
+                <p class="engine-item-help">This describes the weapon's proficiency category. Actual proficiency belongs to the character.</p>
                 <label>Attack ability<select id="ce-attack-ability"><option value="auto" ${!a.ability?'selected':''}>Automatic</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${a.ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
-                <label>Damage dice<div class="engine-inline-fields"><input id="ce-damage-count" type="number" min="0" step="1" value="${Number(d.dice?.count)||0}"><select id="ce-damage-die">${['d4','d6','d8','d10','d12'].map(x=>`<option value="${x}" ${d.dice?.die===x?'selected':''}>${x}</option>`).join('')}</select></div></label>
-                <label>Damage type<select id="ce-damage-type">${DAMAGE.map(x=>`<option value="${x}" ${d.type===x?'selected':''}>${x[0].toUpperCase()+x.slice(1)}</option>`).join('')}</select></label>
-                <label>Damage ability<select id="ce-damage-ability"><option value="" ${!d.ability?'selected':''}>Same as attack</option>${Object.entries(ABILITIES).map(([k,v])=>`<option value="${k}" ${d.ability===k?'selected':''}>${v}</option>`).join('')}</select></label>
+                <div class="engine-damage-editor"><div class="engine-section-heading"><strong>Damage</strong><button type="button" class="engine-damage-add" onclick="addCharacterEngineDamageRow()" aria-label="Add damage component">+</button></div>
+                    <p class="engine-item-help">Add separate components for mixed damage, e.g. 2d4 slashing + 1d8 necrotic.</p>
+                    <div id="ce-damage-list">${damages.map(damageRowHTML).join('')}</div>
+                </div>
                 <label>Weapon properties<input id="ce-properties" type="text" value="${esc((m.properties||[]).join(', '))}" placeholder="Finesse, Versatile, Heavy, ..."></label></div>`;
         }
         if(type==='armor'){
@@ -40,22 +61,53 @@
                 <label>Strength requirement<input id="ce-armor-str" type="number" min="0" step="1" value="${Number(m.strengthRequirement)||0}" placeholder="0 if none"></label>
                 <label class="engine-check-row"><input id="ce-armor-stealth" type="checkbox" ${m.stealthDisadvantage?'checked':''}> Stealth disadvantage</label></div>`;
         }
-        if(type==='shield')return `<div class="engine-item-mechanics"><h3>Shield mechanics</h3><label>AC bonus<input id="ce-shield-ac" type="number" min="0" step="1" value="${Number(m.armorBonus)||0}"></label><p class="engine-item-help">A normal shield grants +2 AC; magical or special shields may differ.</p></div>`;
+        if(type==='shield') return `<div class="engine-item-mechanics"><h3>Shield mechanics</h3><label>AC bonus<input id="ce-shield-ac" type="number" min="0" step="1" value="${Number(m.armorBonus)||0}"></label><p class="engine-item-help">A normal shield grants +2 AC; magical or special shields may differ.</p></div>`;
         return `<div class="engine-item-mechanics"><h3>Effects & modifiers</h3><p class="engine-item-help">Structured modifiers and temporary effects will be connected here after the core equipment model is tested.</p></div>`;
     }
+
     function collect(type,old){
         if(type==='weapon'){
-            const aa=document.getElementById('ce-attack-ability')?.value||'auto',props=(document.getElementById('ce-properties')?.value||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
-            return {mechanics:engine.createWeaponMechanics({attack:{type:document.getElementById('ce-attack-type')?.value||'melee',ability:aa==='auto'?null:aa,proficient:true,bonus:0},damage:[engine.createDamageComponent({dice:{count:Math.max(0,Number(document.getElementById('ce-damage-count')?.value)||0),die:document.getElementById('ce-damage-die')?.value||'d8'},type:document.getElementById('ce-damage-type')?.value||'slashing',ability:document.getElementById('ce-damage-ability')?.value||null})],properties:props}),proficiency:{type:document.getElementById('ce-prof-category')?.value||'none'}};
+            const aa=document.getElementById('ce-attack-ability')?.value||'auto';
+            const props=(document.getElementById('ce-properties')?.value||'').split(',').map(x=>x.trim().toLowerCase()).filter(Boolean);
+            const rows=Array.from(document.querySelectorAll('#ce-damage-list .engine-damage-row'));
+            const damage=rows.map(row=>engine.createDamageComponent({
+                dice:{count:Math.max(0,Number(row.querySelector('.ce-damage-count')?.value)||0),die:row.querySelector('.ce-damage-die')?.value||'d8'},
+                type:row.querySelector('.ce-damage-type')?.value||'slashing',
+                ability:row.querySelector('.ce-damage-ability')?.value||null
+            }));
+            return {mechanics:engine.createWeaponMechanics({attack:{type:document.getElementById('ce-attack-type')?.value||'melee',ability:aa==='auto'?null:aa,proficient:false,bonus:0},damage:damage.length?damage:[engine.createDamageComponent({})],properties:props}),proficiency:{type:document.getElementById('ce-prof-category')?.value||'none'}};
         }
         if(type==='armor'){
-            const mode=document.getElementById('ce-armor-dex')?.value||'none';return{mechanics:engine.createArmorMechanics({category:document.getElementById('ce-armor-category')?.value||'light',armorClass:Math.max(0,Number(document.getElementById('ce-armor-ac')?.value)||0),dexterity:{applies:mode!=='none',maximum:mode==='capped'?Math.max(0,Number(document.getElementById('ce-armor-dex-cap')?.value)||0):null},strengthRequirement:Math.max(0,Number(document.getElementById('ce-armor-str')?.value)||0),stealthDisadvantage:Boolean(document.getElementById('ce-armor-stealth')?.checked)})};
+            const mode=document.getElementById('ce-armor-dex')?.value||'none';
+            return {mechanics:engine.createArmorMechanics({category:document.getElementById('ce-armor-category')?.value||'light',armorClass:Math.max(0,Number(document.getElementById('ce-armor-ac')?.value)||0),dexterity:{applies:mode!=='none',maximum:mode==='capped'?Math.max(0,Number(document.getElementById('ce-armor-dex-cap')?.value)||0):null},strengthRequirement:Math.max(0,Number(document.getElementById('ce-armor-str')?.value)||0),stealthDisadvantage:Boolean(document.getElementById('ce-armor-stealth')?.checked)})};
         }
-        if(type==='shield')return{mechanics:engine.createShieldMechanics({armorBonus:Math.max(0,Number(document.getElementById('ce-shield-ac')?.value)||0)})};
-        return{mechanics:old?.mechanics||{}};
+        if(type==='shield') return {mechanics:engine.createShieldMechanics({armorBonus:Math.max(0,Number(document.getElementById('ce-shield-ac')?.value)||0)})};
+        return {mechanics:old?.mechanics||{}};
     }
+
+    window.addCharacterEngineDamageRow=function(){
+        const list=document.getElementById('ce-damage-list');
+        if(!list)return;
+        const index=list.querySelectorAll('.engine-damage-row').length;
+        list.insertAdjacentHTML('beforeend',damageRowHTML(engine.createDamageComponent({}),index));
+    };
+
+    window.removeCharacterEngineDamageRow=function(index){
+        const list=document.getElementById('ce-damage-list');
+        if(!list)return;
+        const rows=list.querySelectorAll('.engine-damage-row');
+        if(rows.length<=1||!rows[index])return;
+        rows[index].remove();
+        list.querySelectorAll('.engine-damage-row').forEach((row,i)=>{
+            row.dataset.damageIndex=i;
+            const button=row.querySelector('.engine-damage-remove');
+            if(button){button.setAttribute('onclick',`removeCharacterEngineDamageRow(${i})`);button.disabled=i===0;}
+        });
+    };
+
     function open(existing=null){
-        const type=legacyType(existing),selected=existing?.tags||[],overlay=document.createElement('div');overlay.className='inventory-form-overlay';window.__ceEditingItem=existing||null;
+        const type=legacyType(existing),selected=existing?.tags||[],overlay=document.createElement('div');
+        overlay.className='inventory-form-overlay';window.__ceEditingItem=existing||null;
         overlay.innerHTML=`<div class="inventory-form-modal engine-item-modal"><button class="rest-close" onclick="this.closest('.inventory-form-overlay').remove()">×</button><h2>${existing?'Edit Item':'Add Item'}</h2>
             <label>Name<input id="inventory-form-name" value="${esc(existing?.name||'')}" placeholder="Item name"></label><label>Icon<input id="inventory-form-icon" value="${esc(existing?.icon||'📦')}" maxlength="4"></label><label>Description<textarea id="inventory-form-description" placeholder="Describe the item...">${esc(existing?.description||'')}</textarea></label>
             <div class="engine-form-grid"><label>Quantity<input id="inventory-form-quantity" type="number" min="0" step="1" value="${existing?.quantity??1}"></label><label>Weight (kg)<input id="inventory-form-weight" type="number" min="0" step="0.01" value="${existing?.weight??''}"></label></div>
@@ -63,8 +115,12 @@
             <label>Properties (display text)<input id="inventory-form-properties" value="${esc(existing?.properties?.join(', ')||'')}" placeholder="Separate properties with commas"></label><label class="inventory-checkbox-label"><input id="inventory-form-magical" type="checkbox" ${existing?.magical?'checked':''}> Magical item</label>
             <div class="inventory-form-tags"><strong>Tags</strong><small>Choose up to 3</small><div class="inventory-tag-options">${TAGS.map(t=>`<label><input type="checkbox" class="inventory-tag-checkbox" value="${esc(t)}" ${selected.includes(t)?'checked':''} onchange="limitInventoryTags(this)">${esc(t)}</label>`).join('')}</div></div>
             <button class="inventory-form-submit" onclick="saveCharacterEngineInventoryItem('${esc(existing?.id||'')}')">${existing?'Save Changes':'Add Item'}</button></div>`;
-        document.body.appendChild(overlay);const typeSelect=document.getElementById('ce-type'),box=document.getElementById('ce-mechanics');const render=()=>{box.innerHTML=mechanicsHTML(typeSelect.value,existing);const mode=document.getElementById('ce-armor-dex'),row=document.getElementById('ce-dex-cap-row');if(row)row.style.display=mode?.value==='capped'?'':'none';mode?.addEventListener('change',()=>{if(row)row.style.display=mode.value==='capped'?'':'none';});};typeSelect.addEventListener('change',render);render();
+        document.body.appendChild(overlay);
+        const typeSelect=document.getElementById('ce-type'),box=document.getElementById('ce-mechanics');
+        const render=()=>{box.innerHTML=mechanicsHTML(typeSelect.value,existing);const mode=document.getElementById('ce-armor-dex'),row=document.getElementById('ce-dex-cap-row');if(row)row.style.display=mode?.value==='capped'?'':'none';mode?.addEventListener('change',()=>{if(row)row.style.display=mode.value==='capped'?'':'none';});};
+        typeSelect.addEventListener('change',render);render();
     }
+
     window.saveCharacterEngineInventoryItem=function(id=''){
         const existing=id?inventoryItems.find(i=>i.id===id):null,name=document.getElementById('inventory-form-name')?.value.trim(),quantity=Number(document.getElementById('inventory-form-quantity')?.value),weightField=document.getElementById('inventory-form-weight')?.value,weight=weightField===''?null:Number(weightField);
         if(!name){alert('Please enter an item name.');return;}if(!Number.isFinite(quantity)||quantity<0){alert('Quantity must be 0 or greater.');return;}if(weight!==null&&(!Number.isFinite(weight)||weight<0)){alert('Weight must be 0 or greater.');return;}
@@ -75,5 +131,8 @@
         if(type!=='other'){item.category=category[type];item.location=item.equipped?'equipment':'equipment';item.inventorySection='equipment';}else if(!item.equipped){item.category='miscellaneous';item.location='miscellaneous';item.inventorySection='miscellaneous';}
         if(!existing)inventoryItems.push(item);saveInventory();document.querySelector('.inventory-form-overlay')?.remove();window.__ceEditingItem=null;showInventorySection(item.location||'miscellaneous');
     };
-    window.openInventoryItemForm=open;window.openAddItemForm=()=>open(null);window.openEditItemForm=id=>{const item=inventoryItems.find(i=>i.id===id);if(item)open(item);};
+
+    window.openInventoryItemForm=open;
+    window.openAddItemForm=()=>open(null);
+    window.openEditItemForm=id=>{const item=inventoryItems.find(i=>i.id===id);if(item)open(item);};
 })();

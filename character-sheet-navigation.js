@@ -2,6 +2,8 @@
 (() => {
     'use strict';
 
+    let opening = false;
+
     function isHome() {
         return Boolean(document.getElementById('character-entry'));
     }
@@ -14,67 +16,100 @@
         entry.classList.remove('character-sheet-loading');
         entry.dataset.sheetError = 'true';
         entry.title = 'Character Sheet unavailable — check console';
+        opening = false;
+    }
+
+    function markOpening() {
+        const entry = document.getElementById('character-entry');
+        if (!entry) return;
+        entry.classList.add('character-sheet-loading');
+        entry.setAttribute('aria-busy', 'true');
+        delete entry.dataset.sheetError;
+    }
+
+    function invokeSheet(attempt = 0) {
+        if (!isHome()) {
+            opening = false;
+            return false;
+        }
+
+        const entryPoint =
+            typeof window.openCharacterSheet === 'function'
+                ? window.openCharacterSheet
+                : typeof window.showCharacterSheet === 'function'
+                    ? window.showCharacterSheet
+                    : null;
+
+        if (!entryPoint) {
+            if (attempt < 40) {
+                setTimeout(() => invokeSheet(attempt + 1), 100);
+                return true;
+            }
+            showEntryError(new Error('Character Sheet entry point did not become available.'));
+            return false;
+        }
+
+        try {
+            Promise.resolve(entryPoint())
+                .then(result => {
+                    // The bootstrap can legitimately return false while its
+                    // renderer is still settling. Retry instead of requiring
+                    // the player to tap the character repeatedly.
+                    if (result === false && attempt < 40 && isHome()) {
+                        setTimeout(() => invokeSheet(attempt + 1), 100);
+                        return;
+                    }
+                    if (result === false && isHome()) {
+                        showEntryError(new Error('Character Sheet renderer unavailable.'));
+                        return;
+                    }
+                    opening = false;
+                })
+                .catch(showEntryError);
+            return true;
+        } catch (error) {
+            showEntryError(error);
+            return false;
+        }
     }
 
     function openSheet() {
         if (!isHome()) return false;
+        if (opening) return true;
 
-        const entry = document.getElementById('character-entry');
-        if (entry) {
-            entry.classList.add('character-sheet-loading');
-            entry.setAttribute('aria-busy', 'true');
-        }
-
-        // Prefer the public entry point exposed by character-sheet.js.
-        // It owns the dependency bootstrap and returns a Promise while the
-        // rules/renderer are loading.
-        if (typeof window.openCharacterSheet === 'function') {
-            try {
-                Promise.resolve(window.openCharacterSheet()).catch(showEntryError);
-                return true;
-            } catch (error) {
-                showEntryError(error);
-                return false;
-            }
-        }
-
-        // Fallback for a fully loaded sheet where the public bootstrap is
-        // unavailable but the renderer itself is present.
-        if (typeof window.showCharacterSheet === 'function') {
-            try {
-                Promise.resolve(window.showCharacterSheet()).catch(showEntryError);
-                return true;
-            } catch (error) {
-                showEntryError(error);
-                return false;
-            }
-        }
-
-        showEntryError(new Error('Character Sheet entry point is not loaded.'));
-        return false;
+        opening = true;
+        markOpening();
+        return invokeSheet();
     }
 
-    function bindCharacterEntry() {
-        const entry = document.getElementById('character-entry');
-        if (!entry || entry.dataset.sheetBound === 'true') return;
-        entry.dataset.sheetBound = 'true';
-        entry.addEventListener('click', event => {
-            if (event.target.closest('button, input, select, a')) return;
-            openSheet();
-        });
-        entry.addEventListener('keydown', event => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                openSheet();
-            }
-        });
-    }
+    // Event delegation is intentional: the Home view can be recreated by
+    // navigation code, so binding directly to one header node is fragile.
+    // This listener survives DOM replacement and works for every fresh Home.
+    document.addEventListener('click', event => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
 
-    function bind() {
-        bindCharacterEntry();
-    }
+        const entry = target.closest('#character-entry');
+        if (!entry) return;
+        if (target.closest('button, input, select, a')) return;
 
-    bind();
-    [50, 150, 300, 600, 1000].forEach(delay => setTimeout(bind, delay));
-    window.addCharacterSheetShortcut = bind;
+        event.preventDefault();
+        openSheet();
+    }, true);
+
+    document.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        const entry = target.closest('#character-entry');
+        if (!entry) return;
+
+        event.preventDefault();
+        openSheet();
+    }, true);
+
+    // Keep the public helper for any other section that wants to expose the
+    // Character Sheet shortcut. It does not depend on a particular DOM node.
+    window.addCharacterSheetShortcut = openSheet;
 })();

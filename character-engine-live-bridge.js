@@ -10,6 +10,9 @@
         'Breastplate': 14, 'Half Plate': 15, 'Ring Mail': 14,
         'Chain Mail': 16, 'Splint Armor': 17, 'Plate Armor': 18
     };
+    const lightArmor = new Set(['Padded Armor', 'Leather Armor', 'Studded Leather']);
+    const mediumArmor = new Set(['Hide Armor', 'Chain Shirt', 'Scale Mail', 'Breastplate', 'Half Plate']);
+    const heavyArmor = new Set(['Ring Mail', 'Chain Mail', 'Splint Armor', 'Plate Armor']);
 
     function legacyBonus(item) {
         const props = Array.isArray(item?.properties) ? item.properties : [];
@@ -18,6 +21,13 @@
             if (match) return Number(match[1]);
         }
         return 0;
+    }
+
+    function legacyArmorCategory(name) {
+        if (lightArmor.has(name)) return 'light';
+        if (mediumArmor.has(name)) return 'medium';
+        if (heavyArmor.has(name)) return 'heavy';
+        return 'light';
     }
 
     function normalizeItem(item) {
@@ -32,23 +42,27 @@
         if (item.equipped !== undefined) item.equipment.equipped = Boolean(item.equipped);
         if (item.equipment.equipped !== undefined) item.equipped = Boolean(item.equipment.equipped);
 
-        const structured = item.mechanics && Object.keys(item.mechanics).length > 0;
-        if (type === 'armor' && !structured) {
-            const bonus = legacyBonus(item);
+        if (type === 'armor') {
+            const existing = item.mechanics || {};
+            const hasLegacyBase = legacyArmorBase[item.name] !== undefined;
             item.mechanics = engine.createArmorMechanics({
-                category: 'heavy',
-                armorClass: legacyArmorBase[item.name] || 10,
-                strengthRequirement: item.name === 'Plate Armor' ? 15 : 0
+                ...existing,
+                category: existing.category || (hasLegacyBase ? legacyArmorCategory(item.name) : 'light'),
+                armorClass: Number(existing.armorClass) || legacyArmorBase[item.name] || 10,
+                strengthRequirement: Number(existing.strengthRequirement) || (item.name === 'Chain Mail' ? 13 : item.name === 'Splint Armor' ? 15 : item.name === 'Plate Armor' ? 15 : 0)
             });
-            if (bonus) item.modifiers = [...(item.modifiers || []), {
-                id: `legacy-ac-${item.id || item.name}`,
-                target: 'armorClass', mode: 'add', value: bonus, sourceName: item.name
-            }];
+            const bonus = legacyBonus(item);
+            if (bonus && !(item.modifiers || []).some(m => m.id === `legacy-ac-${item.id || item.name}`)) {
+                item.modifiers = [...(item.modifiers || []), {
+                    id: `legacy-ac-${item.id || item.name}`,
+                    target: 'armorClass', mode: 'add', value: bonus, sourceName: item.name
+                }];
+            }
         }
-        if (type === 'shield' && !structured) {
-            item.mechanics = engine.createShieldMechanics({ armorBonus: legacyBonus(item) || 2 });
+        if (type === 'shield') {
+            item.mechanics = engine.createShieldMechanics({ ...(item.mechanics || {}), armorBonus: Number(item.mechanics?.armorBonus) || legacyBonus(item) || 2 });
         }
-        if (type === 'weapon' && !structured) {
+        if (type === 'weapon') {
             item.mechanics = engine.createWeaponMechanics(item.mechanics || {});
         }
         return item;

@@ -16,12 +16,17 @@
     if (type) item.equipment.type = type;
 
     if (type === 'armor' && name === 'plate armor') {
+      const old = item.mechanics || {};
+      const legacyBase = Number(old.armorClass) === 10;
       item.mechanics = engine.createArmorMechanics({
-        ...(item.mechanics || {}),
-        type: 'armor', category: 'heavy', armorClass: 18,
-        strengthRequirement: 15, stealthDisadvantage: true
+        ...old,
+        type: 'armor', category: 'heavy', armorClass: legacyBase ? 18 : (Number(old.armorClass) || 18),
+        strengthRequirement: Number(old.strengthRequirement) || 15,
+        stealthDisadvantage: old.stealthDisadvantage ?? true
       });
-      item.modifiers = (item.modifiers || []).filter(m => !String(m.id || '').startsWith('repair-v5-armor-ac-') && !String(m.id || '').startsWith('repair-v6-armor-ac-'));
+      if (legacyBase) {
+        item.modifiers = (item.modifiers || []).filter(m => !String(m.id || '').startsWith('repair-v5-armor-ac-') && !String(m.id || '').startsWith('repair-v6-armor-ac-'));
+      }
     }
 
     if (type === 'shield' && name === 'shield of bahamut') {

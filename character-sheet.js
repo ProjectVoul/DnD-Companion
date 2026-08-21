@@ -16,15 +16,15 @@
     ];
 
     let renderer = null;
-    let failed = false;
     let resolveReady;
     const ready = new Promise(resolve => { resolveReady = resolve; });
 
-    // Keep a stable public entry point while the rule engine loads asynchronously.
+    // Stable public entry point while the rule engine loads asynchronously.
     window.showCharacterSheet = function (...args) {
-        ready.then(() => {
+        return ready.then(() => {
             if (typeof renderer === 'function') return renderer(...args);
             console.error('Character Sheet renderer was not loaded.');
+            return false;
         });
     };
 
@@ -38,7 +38,7 @@
             }
 
             const script = document.createElement('script');
-            script.src = `${src}?v=20260821-sheetfix`;
+            script.src = `${src}?v=20260821-sheetaccess`;
             script.dataset.characterEngineSrc = src;
             script.addEventListener('load', () => {
                 script.dataset.loaded = 'true';
@@ -51,7 +51,7 @@
 
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'character-sheet.css?v=20260821-sheetfix';
+    style.href = 'character-sheet.css?v=20260821-sheetaccess';
     document.head.appendChild(style);
 
     (async () => {
@@ -69,23 +69,12 @@
             }
 
             if (typeof renderer !== 'function') {
-                failed = true;
                 console.error('Character Sheet renderer was not found.');
             }
         } catch (error) {
-            failed = true;
             console.error('Character Sheet bootstrap failed.', error);
         } finally {
             resolveReady();
         }
     })();
-
-    // Delegated navigation is deliberately independent from the renderer's own binding.
-    document.addEventListener('click', event => {
-        const target = event.target.closest?.('.character-summary, .character-summary h1, .character-header');
-        if (!target || !document.getElementById('app')?.querySelector('.character-summary')) return;
-        if (event.target.closest('button, input, select, a')) return;
-        event.preventDefault();
-        window.showCharacterSheet();
-    });
 })();

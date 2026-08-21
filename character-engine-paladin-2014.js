@@ -9,7 +9,7 @@ e.official5e2014.paladin.subclassFeatures={
  'Oath of Devotion':[
   f('devotion-sacred-weapon','Sacred Weapon','subclass',3,{actions:[{type:'action'}]}),
   f('devotion-turn-the-unholy','Turn the Unholy','subclass',3,{actions:[{type:'action'}]}),
-  f('devotion-aura','Aura of Devotion','subclass',7,{modifiers:[e.createFeatureModifier({id:'devotion-charmed-immunity',target:'condition',mode:'add',value:'charmed',condition:{type:'conscious'}})]}),
+  f('devotion-aura','Aura of Devotion','subclass',7,{modifiers:[e.createFeatureModifier({id:'devotion-charmed-immunity',target:'conditionImmunity',mode:'add',value:'charmed',condition:{type:'conscious'}})]}),
   f('devotion-purity','Purity of Spirit','subclass',15),
   f('devotion-holy-nimbus','Holy Nimbus','subclass',20,{actions:[{type:'action'}],resources:[r('holy-nimbus','Holy Nimbus',1)]})
  ],

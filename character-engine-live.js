@@ -8,8 +8,7 @@ function normalizeItem(item){
  const tagType=({Armor:'armor',Weapon:'weapon',Shield:'shield',Focus:'focus',Accessory:'accessory'}[(item.tags||[]).find(t=>['Armor','Weapon','Shield','Focus','Accessory'].includes(t))]);
  const type=item.equipment.type||item.mechanics?.type||tagType||({armor:'armor',weapons:'weapon',shield:'shield',focus:'focus',accessories:'accessory'}[item.category]);
  if(type)item.equipment.type=type;
- if(item.equipment.equipped===undefined&&item.equipped!==undefined)item.equipment.equipped=Boolean(item.equipped);
- if(item.equipped===undefined&&item.equipment.equipped!==undefined)item.equipped=Boolean(item.equipment.equipped);
+ if(item.equipped!==undefined)item.equipment.equipped=Boolean(item.equipped);else if(item.equipment.equipped!==undefined)item.equipped=Boolean(item.equipment.equipped);
  if(type==='armor'&&item.mechanics?.type!=='armor')item.mechanics=engine.createArmorMechanics(item.mechanics||{});
  if(type==='shield'&&item.mechanics?.type!=='shield')item.mechanics=engine.createShieldMechanics(item.mechanics||{});
  if(type==='weapon'&&item.mechanics?.type!=='weapon')item.mechanics=engine.createWeaponMechanics(item.mechanics||{});

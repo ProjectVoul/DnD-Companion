@@ -16,26 +16,28 @@
 
     function bindCharacterName() {
         const title = document.querySelector('.character-summary h1');
-        if (!title) return;
+        if (!title || title.dataset.sheetBound === 'true') return;
 
+        title.dataset.sheetBound = 'true';
         title.classList.add('character-sheet-link');
         title.tabIndex = 0;
         title.setAttribute('role', 'button');
         title.setAttribute('aria-label', 'Open Character Sheet');
         title.title = 'Open Character Sheet';
 
-        title.onclick = event => {
+        title.addEventListener('click', event => {
             event.preventDefault();
             event.stopPropagation();
             openSheet();
-        };
+        });
 
-        title.onkeydown = event => {
+        title.addEventListener('keydown', event => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
+                event.stopPropagation();
                 openSheet();
             }
-        };
+        });
     }
 
     function bindCharacterHeader() {
@@ -49,44 +51,14 @@
         });
     }
 
-    function addShortcut() {
-        const app = document.getElementById('app');
-        if (!app || isHome()) return;
-        const main = app.querySelector('main');
-        if (!main || document.querySelector('.global-character-sheet-shortcut')) return;
-
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'global-character-sheet-shortcut';
-        button.textContent = '↗ Character Sheet';
-        button.addEventListener('click', openSheet);
-        main.insertBefore(button, main.firstChild);
-    }
-
     function bind() {
         bindCharacterName();
         bindCharacterHeader();
-        addShortcut();
     }
 
-    document.addEventListener('click', event => {
-        const title = event.target.closest?.('.character-summary h1');
-        if (!title || !isHome()) return;
-        event.preventDefault();
-        event.stopPropagation();
-        openSheet();
-    }, true);
-
-    document.addEventListener('keydown', event => {
-        const title = event.target.closest?.('.character-summary h1');
-        if (!title || !isHome()) return;
-        if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            openSheet();
-        }
-    }, true);
-
-    // The engine is loaded asynchronously by character-sheet.js, so bind now and again after it finishes.
+    // The character engine loads asynchronously. Binding is idempotent and
+    // deliberately uses local element listeners only: no document-level
+    // capture listener, so a single user click produces a single open call.
     bind();
     [50, 150, 300, 600, 1000].forEach(delay => setTimeout(bind, delay));
 

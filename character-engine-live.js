@@ -2,6 +2,8 @@
 (() => {
 'use strict';
 const engine=window.DnDCharacterEngine;if(!engine)return;
+const legacyArmorBase={'Padded Armor':11,'Leather Armor':11,'Studded Leather':12,'Hide Armor':12,'Chain Shirt':13,'Scale Mail':14,'Breastplate':14,'Half Plate':15,'Ring Mail':14,'Chain Mail':16,'Splint Armor':17,'Plate Armor':18};
+function legacyBonus(item){const props=Array.isArray(item.properties)?item.properties:[];for(const p of props){const m=String(p).match(/^\s*\+\s*(\d+)\s*AC\s*$/i);if(m)return Number(m[1]);}return 0;}
 function normalizeItem(item){
  if(!item||typeof item!=='object')return item;
  item.equipment=item.equipment||{};
@@ -9,9 +11,10 @@ function normalizeItem(item){
  const type=item.equipment.type||item.mechanics?.type||tagType||({armor:'armor',weapons:'weapon',shield:'shield',focus:'focus',accessories:'accessory'}[item.category]);
  if(type)item.equipment.type=type;
  if(item.equipped!==undefined)item.equipment.equipped=Boolean(item.equipped);else if(item.equipment.equipped!==undefined)item.equipped=Boolean(item.equipment.equipped);
- if(type==='armor'&&item.mechanics?.type!=='armor')item.mechanics=engine.createArmorMechanics(item.mechanics||{});
- if(type==='shield'&&item.mechanics?.type!=='shield')item.mechanics=engine.createShieldMechanics(item.mechanics||{});
- if(type==='weapon'&&item.mechanics?.type!=='weapon')item.mechanics=engine.createWeaponMechanics(item.mechanics||{});
+ const hasStructured=item.mechanics&&Object.keys(item.mechanics).length>0;
+ if(type==='armor'&&!hasStructured){const bonus=legacyBonus(item);item.mechanics=engine.createArmorMechanics({category:'heavy',armorClass:legacyArmorBase[item.name]||10,strengthRequirement:item.name==='Plate Armor'?15:0});if(bonus)item.modifiers=[...(item.modifiers||[]),{id:`legacy-ac-${item.id||item.name}`,target:'armorClass',mode:'add',value:bonus,sourceName:item.name}];}
+ if(type==='shield'&&!hasStructured){const bonus=legacyBonus(item)||2;item.mechanics=engine.createShieldMechanics({armorBonus:bonus});}
+ if(type==='weapon'&&!hasStructured)item.mechanics=engine.createWeaponMechanics(item.mechanics||{});
  return item;
 }
 function syncSpellSlots(character){try{const saved=JSON.parse(localStorage.getItem('spellSlots')||'null');if(!saved)return;character.resources=character.resources||{};character.resources.spellSlots={};Object.keys(saved).forEach(k=>{const s=saved[k];if(s&&Number(s.maximum)>0)character.resources.spellSlots[k]={current:Math.max(0,Math.min(Number(s.current)||0,Number(s.maximum)||0)),maximum:Number(s.maximum)||0};});}catch{}}

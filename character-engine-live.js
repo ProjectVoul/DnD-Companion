@@ -19,9 +19,7 @@ function getLiveCharacter(){
  const character=engine.loadCharacter();
  const liveItems=typeof inventoryItems!=='undefined'&&Array.isArray(inventoryItems)?inventoryItems:null;
  character.items=(liveItems||character.items||[]).map(normalizeItem);
- const hadAncestry=Boolean(character.dragonAncestry);
  if(engine.syncCharacterRules)engine.syncCharacterRules(character);
- if((character.identity.race==='Dragonborn'||character.identity.race==='Draconide')&&!hadAncestry){delete character.dragonAncestry;if(character.defenses)character.defenses.resistances=[];}
  return character;
 }
 engine.getLiveCharacter=getLiveCharacter;

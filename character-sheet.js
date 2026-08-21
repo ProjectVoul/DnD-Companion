@@ -186,7 +186,13 @@
         }
         app.innerHTML = previousHTML;
         previousHTML = null;
-        setTimeout(() => window.addCharacterSheetShortcut?.(), 0);
+        setTimeout(() => {
+            window.updateHP?.();
+            window.updateHitDice?.();
+            window.updateStatusDisplay?.();
+            window.updateDeathSaves?.();
+            window.addCharacterSheetShortcut?.();
+        }, 0);
     }
 
     function injectStyles() {

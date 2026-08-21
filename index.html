@@ -149,128 +149,59 @@
                 >
 
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Blinded"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Blinded" onchange="toggleCondition(this)">
                         Blinded
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Charmed"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Charmed" onchange="toggleCondition(this)">
                         Charmed
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Deafened"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Deafened" onchange="toggleCondition(this)">
                         Deafened
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Frightened"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Frightened" onchange="toggleCondition(this)">
                         Frightened
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Grappled"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Grappled" onchange="toggleCondition(this)">
                         Grappled
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Incapacitated"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Incapacitated" onchange="toggleCondition(this)">
                         Incapacitated
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Invisible"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Invisible" onchange="toggleCondition(this)">
                         Invisible
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Paralyzed"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Paralyzed" onchange="toggleCondition(this)">
                         Paralyzed
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Petrified"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Petrified" onchange="toggleCondition(this)">
                         Petrified
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Poisoned"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Poisoned" onchange="toggleCondition(this)">
                         Poisoned
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Prone"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Prone" onchange="toggleCondition(this)">
                         Prone
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Restrained"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Restrained" onchange="toggleCondition(this)">
                         Restrained
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Stunned"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Stunned" onchange="toggleCondition(this)">
                         Stunned
                     </label>
-
                     <label>
-                        <input
-                            type="checkbox"
-                            value="Unconscious"
-                            onchange="toggleCondition(this)"
-                        >
+                        <input type="checkbox" value="Unconscious" onchange="toggleCondition(this)">
                         Unconscious
                     </label>
 
@@ -285,22 +216,15 @@
 
                     <div class="resource-controls">
 
-                        <button
-                            onclick="changeHitDice(-1)"
-                        >
+                        <button onclick="changeHitDice(-1)">
                             −
                         </button>
 
-                        <span
-                            id="hit-dice-value"
-                            class="status-value"
-                        >
+                        <span id="hit-dice-value" class="status-value">
                             5 / 5
                         </span>
 
-                        <button
-                            onclick="changeHitDice(1)"
-                        >
+                        <button onclick="changeHitDice(1)">
                             +
                         </button>
 
@@ -319,44 +243,19 @@
 
                         <div>
                             <span>Successes</span>
-
                             <div class="save-dots">
-                                <button
-                                    class="save-dot"
-                                    onclick="toggleDeathSave('success', 0)"
-                                ></button>
-
-                                <button
-                                    class="save-dot"
-                                    onclick="toggleDeathSave('success', 1)"
-                                ></button>
-
-                                <button
-                                    class="save-dot"
-                                    onclick="toggleDeathSave('success', 2)"
-                                ></button>
+                                <button class="save-dot" onclick="toggleDeathSave('success', 0)"></button>
+                                <button class="save-dot" onclick="toggleDeathSave('success', 1)"></button>
+                                <button class="save-dot" onclick="toggleDeathSave('success', 2)"></button>
                             </div>
                         </div>
 
-
                         <div>
                             <span>Failures</span>
-
                             <div class="save-dots">
-                                <button
-                                    class="save-dot failure"
-                                    onclick="toggleDeathSave('failure', 0)"
-                                ></button>
-
-                                <button
-                                    class="save-dot failure"
-                                    onclick="toggleDeathSave('failure', 1)"
-                                ></button>
-
-                                <button
-                                    class="save-dot failure"
-                                    onclick="toggleDeathSave('failure', 2)"
-                                ></button>
+                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 0)"></button>
+                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 1)"></button>
+                                <button class="save-dot failure" onclick="toggleDeathSave('failure', 2)"></button>
                             </div>
                         </div>
 
@@ -371,83 +270,28 @@
 
             <section class="main-menu">
 
-                <button
-                    class="main-menu-button"
-                    onclick="openSection('abilities')"
-                >
-
-                    <span class="main-menu-icon">
-                        ⚔️
-                    </span>
-
-                    <span>
-                        Abilities
-                    </span>
-
-                    <span class="main-menu-arrow">
-                        ›
-                    </span>
-
+                <button class="main-menu-button" onclick="openSection('abilities')">
+                    <span class="main-menu-icon">⚔️</span>
+                    <span>Abilities</span>
+                    <span class="main-menu-arrow">›</span>
                 </button>
 
-
-                <button
-                    class="main-menu-button"
-                    onclick="openSection('inventory')"
-                >
-
-                    <span class="main-menu-icon">
-                        🎒
-                    </span>
-
-                    <span>
-                        Inventory
-                    </span>
-
-                    <span class="main-menu-arrow">
-                        ›
-                    </span>
-
+                <button class="main-menu-button" onclick="openSection('inventory')">
+                    <span class="main-menu-icon">🎒</span>
+                    <span>Inventory</span>
+                    <span class="main-menu-arrow">›</span>
                 </button>
 
-
-                <button
-                    class="main-menu-button"
-                    onclick="openSection('spells')"
-                >
-
-                    <span class="main-menu-icon">
-                        ✨
-                    </span>
-
-                    <span>
-                        Spells
-                    </span>
-
-                    <span class="main-menu-arrow">
-                        ›
-                    </span>
-
+                <button class="main-menu-button" onclick="openSection('spells')">
+                    <span class="main-menu-icon">✨</span>
+                    <span>Spells</span>
+                    <span class="main-menu-arrow">›</span>
                 </button>
 
-
-                <button
-                    class="main-menu-button"
-                    onclick="openRestMenu()"
-                >
-
-                    <span class="main-menu-icon">
-                        🌙
-                    </span>
-
-                    <span>
-                        Rest
-                    </span>
-
-                    <span class="main-menu-arrow">
-                        ›
-                    </span>
-
+                <button class="main-menu-button" onclick="openRestMenu()">
+                    <span class="main-menu-icon">🌙</span>
+                    <span>Rest</span>
+                    <span class="main-menu-arrow">›</span>
                 </button>
 
             </section>
@@ -458,6 +302,8 @@
 
 
     <script src="app.js"></script>
+    <script src="character-sheet.js"></script>
+    <script src="character-sheet-navigation.js"></script>
     <script src="p1-recovery.js"></script>
     <script src="p1-interaction.js"></script>
     <script src="p1-inventory-fix.js"></script>

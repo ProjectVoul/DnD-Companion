@@ -1,8 +1,21 @@
-/* D&D Companion — class/race migration bridge, 5e 2014 */
+/* D&D Companion — class/race/subclass synchronization | D&D 5e 2014 */
 (() => {
 'use strict';
-const engine=window.DnDCharacterEngine;if(!engine||!engine.syncCharacterRules)return;
-const baseSync=engine.syncCharacterRules,baseApply=engine.applyCharacterSelection,norm=r=>r==='Draconide'?'Dragonborn':r,abilities=['strength','dexterity','constitution','intelligence','wisdom','charisma'];
-engine.syncCharacterRules=character=>{const c=baseSync(character);c.ruleState=c.ruleState||{};if(!c.ruleState.raceMigrationInitialized){const r=norm(c.identity?.race);c.ruleState.legacyRace=r;c.ruleState.raceLegacyBonuses=JSON.parse(JSON.stringify(engine.characterOptions?.races?.[r]?.abilityBonuses||{}));c.ruleState.raceAppliedBonuses={};c.abilityScoreBonuses={};c.ruleState.raceMigrationInitialized=true;}const auto=new Set(c.ruleState.autoFeatureIds||[]),manual=(c.features||[]).filter(f=>!auto.has(f.id)),generated=[],defs=engine.official5e2014?.paladin?.coreFeatures;if(c.identity?.class==='Paladin'&&defs)Object.values(defs).forEach(f=>{if((Number(c.identity.level)||1)>=(Number(f.level)||1))generated.push(JSON.parse(JSON.stringify(f)));});c.features=[...manual,...generated];c.ruleState.autoFeatureIds=generated.map(f=>f.id);return c;};
-engine.applyCharacterSelection=(c,type,value)=>{if(type!=='race')return baseApply(c,type,value);c.ruleState=c.ruleState||{};const races=engine.characterOptions?.races||{},old=norm(c.ruleState.legacyRace||c.identity?.race),next=norm(value);if(old===next&&!c.ruleState.raceExplicitlyApplied){c.identity.race=value;c.ruleState.raceExplicitlyApplied=true;c.abilityScoreBonuses={};c.ruleState.raceAppliedBonuses={};return c;}const oldBonus=c.ruleState.raceAppliedBonuses&&Object.keys(c.ruleState.raceAppliedBonuses).length?c.ruleState.raceAppliedBonuses:c.ruleState.raceLegacyBonuses||{};abilities.forEach(a=>{c.abilityScores[a]=(Number(c.abilityScores?.[a])||0)-(Number(oldBonus[a])||0);});c.identity.race=value;c.abilityScoreBonuses=JSON.parse(JSON.stringify(races[next]?.abilityBonuses||{}));c.ruleState.raceAppliedBonuses=JSON.parse(JSON.stringify(c.abilityScoreBonuses));c.ruleState.raceLegacyBonuses={};c.ruleState.legacyRace=next;c.ruleState.raceExplicitlyApplied=true;baseSync(c);return c;};
+const e=window.DnDCharacterEngine;if(!e||!e.syncCharacterRules)return;
+const baseSync=e.syncCharacterRules,baseApply=e.applyCharacterSelection;
+const normRace=r=>r==='Draconide'?'Dragonborn':r;
+const ensure=c=>{c.ruleState=c.ruleState||{};c.choices=c.choices||{};c.features=Array.isArray(c.features)?c.features:[];c.proficiencies=c.proficiencies||{};c.proficiencies.skills=c.proficiencies.skills||{};c.proficiencies.savingThrows=c.proficiencies.savingThrows||[];c.resources=c.resources||{};c.resources.hp=c.resources.hp||{maximum:1,current:1,temporary:0};return c;};
+const clone=v=>JSON.parse(JSON.stringify(v));
+function generated(c){
+ const out=[],cls=c.identity?.class,lv=Math.max(1,Number(c.identity?.level)||1),p=e.official5e2014?.paladin;
+ if(cls==='Paladin'&&p?.coreFeatures){Object.values(p.coreFeatures).forEach(f=>{if(lv>=Number(f.level||1))out.push(clone(f));});
+  if(lv>=2){const style=c.choices?.fightingStyle||c.fightingStyle,chosen=style&&p.fightingStyles?.[style];out.push(chosen?clone(chosen):e.createFeature({id:'fighting-style-choice',name:'Fighting Style',type:'class',level:2,description:'Choose a fighting style.'}));}
+  [4,8,12,16,19].forEach(n=>{if(lv>=n)out.push(e.createFeature({id:`asi-${n}`,name:'Ability Score Improvement',type:'class',level:n}));});
+ }
+ const sub=p?.subclassFeatures?.[c.identity?.subclass]||[];sub.forEach(f=>{if(lv>=Number(f.level||1))out.push(clone(f));});
+ const race=p?.raceFeatures?.[normRace(c.identity?.race)]||[];race.forEach(f=>{if(lv>=Number(f.level||1))out.push(clone(f));});
+ return out;
+}
+e.syncCharacterRules=c=>{const out=baseSync(c)||c;ensure(out);const auto=new Set(out.ruleState.autoFeatureIds||[]);const manual=out.features.filter(f=>!auto.has(f.id));const gen=generated(out);out.features=[...manual,...gen];out.ruleState.autoFeatureIds=gen.map(f=>f.id);if(out.resources?.hp&&!out.resources.hp.manualMaximum&&e.getHitPointMaximum)out.resources.hp.maximum=e.getHitPointMaximum(out);return out;};
+e.applyCharacterSelection=(c,type,value)=>{ensure(c);if(type==='fightingStyle'){c.choices.fightingStyle=value;c.fightingStyle=value;e.syncCharacterRules(c);return c;}const out=baseApply(c,type,value);e.syncCharacterRules(out);return out;};
 })();

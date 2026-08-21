@@ -28,7 +28,7 @@
                 return;
             }
             const script = document.createElement('script');
-            script.src = `${src}?v=20260821-sheetentry2`;
+            script.src = `${src}?v=20260821-sheetentry3`;
             script.dataset.characterEngineSrc = src;
             script.addEventListener('load', () => {
                 script.dataset.loaded = 'true';
@@ -53,13 +53,17 @@
 
     const style = document.createElement('link');
     style.rel = 'stylesheet';
-    style.href = 'character-sheet.css?v=20260821-sheetentry2';
+    style.href = 'character-sheet.css?v=20260821-sheetentry3';
     document.head.appendChild(style);
 
     (async () => {
         for (const script of scripts) {
             await loadScript(script);
             if (script === 'character-sheet-v3.js' && typeof window.showCharacterSheet === 'function' && window.showCharacterSheet !== window.openCharacterSheet) {
+                renderer = window.showCharacterSheet;
+            }
+            // Keep the adapter in the normal rendering path when it is available.
+            if (script === 'character-sheet-v4-adapter.js' && typeof window.showCharacterSheet === 'function' && window.showCharacterSheet !== window.openCharacterSheet) {
                 renderer = window.showCharacterSheet;
             }
         }

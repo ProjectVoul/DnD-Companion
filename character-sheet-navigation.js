@@ -52,9 +52,6 @@
         try {
             Promise.resolve(entryPoint())
                 .then(result => {
-                    // The bootstrap can legitimately return false while its
-                    // renderer is still settling. Retry instead of requiring
-                    // the player to tap the character repeatedly.
                     if (result === false && attempt < 40 && isHome()) {
                         setTimeout(() => invokeSheet(attempt + 1), 100);
                         return;
@@ -82,9 +79,9 @@
         return invokeSheet();
     }
 
-    // Event delegation is intentional: the Home view can be recreated by
-    // navigation code, so binding directly to one header node is fragile.
-    // This listener survives DOM replacement and works for every fresh Home.
+    // One navigation owner for Home → Character Sheet.
+    // Capture-phase handling intentionally stops the legacy inline/direct
+    // handlers from firing a second render for the same user action.
     document.addEventListener('click', event => {
         const target = event.target;
         if (!(target instanceof Element)) return;
@@ -94,6 +91,7 @@
         if (target.closest('button, input, select, a')) return;
 
         event.preventDefault();
+        event.stopImmediatePropagation();
         openSheet();
     }, true);
 
@@ -106,10 +104,10 @@
         if (!entry) return;
 
         event.preventDefault();
+        event.stopImmediatePropagation();
         openSheet();
     }, true);
 
-    // Keep the public helper for any other section that wants to expose the
-    // Character Sheet shortcut. It does not depend on a particular DOM node.
+    // Public helper for other sections that want to expose the same shortcut.
     window.addCharacterSheetShortcut = openSheet;
 })();

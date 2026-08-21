@@ -9,10 +9,11 @@
 
     function abilityModifier(score) { return Math.floor(((Number(score) || 0) - 10) / 2); }
     function proficiencyBonus(level) { const l=Math.max(1,Number(level)||1); return 2+Math.floor((l-1)/4); }
+    function isEquipped(item){return item?.equipment?.equipped===true||item?.equipped===true;}
     function getAllModifiers(character) {
         const modifiers=[];
         (character.items||[]).forEach(item=>{
-            if(!item?.equipment?.equipped) return;
+            if(!isEquipped(item)) return;
             (item.modifiers||[]).forEach(modifier=>modifiers.push({...modifier,source:modifier.source||{type:'item',id:item.id},sourceName:modifier.sourceName||item.name||'Item'}));
         });
         (character.activeEffects||[]).filter(effect=>effect?.active!==false).forEach(effect=>modifiers.push({id:effect.id,source:effect.source,sourceName:effect.source?.name||effect.name||'Active Effect',target:effect.target,mode:effect.mode,value:effect.value,condition:effect.condition}));
@@ -24,7 +25,8 @@
 
     function getEffectiveAbilityScore(character,ability){
         const base=Number(character.abilityScores?.[ability])||0;
-        return applyTargetModifiers(base,character,ability);
+        const racial=Number(character.abilityScoreBonuses?.[ability])||0;
+        return applyTargetModifiers(base+racial,character,ability);
     }
     function getAbilityModifier(character,ability){return abilityModifier(getEffectiveAbilityScore(character,ability));}
 
@@ -63,18 +65,12 @@
         return (item.mechanics.damage||[]).map(damage=>{
             const damageAbility=ABILITIES.includes(damage?.ability)?damage.ability:attackAbility;
             const abilityMod=getAbilityModifier(character,damageAbility);
-            return {
-                dice:clone(damage.dice||{count:0,die:null}),
-                type:damage.type,
-                ability:damageAbility,
-                modifier:(Number(damage.modifier)||0)+abilityMod,
-                source:damage.source||{type:'item',id:item.id}
-            };
+            return {dice:clone(damage.dice||{count:0,die:null}),type:damage.type,ability:damageAbility,modifier:(Number(damage.modifier)||0)+abilityMod,source:damage.source||{type:'item',id:item.id}};
         });
     }
 
-    function getEquippedArmor(character){return(character.items||[]).find(item=>item?.equipment?.equipped&&item?.mechanics?.type==='armor')||null;}
-    function getEquippedShield(character){return(character.items||[]).find(item=>item?.equipment?.equipped&&item?.mechanics?.type==='shield')||null;}
+    function getEquippedArmor(character){return(character.items||[]).find(item=>isEquipped(item)&&item?.mechanics?.type==='armor')||null;}
+    function getEquippedShield(character){return(character.items||[]).find(item=>isEquipped(item)&&item?.mechanics?.type==='shield')||null;}
 
     function getArmorClassBreakdown(character){
         const armor=getEquippedArmor(character), shield=getEquippedShield(character), entries=[];

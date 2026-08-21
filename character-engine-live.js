@@ -15,18 +15,12 @@ function normalizeItem(item){
  if(type==='weapon'&&item.mechanics?.type!=='weapon')item.mechanics=engine.createWeaponMechanics(item.mechanics||{});
  return item;
 }
-function getLiveCharacter(){
- const character=engine.loadCharacter();
- const liveItems=typeof inventoryItems!=='undefined'&&Array.isArray(inventoryItems)?inventoryItems:null;
- character.items=(liveItems||character.items||[]).map(normalizeItem);
- if(engine.syncCharacterRules)engine.syncCharacterRules(character);
- return character;
-}
+function getLiveCharacter(){const character=engine.loadCharacter();const liveItems=typeof inventoryItems!=='undefined'&&Array.isArray(inventoryItems)?inventoryItems:null;character.items=(liveItems||character.items||[]).map(normalizeItem);if(engine.syncCharacterRules)engine.syncCharacterRules(character);return character;}
 engine.getLiveCharacter=getLiveCharacter;
 engine.getLiveDerivedData=()=>engine.calculator.getDerivedData(getLiveCharacter());
 engine.getLiveArmorClassBreakdown=()=>engine.calculator.getArmorClassBreakdown?engine.calculator.getArmorClassBreakdown(getLiveCharacter()):null;
 engine.getLiveHitPointMaximum=()=>engine.getHitPointMaximum?engine.getHitPointMaximum(getLiveCharacter()):getLiveCharacter().resources.hp.maximum;
 const css=document.createElement('link');css.rel='stylesheet';css.href='character-sheet.css';document.head.appendChild(css);
 function loadScript(src,onload){const s=document.createElement('script');s.src=src;s.onload=onload;s.onerror=()=>console.error('Character Engine: failed to load',src);document.body.appendChild(s);}
-loadScript('character-engine-options-v2.js',()=>loadScript('character-engine-features.js',()=>loadScript('character-engine-paladin-2014.js',()=>loadScript('character-engine-class-sync-v3.js',()=>loadScript('character-sheet-v3.js')))));
+loadScript('character-engine-options-v2.js',()=>loadScript('character-engine-features.js',()=>loadScript('character-engine-paladin-2014.js',()=>loadScript('character-engine-class-sync-v3.js',()=>loadScript('character-engine-weapon-rules.js',()=>loadScript('character-sheet-v3.js'))))));
 })();

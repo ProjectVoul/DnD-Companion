@@ -34,21 +34,13 @@
         `;
     }
 
-    function show() {
-        original();
+    function show(...args) {
+        original(...args);
         requestAnimationFrame(updatePreparedSpellSummary);
     }
 
+    // The navigation module owns all Home → Character Sheet input binding.
+    // Keep this adapter focused on presentation augmentation only, avoiding
+    // duplicate click/keydown handlers on the character heading.
     window.showCharacterSheet = show;
-
-    const heading = document.querySelector('.character-summary h1');
-    if (heading) {
-        heading.onclick = show;
-        heading.onkeydown = event => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                show();
-            }
-        };
-    }
 })();

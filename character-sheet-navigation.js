@@ -3,57 +3,75 @@
     'use strict';
 
     function isHome() {
-        return Boolean(document.getElementById('app')?.querySelector('.character-summary'));
+        return Boolean(document.getElementById('character-entry'));
+    }
+
+    function showEntryError(error) {
+        console.error('Character Sheet navigation failed:', error);
+        const entry = document.getElementById('character-entry');
+        if (!entry) return;
+        entry.setAttribute('aria-busy', 'false');
+        entry.classList.remove('character-sheet-loading');
+        entry.dataset.sheetError = 'true';
+        entry.title = 'Character Sheet unavailable — check console';
     }
 
     function openSheet() {
+        if (!isHome()) return false;
+
+        const entry = document.getElementById('character-entry');
+        if (entry) {
+            entry.classList.add('character-sheet-loading');
+            entry.setAttribute('aria-busy', 'true');
+        }
+
+        // Prefer the public entry point exposed by character-sheet.js.
+        // It owns the dependency bootstrap and returns a Promise while the
+        // rules/renderer are loading.
         if (typeof window.openCharacterSheet === 'function') {
-            window.openCharacterSheet();
-            return true;
+            try {
+                Promise.resolve(window.openCharacterSheet()).catch(showEntryError);
+                return true;
+            } catch (error) {
+                showEntryError(error);
+                return false;
+            }
         }
+
+        // Fallback for a fully loaded sheet where the public bootstrap is
+        // unavailable but the renderer itself is present.
         if (typeof window.showCharacterSheet === 'function') {
-            window.showCharacterSheet();
-            return true;
+            try {
+                Promise.resolve(window.showCharacterSheet()).catch(showEntryError);
+                return true;
+            } catch (error) {
+                showEntryError(error);
+                return false;
+            }
         }
+
+        showEntryError(new Error('Character Sheet entry point is not loaded.'));
         return false;
     }
 
-    function bindCharacterName() {
-        const title = document.querySelector('.character-summary h1');
-        if (!title || title.dataset.sheetBound === 'true') return;
-        title.dataset.sheetBound = 'true';
-        title.classList.add('character-sheet-link');
-        title.tabIndex = 0;
-        title.setAttribute('role', 'button');
-        title.setAttribute('aria-label', 'Open Character Sheet');
-        title.title = 'Open Character Sheet';
-        title.addEventListener('click', event => {
-            event.preventDefault();
-            event.stopPropagation();
+    function bindCharacterEntry() {
+        const entry = document.getElementById('character-entry');
+        if (!entry || entry.dataset.sheetBound === 'true') return;
+        entry.dataset.sheetBound = 'true';
+        entry.addEventListener('click', event => {
+            if (event.target.closest('button, input, select, a')) return;
             openSheet();
         });
-        title.addEventListener('keydown', event => {
+        entry.addEventListener('keydown', event => {
             if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
-                event.stopPropagation();
                 openSheet();
             }
         });
     }
 
-    function bindCharacterHeader() {
-        const header = document.querySelector('.character-header');
-        if (!header || header.dataset.sheetBound === 'true') return;
-        header.dataset.sheetBound = 'true';
-        header.addEventListener('click', event => {
-            if (event.target.closest('button, input, select, a')) return;
-            if (isHome()) openSheet();
-        });
-    }
-
     function bind() {
-        bindCharacterName();
-        bindCharacterHeader();
+        bindCharacterEntry();
     }
 
     bind();

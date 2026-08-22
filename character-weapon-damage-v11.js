@@ -1,0 +1,63 @@
+/* D&D Companion — inventory item editor v11
+ * Stable generic item form with multi-component weapon damage.
+ */
+(() => {
+  'use strict';
+  const E=()=>window.DnDCharacterEngine;
+  const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c]));
+  const n=v=>Number.isFinite(Number(v))?Number(v):0;
+  const TYPE_LABEL={weapon:'Weapons',armor:'Armor',shield:'Shields',focus:'Focus',accessory:'Accessories',other:'Other'};
+  const TYPE_ICON={weapon:'⚔️',armor:'🛡️',shield:'🛡️',focus:'✝️',accessory:'💍',other:'📦'};
+  const DICE=['d4','d6','d8','d10','d12','d20'];
+  const DAMAGE_TYPES=[['acid','Acid'],['bludgeoning','Bludgeoning'],['cold','Cold'],['fire','Fire'],['force','Force'],['lightning','Lightning'],['necrotic','Necrotic'],['piercing','Piercing'],['poison','Poison'],['psychic','Psychic'],['radiant','Radiant'],['slashing','Slashing'],['thunder','Thunder']];
+  const TAGS=['Armor','Weapon','Shield','Focus','Ammunition','Accessory','Consumable','Potion','Treasure','Quest Item','Spell Component','Magical','Material','Utility'];
+  const get=()=>{const e=E(),c=e.getLiveCharacter?e.getLiveCharacter():e.loadCharacter();if(e.syncCharacterRules)e.syncCharacterRules(c);if(e.normalizeCharacter)e.normalizeCharacter(c);return c;};
+  const save=c=>E().saveLiveCharacter?E().saveLiveCharacter(c):E().saveCharacter(c);
+  const itemType=i=>i?.mechanics?.type||i?.equipment?.type||'other';
+  const currentId=()=>document.querySelector('.inventory-v11-submit')?.dataset.itemId||'';
+  const currentDraft=()=>window.__inventoryV11Damage||[{count:1,die:'d8',type:'slashing',base:true}];
+  function escAttr(v){return esc(v);}
+  function damageRows(i){const rows=Array.isArray(i?.mechanics?.damage)?i.mechanics.damage:[];return rows.length?rows.map((d,index)=>({count:Math.max(1,Math.floor(n(d?.dice?.count)||1)),die:DICE.includes(d?.dice?.die)?d.dice.die:'d8',type:DAMAGE_TYPES.some(x=>x[0]===d?.type)?d.type:'slashing',base:index===0&&d?.ability==null})): [{count:1,die:'d8',type:'slashing',base:true}];}
+  function injectStyles(){if(document.getElementById('inventory-v11-style'))return;const s=document.createElement('style');s.id='inventory-v11-style';s.textContent=`
+    .inventory-v11-damage{border:1px solid var(--border);border-radius:12px;padding:12px;margin:10px 0;background:var(--surface-light)}
+    .inventory-v11-damage>h3{margin:0;font-size:12px;color:var(--accent-light)}
+    .inventory-v11-help{display:block;margin:4px 0 10px;color:var(--text-muted);font-size:10px;line-height:1.4}
+    .inventory-v11-row{border:1px solid var(--border);border-radius:10px;padding:10px;margin:7px 0;background:var(--surface)}
+    .inventory-v11-row-head{display:flex;align-items:center;gap:7px;margin-bottom:8px}.inventory-v11-row-head strong{font-size:11px}.inventory-v11-row-head small{flex:1;color:var(--text-muted);font-size:9px}
+    .inventory-v11-remove{width:25px;height:25px;border:1px solid var(--border);border-radius:50%;background:transparent;color:var(--text-muted);font-size:17px;cursor:pointer}.inventory-v11-remove:disabled{opacity:.3;cursor:not-allowed}
+    .inventory-v11-fields{display:grid;grid-template-columns:72px 80px 1fr;gap:7px}.inventory-v11-fields label{margin:0!important}.inventory-v11-fields label span{display:block;font-size:9px;color:var(--text-muted)}
+    .inventory-v11-fields input,.inventory-v11-fields select{width:100%;box-sizing:border-box;background:var(--surface-light);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;margin-top:4px}
+    .inventory-v11-add{width:100%;margin-top:8px;border:1px dashed var(--accent);background:transparent;color:var(--accent-light);border-radius:9px;padding:9px;cursor:pointer;font:inherit}
+    @media(max-width:430px){.inventory-v11-fields{grid-template-columns:65px 75px 1fr}}
+  `;document.head.appendChild(s);}
+  function field(id,label,type,value,extra=''){return `<label>${label}<input id="${id}" type="${type}" value="${escAttr(value??'')}" ${extra}></label>`;}
+  function renderDamageRows(){const box=document.getElementById('inventory-v11-damage-list');if(!box)return;box.innerHTML=currentDraft().map((r,index)=>{const dies=DICE.map(d=>`<option value="${d}" ${r.die===d?'selected':''}>${d}</option>`).join('');const types=DAMAGE_TYPES.map(([v,l])=>`<option value="${v}" ${r.type===v?'selected':''}>${l}</option>`).join('');return `<div class="inventory-v11-row"><div class="inventory-v11-row-head"><strong>${index===0?'Base damage':'Additional damage'}</strong><small>${index===0?'Ability modifier applies':'Extra damage only'}</small><button type="button" class="inventory-v11-remove" onclick="removeInventoryDamage(${index})" ${index===0?'disabled':''}>×</button></div><div class="inventory-v11-fields"><label><span>Quantity</span><input class="inventory-v11-count" type="number" min="1" max="20" value="${r.count}"></label><label><span>Die</span><select class="inventory-v11-die">${dies}</select></label><label><span>Damage type</span><select class="inventory-v11-type">${types}</select></label></div></div>`;}).join('');}
+  window.addInventoryDamage=()=>{window.__inventoryV11Damage=currentDraft();window.__inventoryV11Damage.push({count:1,die:'d6',type:'fire',base:false});renderDamageRows();};
+  window.removeInventoryDamage=index=>{if(index<=0)return;window.__inventoryV11Damage=currentDraft();window.__inventoryV11Damage.splice(index,1);renderDamageRows();};
+  function collectDamage(){return [...document.querySelectorAll('#inventory-v11-damage-list .inventory-v11-row')].map((row,index)=>({dice:{count:Math.max(1,Math.min(20,Math.floor(n(row.querySelector('.inventory-v11-count')?.value)||1))),die:row.querySelector('.inventory-v11-die')?.value||'d8'},type:row.querySelector('.inventory-v11-type')?.value||'slashing',ability:index===0?null:'none',modifier:0,source:null}));}
+  function typeFields(i,t){const m=i?.mechanics||{};if(t==='weapon')return `<div class="inventory-form-type-card"><h3>Weapon</h3>${field('if-attack-type','Attack type','text',m.attack?.type||'melee')}${field('if-attack-ability','Attack ability','text',m.attack?.ability||'strength')}${field('if-attack-bonus','Attack bonus','number',m.attack?.bonus??0)}<div class="inventory-v11-damage"><h3>Damage</h3><small class="inventory-v11-help">Define the base damage, then add extra damage components when needed (for example 1d6 fire).</small><div id="inventory-v11-damage-list"></div><button type="button" class="inventory-v11-add" onclick="addInventoryDamage()">＋ Add damage</button></div>${field('if-weapon-properties','Weapon properties','text',(m.properties||[]).join(', '),'placeholder="finesse, heavy, versatile..."')}</div>`;
+    if(t==='armor')return `<div class="inventory-form-type-card"><h3>Armor</h3><label>Category<select id="if-armor-category"><option value="light" ${m.category==='light'?'selected':''}>Light</option><option value="medium" ${m.category==='medium'?'selected':''}>Medium</option><option value="heavy" ${m.category==='heavy'?'selected':''}>Heavy</option></select></label>${field('if-armor-ac','Base AC','number',m.armorClass??10,'min="1" max="30"')}${field('if-armor-dex','DEX maximum','number',m.dexterity?.maximum??2,'min="0" max="10"')}${field('if-armor-str','STR requirement','number',m.strengthRequirement??0,'min="0" max="30"')}<label class="inventory-checkbox-label"><input id="if-armor-stealth" type="checkbox" ${m.stealthDisadvantage?'checked':''}> Stealth disadvantage</label></div>`;
+    if(t==='shield')return `<div class="inventory-form-type-card"><h3>Shield</h3>${field('if-shield-bonus','AC bonus','number',m.armorBonus??2,'min="0" max="10"')}</div>`;
+    return '<p class="sheet-help">No combat-specific mechanics for this type.</p>';
+  }
+  function renderTypeFields(){const box=document.getElementById('inventory-v11-type-fields');if(!box)return;const t=document.getElementById('if-type')?.value||'other',i=window.__inventoryV11Existing;box.innerHTML=typeFields(i,t);if(t==='weapon')renderDamageRows();}
+  window.refreshInventoryV11Type=renderTypeFields;
+  function openForm(existing){
+    injectStyles();window.__inventoryV11Existing=existing||null;window.__inventoryV11Damage=damageRows(existing);
+    const i=existing||{},t=itemType(i),o=document.createElement('div');o.className='inventory-form-overlay';
+    o.innerHTML=`<div class="inventory-form-modal"><button class="rest-close" type="button" onclick="this.closest('.inventory-form-overlay').remove();window.__inventoryV11Existing=null;window.__inventoryV11Damage=null">×</button><h2>${existing?'Edit Item':'Add Item'}</h2>${field('if-name','Name','text',i.name)}${field('if-icon','Icon','text',i.icon||TYPE_ICON[t]||'📦','maxlength="4"')}<label>Description<textarea id="if-description">${esc(i.description||'')}</textarea></label>${field('if-quantity','Quantity','number',i.quantity??1,'min="0" step="1"')}${field('if-weight','Weight (kg)','number',i.weight??0,'min="0" step="0.01"')}<label>Item Type<select id="if-type" onchange="refreshInventoryV11Type()">${Object.entries(TYPE_LABEL).map(([v,l])=>`<option value="${v}" ${t===v?'selected':''}>${l}</option>`).join('')}</select></label><div id="inventory-v11-type-fields"></div><label class="inventory-checkbox-label"><input id="if-magical" type="checkbox" ${i.magical?'checked':''}> Magical item</label>${field('if-properties','Properties','text',(i.properties||[]).join(', '),'placeholder="finesse, heavy, +1 AC..."')}<div class="inventory-form-tags"><strong>Tags</strong><div class="inventory-tag-options">${TAGS.map(v=>`<label><input type="checkbox" class="if-tag" value="${esc(v)}" ${(i.tags||[]).includes(v)?'checked':''}> ${esc(v)}</label>`).join('')}</div></div><button type="button" class="inventory-form-submit inventory-v11-submit" data-item-id="${esc(i.id||'')}" onclick="saveItemForm('${esc(i.id||'')}')">${existing?'Save Changes':'Add Item'}</button></div>`;
+    document.body.appendChild(o);renderTypeFields();
+  }
+  window.openItemForm=id=>{const x=get(),i=id?x.items.find(v=>String(v.id)===String(id)):null;openForm(i);};
+  window.openAddItemForm=()=>openForm(null);
+  window.saveItemForm=id=>{
+    const x=get(),e=E(),existing=id?x.items.find(v=>String(v.id)===String(id)):null,t=document.getElementById('if-type')?.value||'other',name=document.getElementById('if-name')?.value.trim();
+    if(!name){alert('Please enter an item name.');return;}
+    const i=existing||e.createItem({id:`item-${Date.now()}`});i.name=name;i.icon=document.getElementById('if-icon')?.value||TYPE_ICON[t]||'📦';i.description=document.getElementById('if-description')?.value.trim()||'';i.quantity=Math.max(0,Math.floor(n(document.getElementById('if-quantity')?.value)));i.weight=Math.max(0,n(document.getElementById('if-weight')?.value));i.magical=!!document.getElementById('if-magical')?.checked;i.properties=(document.getElementById('if-properties')?.value||'').split(',').map(v=>v.trim()).filter(Boolean);i.tags=[...document.querySelectorAll('.if-tag:checked')].map(v=>v.value);i.equipment=i.equipment||{type:null,equipped:false};i.equipment.type=t;i.inventorySection=i.equipment.equipped?'equipment':(existing?.inventorySection||'miscellaneous');
+    if(t==='weapon')i.mechanics=e.createWeaponMechanics({type:'weapon',attack:{type:document.getElementById('if-attack-type')?.value||'melee',ability:document.getElementById('if-attack-ability')?.value||'strength',proficient:true,bonus:n(document.getElementById('if-attack-bonus')?.value)},damage:collectDamage(),properties:(document.getElementById('if-weapon-properties')?.value||'').split(',').map(v=>v.trim()).filter(Boolean)});
+    else if(t==='armor'){const cat=document.getElementById('if-armor-category')?.value||'light';i.mechanics=e.createArmorMechanics({type:'armor',category:cat,armorClass:n(document.getElementById('if-armor-ac')?.value)||10,dexterity:{applies:cat!=='heavy',maximum:cat==='light'?null:n(document.getElementById('if-armor-dex')?.value)||2},strengthRequirement:n(document.getElementById('if-armor-str')?.value),stealthDisadvantage:!!document.getElementById('if-armor-stealth')?.checked});}
+    else if(t==='shield')i.mechanics=e.createShieldMechanics({type:'shield',armorBonus:n(document.getElementById('if-shield-bonus')?.value)||0});
+    else i.mechanics={type:t};
+    if(!existing)x.items.push(i);save(x);window.__inventoryV11Existing=null;window.__inventoryV11Damage=null;document.querySelector('.inventory-form-overlay')?.remove();const section=i.inventorySection==='equipment'?'equipment':'miscellaneous';window.showInventorySection(section,section==='equipment'?t:'all');
+  };
+})();

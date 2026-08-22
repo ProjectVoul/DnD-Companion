@@ -10,7 +10,6 @@
   const TYPES=[['armor','Armor','🛡️'],['weapon','Weapons','⚔️'],['shield','Shields','🛡️'],['focus','Focus','✝️'],['accessory','Accessories','💍']];
   const MISC_ICON='📦';
   const skillNames=['athletics','acrobatics','sleightOfHand','stealth','arcana','history','investigation','nature','religion','animalHandling','insight','medicine','perception','survival','deception','intimidation','performance','persuasion'];
-
   const get=()=>{const e=E(),c=e.getLiveCharacter?e.getLiveCharacter():e.loadCharacter();if(e.syncCharacterRules)e.syncCharacterRules(c);if(e.normalizeCharacter)e.normalizeCharacter(c);return c;};
   const save=c=>E().saveLiveCharacter?E().saveLiveCharacter(c):E().saveCharacter(c);
   const typeOf=i=>i?.mechanics?.type||i?.equipment?.type||'other';
@@ -57,12 +56,12 @@
       out.mechanics=out.mechanics||{};out.mechanics.type=t;
       if(t==='weapon'){
         const raw=overlay.querySelector('#ie-dice').value.trim().match(/^(\d+)d(\d+)$/i)||[null,1,8];
-        out.mechanics=E().createWeaponMechanics({...out.mechanics,type:'weapon',attack:{type:'melee',ability:overlay.querySelector('#ie-ability').value,proficient:true,bonus:n(overlay.querySelector('#ie-attack-bonus').value)},damage:[{dice:{count:Number(raw[1]),die:`d${raw[2]}`},type:overlay.querySelector('#ie-damage-type').value,ability:null,modifier:0}]});
+        out.mechanics=E().createWeaponMechanics({...out.mechanics,type:'weapon',attack:{type:'melee',ability:overlay.querySelector('#ie-ability').value,proficient:true,bonus:n(overlay.querySelector('#ie-attack-bonus').value)},damage:[{dice:{count:Number(raw[1])||1,die:`d${Number(raw[2])||8}`},type:overlay.querySelector('#ie-damage-type').value,ability:null,modifier:0}]});
       } else if(t==='armor') out.mechanics=E().createArmorMechanics({...out.mechanics,type:'armor',armorClass:n(overlay.querySelector('#ie-ac').value)||18,category:out.mechanics.category||'heavy',dexterity:out.mechanics.dexterity||{applies:false,maximum:null}});
       else if(t==='shield') out.mechanics=E().createShieldMechanics({...out.mechanics,type:'shield'});
-      if(!item)c.items=(c.items||[]).concat(out);save(c);close();renderInventorySection(section,t);renderInventory();
+      if(!item)c.items=(c.items||[]).concat(out);save(c);close();renderInventorySection(section,t);
     };
-    overlay.querySelector('.inventory-delete')?.addEventListener('click',()=>{if(!confirm(`Delete ${name}?`))return;const c=get();c.items=(c.items||[]).filter(x=>String(x.id)!==String(item.id));save(c);close();renderInventory();});
+    overlay.querySelector('.inventory-delete')?.addEventListener('click',()=>{if(!confirm(`Delete ${i.name}?`))return;const c=get();c.items=(c.items||[]).filter(x=>String(x.id)!==String(item.id));save(c);close();renderInventorySection(item.inventorySection==='equipment'?'equipment':'miscellaneous');});
   }
 
   function renderInventory(){

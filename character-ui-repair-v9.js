@@ -30,15 +30,11 @@
   const originalSheet=window.showCharacterSheet;
   if(typeof originalSheet==='function')window.showCharacterSheet=()=>{originalSheet();decorateSkills();decorateWeapons();};
 
-  // iOS/touch fallback: execute the button's native click path once on touch devices.
-  // The normal click event remains the canonical path for mouse/trackpad input.
-  let touchHandledAt=0;
+  // iOS/touch fallback for buttons. Mouse/trackpad continue through normal click events.
   document.addEventListener('touchend',ev=>{
-    const target=ev.target?.closest?.('button,[role="button"],input,select');
+    const target=ev.target?.closest?.('button,[role="button"]');
     if(!target||target.disabled)return;
-    touchHandledAt=Date.now();
     ev.preventDefault();
-    if(target.tagName==='BUTTON'||target.getAttribute('role')==='button')target.click();
+    target.click();
   },{passive:false});
-  document.addEventListener('click',ev=>{if(Date.now()-touchHandledAt<500)ev.stopImmediatePropagation();},true);
 })();

@@ -1,6 +1,7 @@
 import {CLASSES,SPECIES} from './catalog';
 import {ALL_SUBCLASSES} from './content/subclass-registry';
-import type {Ability,Character,Skill} from './types';
+import {FULL_CASTER_SLOTS,PACT_SLOTS} from './slot-tables';
+import type {Ability,Character,Skill,SpellState} from './types';
 import {SKILLS,mod,proficiency} from './rules';
 export const ABILITIES:Ability[]=['str','dex','con','int','wis','cha'];
 export const SKILL_KEYS=Object.keys(SKILLS) as Skill[];
@@ -8,7 +9,8 @@ export const CLASS_SKILL_OPTIONS:Record<string,Skill[]>={barbarian:['animalHandl
 export const CLASS_SKILL_COUNT:Record<string,number>={barbarian:2,bard:3,cleric:2,druid:2,fighter:2,monk:2,paladin:2,ranger:3,rogue:4,sorcerer:2,warlock:2,wizard:2,artificer:2};
 export const STANDARD_ARRAY=[15,14,13,12,10,8];
 export function defaultSkillStates(){return Object.fromEntries(SKILL_KEYS.map(s=>[s,{proficient:false,expertise:false}])) as Character['skillStates'];}
+function spellStateForClass(classId:string,level:number):SpellState{const def=CLASSES.find(x=>x.id===classId);const empty:SpellState={known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}};if(!def||def.spellcasting==='none')return empty;if(def.spellcasting==='pact'){const pact=PACT_SLOTS[level]??PACT_SLOTS[0];return {...empty,pactSlots:{max:pact.count,used:0,level:pact.level}}}let casterLevel=level;if(classId==='paladin'||classId==='ranger')casterLevel=Math.floor(level/2);else if(classId==='artificer')casterLevel=Math.ceil(level/2);const row=FULL_CASTER_SLOTS[Math.max(0,Math.min(20,casterLevel))]??[];return {...empty,slots:Object.fromEntries(row.map((max,i)=>[i+1,{max,used:0}]).filter(([,v])=>(v as {max:number}).max>0))};}
 export function createBlankCharacter():Character{return {id:crypto.randomUUID(),name:'New Character',species:SPECIES[0],classes:[],level:1,abilityScores:{str:8,dex:8,con:8,int:8,wis:8,cha:8},skillStates:defaultSkillStates(),savingThrowProficiency:[],proficiencyBonus:2,maxHP:1,currentHP:1,tempHP:0,hitDice:{die:8,max:1,current:1},deathSaves:{successes:0,failures:0},items:[],spellcasting:{},features:[],resources:[],conditions:[],resistances:[],fightingStyles:[],feats:[],contentSources:['phb2014','homebrew']};}
-export function setClass(c:Character,classId:string):Character{const def=CLASSES.find(x=>x.id===classId);if(!def)return c;return {...c,classes:[{id:def.id,name:def.name,level:1,spellcastingAbility:def.spellcastingAbility}],savingThrowProficiency:[...def.savingThrows],proficiencyBonus:proficiency(1),hitDice:{die:def.hitDie,max:1,current:1},maxHP:Math.max(1,def.hitDie+mod(c.abilityScores.con)),currentHP:Math.max(1,def.hitDie+mod(c.abilityScores.con))};}
+export function setClass(c:Character,classId:string):Character{const def=CLASSES.find(x=>x.id===classId);if(!def)return c;return {...c,classes:[{id:def.id,name:def.name,level:1,spellcastingAbility:def.spellcastingAbility}],savingThrowProficiency:[...def.savingThrows],proficiencyBonus:proficiency(1),hitDice:{die:def.hitDie,max:1,current:1},maxHP:Math.max(1,def.hitDie+mod(c.abilityScores.con)),currentHP:Math.max(1,def.hitDie+mod(c.abilityScores.con)),spellcasting:def.spellcasting==='none'?{}:{[classId]:spellStateForClass(classId,1)}};}
 export function availableSubclasses(classId:string){return ALL_SUBCLASSES[classId]??[];}
 export function assignSubclass(c:Character,subclassId:string):Character{const cl=c.classes[0];if(!cl)return c;const sub=availableSubclasses(cl.id).find(x=>x.id===subclassId);return sub?{...c,classes:[{...cl,subclassId:sub.id,subclassName:sub.name}]}:c;}

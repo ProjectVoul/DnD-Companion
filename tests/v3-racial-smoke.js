@@ -4,4 +4,5 @@ const storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,set
 const E=window.DnDEngineV3;
 const tiefling=E.create({abilityScores:{constitution:10,charisma:14},classes:[{classId:'warlock',level:5}],origin:{species:'tiefling',subrace:''}});const tieTraits=E.racialTraits(tiefling);assert.ok(tieTraits.length>=1);assert.ok(tieTraits.some(t=>t.effects?.some(e=>e.target==='resistance:fire')));
 const halfOrc=E.create({abilityScores:{strength:16,constitution:14},classes:[{classId:'fighter',level:5}],origin:{species:'half-orc',subrace:''}});const orcTraits=E.racialTraits(halfOrc);assert.ok(orcTraits.some(t=>t.effects?.some(e=>e.target==='skill:intimidation')));
+const hillDwarf=E.create({abilityScores:{constitution:14},classes:[{classId:'fighter',level:5}],origin:{species:'dwarf',subrace:'hill'}});hillDwarf.origin.traits=E.racialTraits(hillDwarf);assert.equal(E.hpMaximum(hillDwarf),49);
 console.log('D&D Companion v3 racial smoke tests passed');

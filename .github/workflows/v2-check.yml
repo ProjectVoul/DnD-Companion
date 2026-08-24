@@ -32,6 +32,7 @@ jobs:
       - run: node --check dnd-class-resources-ui-v3.js
       - run: node --check dnd-spellcasting-ui-v3.js
       - run: node --check dnd-combat-ui-v3.js
+      - run: node --check dnd-feats-ui-v3.js
       - run: node --check dnd-builder-v2.js
       - run: node --check dnd-builder-stability-patch-v3.js
       - run: node --check dnd-sheet-enhancements-v2.js

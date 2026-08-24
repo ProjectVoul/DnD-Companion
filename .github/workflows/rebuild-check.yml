@@ -15,5 +15,6 @@ jobs:
           cache: npm
       - run: npm install
       - run: npm run check
+      - run: npm run test:rules
       - run: node tests/rebuild-invariants.mjs
       - run: npm run build

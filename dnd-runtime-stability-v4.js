@@ -15,7 +15,10 @@
     const c=E.state;
     if(button.dataset.action==='long-rest')E.performLongRest(c);else E.performShortRest(c);
     E.save();
-    if(window.DnDAppV2?.render)window.DnDAppV2.render();
+    /* The legacy app renderer is private to dnd-app-v2.js. A full reload is
+       deliberate here: it guarantees the rendered sheet is reconstructed
+       from the corrected persisted state rather than duplicating renderer code. */
+    window.location.reload();
   },true);
 
   /* Keep one authoritative HP maximum in live state. */

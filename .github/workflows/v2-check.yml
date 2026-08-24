@@ -19,3 +19,4 @@ jobs:
       - run: node --check dnd-engine-v2.js
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-builder-v2.js
+      - run: node tests/v2-smoke.js

@@ -22,9 +22,12 @@ jobs:
       - run: node --check dnd-engine-v3.js
       - run: node --check dnd-engine-v3-rules-patch.js
       - run: node --check dnd-app-v2.js
+      - run: node --check dnd-app-v3.js
+      - run: node --check dnd-item-editor-v3.js
       - run: node --check dnd-builder-v2.js
       - run: node --check dnd-sheet-enhancements-v2.js
       - run: node --check dnd-runtime-stability-v4.js
       - run: node tests/v2-smoke.js
       - run: node tests/v3-engine-smoke.js
       - run: node tests/v3-content-integrity.js
+      - run: node tests/v3-ui-static.js

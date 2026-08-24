@@ -20,6 +20,8 @@ assert.equal(E.hpMaximum(paladin),121);
 assert.equal(E.spellcasterLevel(paladin),6);
 assert.deepEqual(E.spellSlots(paladin),{1:4,2:3,3:3});
 assert.equal(E.spellDC(paladin),17);
+assert.equal(E.summary(paladin).spellSaveDC,17);
+assert.equal(E.summary(paladin).spellDC,17);
 assert.equal(E.extraAttacks(paladin),2);
 assert.equal(E.saveThrow(paladin,'dexterity'),4);
 assert.equal(E.hasImmunity(paladin,'frightened'),true);

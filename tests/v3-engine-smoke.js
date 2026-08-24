@@ -21,6 +21,10 @@ assert.equal(E.spellcasterLevel(paladin),6);
 assert.deepEqual(E.spellSlots(paladin),{1:4,2:3,3:3});
 assert.equal(E.spellDC(paladin),17);
 assert.equal(E.extraAttacks(paladin),2);
+assert.equal(E.saveThrow(paladin,'dexterity'),9);
+assert.equal(E.hasImmunity(paladin,'frightened'),true);
+const unconsciousPaladin=E.create({...paladin,conditions:['unconscious']});
+assert.equal(E.hasImmunity(unconsciousPaladin,'frightened'),false);
 
 const fighter11=E.create({abilityScores:{strength:18},classes:[{classId:'fighter',level:11,subclass:'battle-master'}]});
 assert.equal(E.extraAttacks(fighter11),3);
@@ -30,6 +34,10 @@ const valor=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level
 assert.equal(E.extraAttacks(valor),2);
 const lore=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level:6,subclass:'lore'}]});
 assert.equal(E.extraAttacks(lore),1);
+const armorer=E.create({abilityScores:{intelligence:16},classes:[{classId:'artificer',level:5,subclass:'armorer'}]});
+assert.equal(E.extraAttacks(armorer),2);
+const alchemist=E.create({abilityScores:{intelligence:16},classes:[{classId:'artificer',level:5,subclass:'alchemist'}]});
+assert.equal(E.extraAttacks(alchemist),1);
 
 const itemState=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13}],items:[
   {id:'plate',name:'Plate Armor',mechanics:{type:'armor',category:'heavy',armorClass:18},equipment:{equipped:true}},

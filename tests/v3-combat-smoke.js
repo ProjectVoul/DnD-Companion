@@ -1,0 +1,8 @@
+const fs=require('fs');const vm=require('vm');const assert=require('assert');
+const storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};global.window={};global.CustomEvent=class{constructor(type){this.type=type;}};
+['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js','dnd-combat-v3.js'].forEach(f=>vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f}));
+const E=window.DnDEngineV3;
+const c=E.create({abilityScores:{strength:16,dexterity:14,constitution:14},classes:[{classId:'fighter',level:5}],items:[{name:'Longsword',magicBonus:1,mechanics:{type:'weapon',properties:['versatile'],attack:{type:'melee',proficient:true},damage:[{dice:{count:1,die:'d8'},type:'slashing'}]},equipment:{equipped:true}}]});
+const a=E.attack(c,c.items[0]);assert.equal(a.bonus,6);assert.equal(a.ability,'strength');assert.equal(a.damage[0].dice.die,'d8');assert.equal(a.damage[0].modifier,3);assert.equal(a.attacks,2);
+const finesse=E.create({abilityScores:{strength:10,dexterity:18},classes:[{classId:'rogue',level:3}],items:[{name:'Rapier',mechanics:{type:'weapon',properties:['finesse'],attack:{type:'melee',proficient:true},damage:[{dice:{count:1,die:'d8'},type:'piercing' }]},equipment:{equipped:true}}]});assert.equal(E.attack(finesse,finesse.items[0]).ability,'dexterity');
+console.log('D&D Companion v3 combat smoke tests passed');

@@ -26,15 +26,7 @@
   window.toggleEquipmentGroup=t=>document.getElementById(`equipment-group-${t}`)?.classList.toggle('collapsed');
 
   function decorateSkills(){document.querySelectorAll('.character-sheet .skill-row').forEach(row=>{const buttons=row.querySelectorAll('[data-skill-action]');if(buttons.length<2)return;buttons[0].textContent=buttons[0].classList.contains('active')?'✓':'P';buttons[1].textContent=buttons[1].classList.contains('active')?'★':'M';buttons[0].title='P — Proficiency';buttons[1].title='M — Expertise';});}
-  function decorateWeapons(){document.querySelectorAll('.character-sheet .weapon-entry').forEach(row=>{if(row.querySelector('.weapon-damage-v9'))return;const name=row.querySelector('strong')?.textContent?.trim();if(!name||!E().calculator?.getWeaponDamage)return;const c=get(),item=(c.items||[]).find(i=>i.name===name&&i.mechanics?.type==='weapon');if(!item)return;const damage=E().calculator.getWeaponDamage(c,item).map(d=>`${d.dice?.count||0}${d.dice?.die||''} ${d.type||''}${d.modifier?` ${d.modifier>0?'+':''}${d.modifier}`:''}`).join(' + ');if(!damage)return;const box=row.querySelector('.equipped-item-values');if(box){const s=document.createElement('span');s.className='weapon-damage-v9';s.textContent=damage;box.appendChild(s);}});}
+  function decorateWeapons(){document.querySelectorAll('.character-sheet .weapon-entry').forEach(row=>{if(row.querySelector('.weapon-damage-v9'))return;const name=row.querySelector('.weapon-entry strong')?.textContent?.trim();if(!name||!E().calculator?.getWeaponDamage)return;const c=get(),item=(c.items||[]).find(i=>i.name===name&&i.mechanics?.type==='weapon');if(!item)return;const damage=E().calculator.getWeaponDamage(c,item).map(d=>`${d.dice?.count||0}${d.dice?.die||''} ${d.type||''}${d.modifier?` ${d.modifier>0?'+':''}${d.modifier}`:''}`).join(' + ');if(!damage)return;const box=row.querySelector('.equipped-item-values');if(box){const s=document.createElement('span');s.className='weapon-damage-v9';s.textContent=damage;box.appendChild(s);}});}
   const originalSheet=window.showCharacterSheet;
   if(typeof originalSheet==='function')window.showCharacterSheet=()=>{originalSheet();decorateSkills();decorateWeapons();};
-
-  // iOS/touch fallback for buttons. Mouse/trackpad continue through normal click events.
-  document.addEventListener('touchend',ev=>{
-    const target=ev.target?.closest?.('button,[role="button"]');
-    if(!target||target.disabled)return;
-    ev.preventDefault();
-    target.click();
-  },{passive:false});
 })();

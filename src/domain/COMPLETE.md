@@ -1,0 +1,1 @@
+Manual testing gate: CI green, no runtime errors, rules/data review complete against uploaded 5e 2014 source PDFs, and deployment configured to rebuild/react-engine.

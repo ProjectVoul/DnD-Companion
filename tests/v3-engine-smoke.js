@@ -6,7 +6,7 @@ global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(
 global.window={};
 global.CustomEvent=class CustomEvent{constructor(type){this.type=type;}};
 global.window.dispatchEvent=()=>{};
-['dnd-data-v2.js','dnd-content-v2.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
+['dnd-data-v2.js','dnd-content-v2.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
 const E=window.DnDEngineV3;
 
 const paladin=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13,subclass:'devotion'}]});
@@ -24,6 +24,11 @@ const itemState=E.create({abilityScores:{strength:16,dexterity:10,constitution:1
 ]});
 assert.equal(E.ac(itemState),23);
 
+const unattuned=E.create({abilityScores:{dexterity:10},classes:[{classId:'fighter',level:1}],items:[
+  {name:'Unattuned Charm',magic:true,attunementRequired:true,modifiers:[{target:'armorClass',value:5}],equipment:{equipped:true,attuned:false}}
+]});
+assert.equal(E.ac(unattuned),10);
+
 const defenseState=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13}],items:[
   {name:'Plate Armor',mechanics:{type:'armor',category:'heavy',armorClass:18},equipment:{equipped:true}},
   {name:'Shield',mechanics:{type:'shield',armorBonus:4},equipment:{equipped:true}}
@@ -34,10 +39,7 @@ const skills=E.create({abilityScores:{dexterity:16},classes:[{classId:'rogue',le
 assert.equal(E.skill(skills,'stealth'),6);
 assert.equal(E.skill(skills,'perception'),9);
 
-const multiclass=E.create({abilityScores:{intelligence:16,wisdom:14,charisma:16},classes:[
-  {classId:'wizard',level:3},
-  {classId:'paladin',level:6}
-]});
+const multiclass=E.create({abilityScores:{intelligence:16,wisdom:14,charisma:16},classes:[{classId:'wizard',level:3},{classId:'paladin',level:6}]});
 assert.equal(E.totalLevel(multiclass),9);
 assert.equal(E.spellcasterLevel(multiclass),6);
 assert.deepEqual(E.spellSlots(multiclass),{1:4,2:3,3:3});
@@ -62,5 +64,11 @@ assert.equal(E.hasCondition(conditions,'poisoned'),true);
 assert.equal(E.hasResistance(conditions,'fire'),true);
 assert.equal(E.hasImmunity(conditions,'poison'),true);
 assert.equal(E.hasVulnerability(conditions,'cold'),true);
+
+const artificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:14}]});
+assert.equal(E.spellcasterLevel(artificer),7);
+assert.equal(E.attunementCapacity(artificer),5);
+const highArtificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:18}]});
+assert.equal(E.attunementCapacity(highArtificer),6);
 
 console.log('D&D Companion v3 engine smoke tests passed');

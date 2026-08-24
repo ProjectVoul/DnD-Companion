@@ -7,11 +7,13 @@ export function applyRest(c:Character,type:RestType):Character{
   const next=structuredClone(c);
   if(type==='short'){
     next.resources.forEach(r=>{if(r.recharge==='short')r.current=r.max});
+    Object.values(next.spellcasting).forEach(s=>{if(s.pactSlots)s.pactSlots.used=0});
     return next;
   }
   if(next.currentHP<=0)return next;
   next.currentHP=next.maxHP;
   next.tempHP=0;
+  next.deathSaves={successes:0,failures:0};
   next.hitDice.current=Math.min(next.hitDice.max,next.hitDice.current+Math.max(1,Math.floor(next.hitDice.max/2)));
   Object.values(next.spellcasting).forEach(s=>{
     Object.values(s.slots).forEach(x=>x.used=0);

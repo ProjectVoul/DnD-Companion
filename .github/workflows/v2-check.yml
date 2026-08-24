@@ -20,10 +20,12 @@ jobs:
       - run: node --check dnd-class-features-v3-completion.js
       - run: node --check dnd-spell-catalog-v3.js
       - run: node --check dnd-subclass-features-v3.js
+      - run: node --check dnd-subclass-expansion-v3.js
       - run: node --check dnd-engine-v2.js
       - run: node --check dnd-engine-patch-v2.js
       - run: node --check dnd-engine-v3.js
       - run: node --check dnd-engine-v3-rules-patch.js
+      - run: node --check dnd-subclass-engine-v3.js
       - run: node --check dnd-class-resources-v3.js
       - run: node --check dnd-spellcasting-rules-v3.js
       - run: node --check dnd-spellcasting-integration-v3.js

@@ -1,0 +1,7 @@
+const fs=require('fs');const vm=require('vm');const assert=require('assert');
+const storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};global.window={};global.CustomEvent=class{constructor(type){this.type=type;}};
+['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js','dnd-class-resources-v3.js'].forEach(f=>vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f}));
+const E=window.DnDEngineV3;
+let p=E.create({abilityScores:{charisma:18},classes:[{classId:'paladin',level:13}],resources:{class:{'paladin:lay-on-hands':{current:10}}}});assert.equal(E.classResources(p).find(x=>x.id==='lay-on-hands').maximum,65);assert.equal(p.resources.class['paladin:lay-on-hands'].current,10);E.performLongRest(p);assert.equal(p.resources.class['paladin:lay-on-hands'].current,65);
+let f=E.create({classes:[{classId:'fighter',level:17}],resources:{class:{'fighter:action-surge':{current:0}}}});assert.equal(E.classResources(f).find(x=>x.id==='action-surge').maximum,2);E.performShortRest(f);assert.equal(f.resources.class['fighter:action-surge'].current,2);
+console.log('D&D Companion v3 resource smoke tests passed');

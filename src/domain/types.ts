@@ -6,7 +6,7 @@ export type ArmorCategory='light'|'medium'|'heavy';
 export type Die=4|6|8|10|12|20|100;
 export type FeatureSource='class'|'subclass'|'species'|'feat'|'background'|'item'|'optional';
 export type RestType='short'|'long';
-
+export type Size='Tiny'|'Small'|'Medium'|'Large';
 export interface AbilityScores{str:number;dex:number;con:number;int:number;wis:number;cha:number;}
 export interface SkillState{proficient:boolean;expertise:boolean;bonusOverride?:number;}
 export interface DamagePart{dice:number;die:Die;type:DamageType;flat?:number;}
@@ -19,6 +19,7 @@ export interface SpellState{known:string[];prepared:string[];alwaysPrepared:stri
 export interface Feature{id:string;name:string;source:FeatureSource;level:number;description?:string;optional?:boolean;replaces?:string;}
 export interface Resource{id:string;name:string;current:number;max:number;recharge:'short'|'long'|'manual';}
 export interface DeathSaves{successes:number;failures:number;}
+export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
 export interface CharacterClass{id:string;name:string;level:number;subclassId?:string;subclassName?:string;spellcastingAbility?:Ability;}
 export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;alignment?:string;
@@ -26,4 +27,6 @@ export interface Character{
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:{die:Die;max:number;current:number};
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];notes?:string;
+ languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
+ contentSources?:string[];optionalFeatures?:string[];
 }

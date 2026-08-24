@@ -1,9 +1,9 @@
 name: D&D Companion v2 checks
 on:
   push:
-    branches: [architecture-v2]
+    branches: [repair/stability]
   pull_request:
-    branches: [main]
+    branches: [main, repair/stability]
 jobs:
   syntax:
     runs-on: ubuntu-latest

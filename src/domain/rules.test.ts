@@ -1,5 +1,5 @@
 import {strict as assert} from 'node:assert';
-import {abilityMod,proficiencyBonus,skillBonus,armorClass,maxPreparedSpells} from './rules';
+import {abilityMod,proficiencyBonus,skillBonus,armorClass,maxPreparedSpells,spellSaveDC,spellAttackBonus,multiclassSpellSlots} from './rules';
 import {setPrepared} from './rules/spellcasting';
 import {setHP,hpPercent,addDeathSave} from './rules/hp';
 import type {Character} from './types';
@@ -8,4 +8,6 @@ const base:Character={id:'test',name:'Test',species:'Human',classes:[{id:'fighte
 assert.equal(abilityMod(16),3);assert.equal(proficiencyBonus(1),2);assert.equal(proficiencyBonus(5),3);base.skillStates.athletics={proficient:true,expertise:false};assert.equal(skillBonus(base,'athletics'),6);base.skillStates.athletics={proficient:true,expertise:true};assert.equal(skillBonus(base,'athletics'),9);
 base.items=[{id:'a',name:'Plate',kind:'armor',quantity:1,equipped:true,armor:{category:'heavy',baseAC:18,dexBonus:false,stealthDisadvantage:true,magicBonus:0}},{id:'s',name:'Shield',kind:'shield',quantity:1,equipped:true,shield:{acBonus:2,magicBonus:0}}];base.fightingStyles=['defense'];assert.equal(armorClass(base),21);
 const hp=setHP(base,121);assert.equal(hp.currentHP,40);assert.equal(hpPercent(hp),100);const death=addDeathSave(base,false);assert.equal(death.deathSaves.failures,1);
-const pal={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'paladin',name:'Paladin',level:13,spellcastingAbility:'cha'}]};assert.equal(maxPreparedSpells(pal,'paladin'),7);const spellState={known:[],prepared:[],alwaysPrepared:['bless'],spellbook:[],slots:{}};assert.equal(setPrepared(spellState,'bless',false,7).prepared.length,0);assert.equal(setPrepared(spellState,'aid',true,1).prepared.length,1);assert.equal(setPrepared({...spellState,prepared:['aid']},'cure-wounds',true,1).prepared.length,1);console.log('core rules tests passed');
+const pal={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'paladin',name:'Paladin',level:13,spellcastingAbility:'cha'}],proficiencyBonus:5};assert.equal(maxPreparedSpells(pal,'paladin'),7);assert.equal(spellSaveDC(pal,'paladin'),17);assert.equal(spellAttackBonus(pal,'paladin'),9);
+const spellState={known:[],prepared:[],alwaysPrepared:['bless'],spellbook:[],slots:{}};assert.equal(setPrepared(spellState,'bless',false,7).prepared.length,0);assert.equal(setPrepared(spellState,'aid',true,1).prepared.length,1);assert.equal(setPrepared({...spellState,prepared:['aid']},'cure-wounds',true,1).prepared.length,1);
+const multi={...pal,classes:[{id:'paladin',name:'Paladin',level:6,spellcastingAbility:'cha'},{id:'wizard',name:'Wizard',level:4,spellcastingAbility:'int'}],level:10};const slots=multiclassSpellSlots(multi);assert.equal(slots[4].max,2);console.log('core rules tests passed');

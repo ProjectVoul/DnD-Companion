@@ -1,0 +1,8 @@
+const fs=require('fs');const vm=require('vm');const assert=require('assert');
+const storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};global.window={};global.CustomEvent=class{constructor(type){this.type=type;}};
+['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-class-features-v3-completion.js','dnd-spell-catalog-v3.js','dnd-subclass-features-v3.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js','dnd-spellcasting-rules-v3.js','dnd-spellcasting-integration-v3.js'].forEach(f=>vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f}));
+const E=window.DnDEngineV3,D=window.DnDDataV2;
+const wizard=E.create({abilityScores:{intelligence:16},classes:[{classId:'wizard',level:5,subclass:'evocation'}]});assert.ok(D.SPELLS.fireball);assert.ok(E.canLearnSpell(wizard,'wizard','fireball'));assert.ok(!E.canLearnSpell(wizard,'wizard','cure-wounds'));assert.ok(E.eligibleSpells(wizard,'wizard').some(s=>s.id==='magic-missile'));
+const paladin=E.create({abilityScores:{charisma:16},classes:[{classId:'paladin',level:7,subclass:'devotion'}]});assert.ok(D.SUBCLASS_FEATURES.paladin.devotion.some(f=>f.id==='aura-of-devotion'&&f.level===7));
+assert.equal(E.spellcastingRules(wizard).wizard.preparedCount,6);assert.equal(E.spellcastingRules(paladin).paladin.preparedCount,4);
+console.log('D&D Companion v3 spell/subclass smoke tests passed');

@@ -24,6 +24,7 @@ jobs:
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-app-v3.js
       - run: node --check dnd-item-editor-v3.js
+      - run: node --check dnd-inventory-patch-v3.js
       - run: node --check dnd-builder-v2.js
       - run: node --check dnd-sheet-enhancements-v2.js
       - run: node --check dnd-runtime-stability-v4.js

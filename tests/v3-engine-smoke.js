@@ -5,8 +5,13 @@ const storage=new Map();
 global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
 global.window={};
 global.CustomEvent=class CustomEvent{constructor(type){this.type=type;}};
-['dnd-data-v2.js','dnd-content-v2.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
+['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
 const E=window.DnDEngineV3;
+const D=window.DnDDataV2;
+
+assert.ok(D.SUBCLASSES.some(s=>s.classId==='artificer'&&s.id==='alchemist'&&s.source==='tasha'));
+assert.ok(D.SUBCLASSES.some(s=>s.classId==='artificer'&&s.id==='battle-smith'&&s.source==='tasha'));
+assert.equal(D.SUBCLASS_FEATURES.artificer['battle-smith'].find(f=>f.id==='extra-attack').level,5);
 
 const paladin=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13,subclass:'devotion'}]});
 assert.equal(E.totalLevel(paladin),13);

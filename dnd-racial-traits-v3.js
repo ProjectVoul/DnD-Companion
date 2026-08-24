@@ -1,0 +1,23 @@
+/* Racial trait normalization: passive 2014 traits become structured effects instead of display-only labels. */
+(() => {
+  'use strict';
+  const E=window.DnDEngineV3||window.DnDEngineV2,D=window.DnDDataV2;if(!E||!D)return;
+  const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[’']/g,'').replace(/[^a-z0-9]+/g,'-');
+  const effects={
+    'darkvision':{target:'sense:darkvision',value:60,mode:'set'},
+    'scurovisione':{target:'sense:darkvision',value:60,mode:'set'},
+    'fey-ancestry':{target:'save:charmed',value:1,mode:'advantage'},
+    'retaggio-fatato':{target:'save:charmed',value:1,mode:'advantage'},
+    'dwarven-resilience':{target:'resistance:poison',value:1,mode:'add'},
+    'resilienza-nanica':{target:'resistance:poison',value:1,mode:'add'},
+    'hellish-resistance':{target:'resistance:fire',value:1,mode:'add'},
+    'resistenza-infernale':{target:'resistance:fire',value:1,mode:'add'},
+    'dwarven-toughness':{target:'hitPointMaximumPerLevel',value:1,mode:'add'},
+    'robustezza-nanica':{target:'hitPointMaximumPerLevel',value:1,mode:'add'},
+    'menacing':{target:'skill:intimidation',value:1,mode:'proficiency'},
+    'intimidatorio':{target:'skill:intimidation',value:1,mode:'proficiency'}
+  };
+  function traits(c){const race=c.origin?.species||c.origin?.race;if(!race)return [];const sp=D.SPECIES?.[race];if(!sp)return [];const sub=sp.subraces?.[c.origin?.subrace];const raw=[...(sp.traits||[]),...(sub?.traits||[])];return raw.map(x=>{const name=typeof x==='string'?x:x.name||x.id||'Trait';const key=norm(name);const e=effects[key];return typeof x==='object'&&!e?{...x}:{id:key,name,effects:e?[e]:[]};});}
+  const oldSave=E.save;E.save=()=>{E.state.origin??={};E.state.origin.traits=traits(E.state);return oldSave();};
+  E.racialTraits=traits;window.DnDRacialTraitsV3={traits};
+})();

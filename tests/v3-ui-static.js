@@ -1,9 +1,13 @@
 const fs=require('fs');const assert=require('assert');
 const app=fs.readFileSync('dnd-app-v3.js','utf8');
 const item=fs.readFileSync('dnd-item-editor-v3.js','utf8');
+const defenses=fs.readFileSync('dnd-defenses-patch-v3.js','utf8');
+const inventory=fs.readFileSync('dnd-inventory-patch-v3.js','utf8');
 const index=fs.readFileSync('index.html','utf8');
 assert.ok(index.includes('dnd-app-v3.js'));
 assert.ok(index.includes('dnd-item-editor-v3.js'));
+assert.ok(index.includes('dnd-inventory-patch-v3.js'));
+assert.ok(index.includes('dnd-defenses-patch-v3.js'));
 assert.ok(app.includes('data-hp-range')&&app.includes('data-hp-number'),'HP must have range and numeric controls');
 assert.ok(app.includes('Miscellaneous')&&app.includes('Equipment'),'Inventory must keep the two top-level sections');
 assert.ok(app.includes("categories={armor:'Armor',weapon:'Weapons',shield:'Shield',focus:'Spellcasting Focus',tool:'Tools',other:'Other'}"));
@@ -11,4 +15,6 @@ assert.ok(app.includes('data-skill-prof')&&app.includes('data-skill-exp'),'Skill
 assert.ok(app.includes('preparedSpells')&&app.includes('knownSpells')&&app.includes('spellbook'),'Spellcasting must distinguish prepared/known/spellbook state');
 assert.ok(item.includes('data-add-damage')&&item.includes('data-dmg-count')&&item.includes('data-dmg-die')&&item.includes('data-dmg-type'),'Weapons must support multiple damage components');
 assert.ok(item.includes('armor')&&item.includes('shield'),'Item editor must have armor and shield mechanics');
+assert.ok(defenses.includes('Resistances')&&defenses.includes('Immunities')&&defenses.includes('Vulnerabilities'));
+assert.ok(inventory.includes('MutationObserver')&&inventory.includes('Spellcasting Focus'));
 console.log('D&D Companion v3 UI static checks passed');

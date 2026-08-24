@@ -20,7 +20,7 @@
   const spellSlots=c=>{const row=(D.SPELL_SLOTS||[])[Math.min(20,spellcasterLevel(c))]||[];const out=Object.fromEntries(row.map((n,i)=>[i+1,n]));const w=(c.classes||[]).filter(x=>x.classId==='warlock').reduce((n,x)=>n+num(x.level),0);if(w){const p=D.SPELLCASTING?.pactSlots?.[Math.min(20,w)];if(p)out.pact={count:p.slots,level:p.level};}return out;};
   const extraAttacks=c=>{let attacks=1;(c.classes||[]).forEach(cl=>{const level=num(cl.level),id=cl.classId;if(id==='artificer'&&cl.subclass!=='battle-smith'&&cl.subclass!=='armorer')return;if(id==='bard'&&cl.subclass!=='valor')return;const table=D.EXTRA_ATTACK?.[id]||{};Object.keys(table).forEach(k=>{if(level>=num(k))attacks=Math.max(attacks,1+num(table[k]));});if(['barbarian','fighter','monk','paladin','ranger'].includes(id)&&level>=5)attacks=Math.max(attacks,2);if(id==='fighter'&&level>=11)attacks=Math.max(attacks,3);if(id==='fighter'&&level>=20)attacks=Math.max(attacks,4);});return attacks;};
   const requiresAttunement=i=>!!(i?.attunementRequired||i?.requiresAttunement||i?.attunement?.required);
-  const attunementCapacity=c=>{const a=E.classLevel(c,'artificer');if(a>=18)return 6;if(a>=14)return 4;return 3;};
+  const attunementCapacity=c=>{const a=E.classLevel(c,'artificer');if(a>=18)return 6;if(a>=14)return 5;return 3;};
   const attunedItems=c=>(c.items||[]).filter(i=>i.equipment?.equipped&&i.equipment?.attuned);
   const magicItemCount=c=>attunedItems(c).filter(i=>requiresAttunement(i)||i.magic||i.rarity).length;
   const canAttuneItem=(c,item)=>!item||!requiresAttunement(item)||!!item.equipment?.attuned||magicItemCount(c)<attunementCapacity(c);
@@ -45,11 +45,10 @@
   const preparedSpells=(c,sourceClass)=>listFor(c,'prepared',sourceClass);
   const knownSpells=(c,sourceClass)=>listFor(c,'known',sourceClass);
   const spellbook=(c,sourceClass)=>listFor(c,'spellbook',sourceClass);
-
   const totalHitDice=c=>Object.values(E.hitDice(c)||{}).reduce((n,h)=>n+num(h.maximum),0);
   const currentHitDice=c=>Object.values(E.hitDice(c)||{}).reduce((n,h)=>n+num(h.current),0);
   const setHitDice=(c,target)=>{c.resources.hitDice=c.resources.hitDice||{};let remaining=Math.max(0,target);Object.entries(E.hitDice(c)||{}).forEach(([id,h])=>{const maximum=num(h.maximum),current=Math.min(maximum,remaining);c.resources.hitDice[id]={current,maximum};remaining-=current;});};
-  const restoreResourcePools=(c,recovery)=>{for(const key of Object.keys(c.resources||{})){const r=c.resources[key];if(!r||typeof r!=='object'||r.recovery!==recovery)continue;if('current' in r)r.current=num(r.maximum);} };
+  const restoreResourcePools=(c,recovery)=>{for(const key of Object.keys(c.resources||{})){const r=c.resources[key];if(!r||typeof r!=='object'||r.recovery!==recovery)continue;if('current' in r)r.current=num(r.maximum);}};
   const performShortRest=c=>{c.resources=c.resources||{};restoreResourcePools(c,'shortRest');return c;};
   const performLongRest=c=>{c.resources=c.resources||{};c.resources.hp=c.resources.hp||{};c.resources.hp.maximum=E.hpMaximum(c);c.resources.hp.current=c.resources.hp.maximum;c.resources.hp.temporary=0;c.resources.deathSaves={successes:0,failures:0};const max=totalHitDice(c),recover=Math.max(1,Math.floor(max/2));setHitDice(c,Math.min(max,currentHitDice(c)+recover));restoreResourcePools(c,'longRest');const slots=spellSlots(c);c.resources.spellSlots=c.resources.spellSlots||{};Object.keys(slots).forEach(k=>{c.resources.spellSlots[k]=0;});return c;};
   const featureSnapshot=c=>{const out=[];(c.classes||[]).forEach(cl=>{const list=D.CLASS_FEATURES?.[cl.classId]||[];list.filter(f=>num(f.level)<=num(cl.level)).forEach(f=>out.push({...clone(f),classId:cl.classId,source:f.source||'phb2014'}));const sub=D.SUBCLASS_FEATURES?.[cl.classId]?.[cl.subclass]||[];sub.filter(f=>num(f.level)<=num(cl.level)&&sourceEnabled(c,f.source||'phb2014')).forEach(f=>out.push({...clone(f),classId:cl.classId,subclass:cl.subclass,source:f.source||'phb2014'}));});(c.abilities||[]).forEach(f=>out.push({...clone(f),source:f.source||'custom'}));(c.feats||[]).forEach(f=>out.push({...clone(f),type:'feat',source:f.source||'custom'}));return out.sort((a,b)=>num(a.level)-num(b.level));};

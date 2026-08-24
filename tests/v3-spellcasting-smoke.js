@@ -1,0 +1,11 @@
+const fs=require('fs');const vm=require('vm');const assert=require('assert');
+const storage=new Map();global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};global.window={};global.CustomEvent=class{constructor(type){this.type=type;}};
+['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js','dnd-class-resources-v3.js','dnd-spellcasting-rules-v3.js'].forEach(f=>vm.runInThisContext(fs.readFileSync(f,'utf8'),{filename:f}));
+const E=window.DnDEngineV3;
+let wizard=E.create({abilityScores:{intelligence:16},classes:[{classId:'wizard',level:5}]});assert.equal(E.spellcastingRules(wizard).wizard.preparedCount,8);assert.equal(E.spellcastingRules(wizard).wizard.spellbookMinimum,14);
+let cleric=E.create({abilityScores:{wisdom:16},classes:[{classId:'cleric',level:3}]});assert.equal(E.spellcastingRules(cleric).cleric.preparedCount,6);
+let paladin=E.create({abilityScores:{charisma:18},classes:[{classId:'paladin',level:13}]});assert.equal(E.spellcastingRules(paladin).paladin.preparedCount,8);
+let bard=E.create({classes:[{classId:'bard',level:10}]});assert.equal(E.spellcastingRules(bard).bard.knownCount,14);
+let sorcerer=E.create({classes:[{classId:'sorcerer',level:20}]});assert.equal(E.spellcastingRules(sorcerer).sorcerer.knownCount,15);
+let warlock=E.create({classes:[{classId:'warlock',level:5}],resources:{spellSlots:{pact:2}}});assert.equal(E.spellcastingRules(warlock).warlock.knownCount,6);E.performShortRest(warlock);assert.equal(warlock.resources.spellSlots.pact,0);
+console.log('D&D Companion v3 spellcasting smoke tests passed');

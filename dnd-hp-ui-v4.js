@@ -16,7 +16,7 @@
     c.resources.hp.maximum=max;c.resources.hp.current=current;c.resources.hp.temporary=Math.max(0,n(c.resources.hp.temporary,0));
     card.innerHTML=`<div class="stat-label">HIT POINTS</div><div class="hp-v4-head"><div><span class="hp-v4-label">Current</span><input class="hp-v4-input" type="number" min="0" max="${max}" value="${current}" data-hp-current></div><div class="hp-v4-max"><span>Maximum</span><b>${max}</b></div></div><div class="meter hp-v4-meter"><i style="width:${Math.max(0,Math.min(100,current/max*100))}%"></i></div><div class="hp-v4-controls"><button type="button" data-hp-v4="-5">−5</button><button type="button" data-hp-v4="-1">−1</button><button type="button" data-hp-v4="1">+1</button><button type="button" data-hp-v4="5">+5</button></div><label class="hp-v4-temp">Temporary HP <input type="number" min="0" value="${c.resources.hp.temporary}" data-hp-temp></label>`;
     const update=()=>{
-      const value=Math.max(0,Math.min(max,n(card.querySelector('[data-hp-current]').value,current));
+      const value=Math.max(0,Math.min(max,n(card.querySelector('[data-hp-current]').value,current)));
       c.resources.hp.current=value;c.resources.hp.maximum=max;
       const temp=Math.max(0,n(card.querySelector('[data-hp-temp]').value,0));c.resources.hp.temporary=temp;
       card.querySelector('[data-hp-current]').value=value;card.querySelector('[data-hp-temp]').value=temp;card.querySelector('.hp-v4-meter i').style.width=`${value/max*100}%`;

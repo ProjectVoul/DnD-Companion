@@ -15,6 +15,7 @@ jobs:
       - run: node --check dnd-data-v2.js
       - run: node --check dnd-content-v2.js
       - run: node --check dnd-rules-v2.js
+      - run: node --check dnd-class-features-v2.js
       - run: node --check dnd-engine-v2.js
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-builder-v2.js

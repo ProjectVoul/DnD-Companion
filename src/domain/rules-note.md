@@ -1,0 +1,1 @@
+Rules verification checkpoint: PHB 2014 confirms multiclass proficiency and class-level feature acquisition; Tasha confirms optional class features are individually selectable and do not apply automatically. Spell lists and class spellcasting remain source-driven.

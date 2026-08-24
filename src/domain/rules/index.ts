@@ -5,3 +5,4 @@ export * from './hp';
 export * from './rests';
 export * from './spellcasting';
 export * from './spell-slots';
+export * from './species';

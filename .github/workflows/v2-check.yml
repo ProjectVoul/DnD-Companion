@@ -24,6 +24,8 @@ jobs:
       - run: node --check dnd-class-resources-v3.js
       - run: node --check dnd-spellcasting-rules-v3.js
       - run: node --check dnd-combat-v3.js
+      - run: node --check dnd-hp-sync-v3.js
+      - run: node --check dnd-racial-traits-v3.js
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-app-v3.js
       - run: node --check dnd-item-editor-v3.js
@@ -44,3 +46,4 @@ jobs:
       - run: node tests/v3-spellcasting-smoke.js
       - run: node tests/v3-resource-smoke.js
       - run: node tests/v3-combat-smoke.js
+      - run: node tests/v3-racial-smoke.js

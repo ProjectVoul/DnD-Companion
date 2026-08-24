@@ -34,6 +34,9 @@ const valor=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level
 assert.equal(E.extraAttacks(valor),2);
 const lore=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level:6,subclass:'lore'}]});
 assert.equal(E.extraAttacks(lore),1);
+assert.equal(E.initiative(lore),2);
+const bardSkill=E.create({abilityScores:{intelligence:10},classes:[{classId:'bard',level:2,subclass:'lore'}]});
+assert.equal(E.skill(bardSkill,'arcana'),2);
 const armorer=E.create({abilityScores:{intelligence:16},classes:[{classId:'artificer',level:5,subclass:'armorer'}]});
 assert.equal(E.extraAttacks(armorer),2);
 const alchemist=E.create({abilityScores:{intelligence:16},classes:[{classId:'artificer',level:5,subclass:'alchemist'}]});

@@ -35,8 +35,11 @@
     n+(p.type==='full'?p.level:p.type==='half'?Math.floor(p.level/2):p.type==='third'?Math.floor(p.level/3):p.type==='artificer'?Math.ceil(p.level/2):0),0);
 
   const spellAbility=(c,sourceClass)=>{
-    if(sourceClass==='warlock'&&c.classes?.some(x=>x.classId==='warlock'))return D.CLASSES.warlock.spell;
-    return (sourceClass?profiles(c).find(p=>p.classId===sourceClass):profiles(c)[0])?.ability||null;
+    if(sourceClass){
+      const data=D.CLASSES?.[sourceClass];
+      if(data?.spell)return data.spell;
+    }
+    return profiles(c)[0]?.ability || (c.classes||[]).map(cl=>D.CLASSES?.[cl.classId]?.spell).find(Boolean) || null;
   };
   const spellAttack=(c,sourceClass)=>{const a=spellAbility(c,sourceClass);return a?E.abilityMod(c,a)+E.profBonus(c):null;};
   const spellDC=(c,sourceClass)=>{const a=spellAbility(c,sourceClass);return a?8+E.abilityMod(c,a)+E.profBonus(c):null;};
@@ -49,17 +52,14 @@
     return out;
   };
 
-  /* Extra Attack is not additive across classes and only applies where the
-     actual class/subclass grants it. The data table remains the source of truth. */
   const extraAttacks=c=>{
     let attacks=1;
     (c.classes||[]).forEach(cl=>{
       const level=num(cl.level),id=cl.classId;
-      if(id==='artificer' && cl.subclass!=='battle-smith')return;
+      if(id==='artificer' && cl.subclass!=='battle-smith' && cl.subclass!=='armorer')return;
       if(id==='bard' && cl.subclass!=='valor')return;
       const table=D.EXTRA_ATTACK?.[id]||{};
       Object.keys(table).forEach(k=>{if(level>=num(k))attacks=Math.max(attacks,1+num(table[k]));});
-      /* Safety net for the PHB core classes if a data table is unavailable. */
       if(['barbarian','fighter','monk','paladin','ranger'].includes(id)&&level>=5)attacks=Math.max(attacks,2);
       if(id==='fighter'&&level>=11)attacks=Math.max(attacks,3);
       if(id==='fighter'&&level>=20)attacks=Math.max(attacks,4);
@@ -68,24 +68,14 @@
   };
 
   const requiresAttunement=i=>!!(i?.attunementRequired||i?.requiresAttunement||i?.attunement?.required);
-  const attunementCapacity=c=>{
-    const a=E.classLevel(c,'artificer');
-    if(a>=18)return 6;
-    if(a>=14)return 4;
-    return 3;
-  };
+  const attunementCapacity=c=>{const a=E.classLevel(c,'artificer');if(a>=18)return 6;if(a>=14)return 4;return 3;};
   const attunedItems=c=>(c.items||[]).filter(i=>i.equipment?.equipped&&i.equipment?.attuned);
   const magicItemCount=c=>attunedItems(c).filter(i=>requiresAttunement(i)||i.magic||i.rarity).length;
-  const canAttuneItem=(c,item)=>{
-    if(!item||!requiresAttunement(item))return true;
-    if(item.equipment?.attuned)return true;
-    return magicItemCount(c)<attunementCapacity(c);
-  };
+  const canAttuneItem=(c,item)=>!item||!requiresAttunement(item)||!!item.equipment?.attuned||magicItemCount(c)<attunementCapacity(c);
   const canUseItem=(c,item)=>{
     if(!item)return false;
     if(item.equipment?.equippedRequired&&!item.equipment?.equipped)return false;
     if(requiresAttunement(item)&&!item.equipment?.attuned)return false;
-    if(item.equipment?.attuned&&!canAttuneItem(c,item))return false;
     const req=item.requirements||{};
     if(req.class&&!(Array.isArray(req.class)?req.class.some(id=>E.classLevel(c,id)):E.classLevel(c,req.class)))return false;
     if(req.level&&E.totalLevel(c)<num(req.level))return false;

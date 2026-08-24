@@ -4,3 +4,4 @@ export * from './equipment';
 export * from './hp';
 export * from './rests';
 export * from './spellcasting';
+export * from './spell-slots';

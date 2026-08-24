@@ -1,0 +1,11 @@
+const fs=require('fs');const assert=require('assert');
+const index=fs.readFileSync('index.html','utf8');
+const files=['dnd-data-v2.js','dnd-content-v2.js','dnd-content-v3-patch.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-class-features-v3-completion.js','dnd-spell-catalog-v3.js','dnd-optional-spells-v3.js','dnd-optional-class-features-v3.js','dnd-subclass-features-v3.js','dnd-subclass-expansion-v3.js','dnd-engine-v2.js','dnd-engine-patch-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js','dnd-subclass-engine-v3.js','dnd-class-resources-v3.js','dnd-spellcasting-rules-v3.js','dnd-spellcasting-integration-v3.js','dnd-combat-v3.js','dnd-hp-sync-v3.js','dnd-racial-traits-v3.js','dnd-app-v2.js','dnd-builder-v2.js','dnd-builder-stability-patch-v3.js','dnd-item-editor-v3.js','dnd-equipment-presets-v3.js','dnd-inventory-patch-v3.js','dnd-defenses-patch-v3.js','dnd-class-resources-ui-v3.js','dnd-spellcasting-ui-v3.js','dnd-combat-ui-v3.js','dnd-feats-ui-v3.js','dnd-runtime-stability-v4.js'];
+for(const f of files){assert.ok(index.includes(f),`index missing ${f}`);assert.ok(fs.existsSync(f),`missing ${f}`);}
+const app=fs.readFileSync('dnd-app-v3.js','utf8');assert.equal(app.trim(),'','legacy app-v3 override must remain disabled');
+const spell=fs.readFileSync('dnd-spell-catalog-v3.js','utf8');assert.ok(!spell.includes("['arcane-missile','Magic Missile'"),'noncanonical Magic Missile id remains');assert.ok(spell.includes("['magic-missile','Magic Missile'"));
+const integration=fs.readFileSync('dnd-spellcasting-integration-v3.js','utf8');assert.ok(integration.includes('known')&&integration.includes('prepared')&&integration.includes('spellbook'));
+const rules=fs.readFileSync('dnd-engine-v3-rules-patch.js','utf8');assert.ok(rules.includes('spellcasterLevel')&&rules.includes('spellSlots')&&rules.includes('preparedSpells')&&rules.includes('knownSpells')&&rules.includes('spellbook'));
+const optional=fs.readFileSync('dnd-optional-class-features-v3.js','utf8');assert.ok(optional.includes('optional:true')&&optional.includes('replaces'));
+const sub=fs.readFileSync('dnd-subclass-engine-v3.js','utf8');assert.ok(sub.includes('D.SUBCLASS_FEATURES')&&sub.includes('cl.subclass'));
+console.log('Final consistency checks passed');

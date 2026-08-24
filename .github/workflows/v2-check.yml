@@ -22,12 +22,14 @@ jobs:
       - run: node --check dnd-engine-v3.js
       - run: node --check dnd-engine-v3-rules-patch.js
       - run: node --check dnd-class-resources-v3.js
+      - run: node --check dnd-spellcasting-rules-v3.js
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-app-v3.js
       - run: node --check dnd-item-editor-v3.js
       - run: node --check dnd-inventory-patch-v3.js
       - run: node --check dnd-defenses-patch-v3.js
       - run: node --check dnd-class-resources-ui-v3.js
+      - run: node --check dnd-spellcasting-ui-v3.js
       - run: node --check dnd-builder-v2.js
       - run: node --check dnd-sheet-enhancements-v2.js
       - run: node --check dnd-runtime-stability-v4.js

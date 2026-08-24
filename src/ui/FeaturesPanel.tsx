@@ -1,0 +1,3 @@
+import type {Character} from '../domain/types';
+import {CLASS_FEATURES} from '../domain/content/class-features';
+export function FeaturesPanel({c}:{c:Character}){const features=[...c.features,...c.classes.flatMap(cl=>(CLASS_FEATURES[cl.id]??[]).filter(f=>f.level<=cl.level))];const unique=[...new Map(features.map(f=>[f.id,f])).values()].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));return <section className="card"><h2>Features & Traits</h2>{unique.map(f=><article className="feature" key={f.id}><div className="row"><b>{f.name}</b><small>Level {f.level} · {f.source}</small></div>{f.description&&<p>{f.description}</p>}</article>)}</section>}

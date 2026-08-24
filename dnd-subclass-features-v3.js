@@ -1,0 +1,30 @@
+/* Structured subclass progression for the most important 2014/Xanathar/Tasha subclass mechanics. */
+(() => {
+  'use strict';
+  const D=window.DnDDataV2;if(!D)return;
+  D.SUBCLASS_FEATURES=D.SUBCLASS_FEATURES||{};
+  const set=(cls,id,items)=>{D.SUBCLASS_FEATURES[cls]??={};D.SUBCLASS_FEATURES[cls][id]=items.map(x=>({classId:cls,subclassId:id,source:x[3]||'phb2014',level:x[0],id:x[1],name:x[2]}));};
+  set('paladin','devotion',[[3,'sacred-weapon','Channel Divinity: Sacred Weapon'],[3,'turn-the-unholy','Channel Divinity: Turn the Unholy'],[7,'aura-of-devotion','Aura of Devotion'],[15,'purity-of-spirit','Purity of Spirit'],[20,'holy-nimbus','Holy Nimbus']]);
+  set('paladin','ancients',[[3,'nature-wrath','Channel Divinity: Nature’s Wrath'],[3,'turn-the-faithless','Channel Divinity: Turn the Faithless'],[7,'aura-of-warding','Aura of Warding'],[15,'undying-sentinel','Undying Sentinel'],[20,'elder-champion','Elder Champion']]);
+  set('paladin','vengeance',[[3,'abjure-enemy','Channel Divinity: Abjure Enemy'],[3,'vow-of-enmity','Channel Divinity: Vow of Enmity'],[7,'relentless-avenger','Relentless Avenger'],[15,'soul-of-vengeance','Soul of Vengeance'],[20,'avenging-angel','Avenging Angel']]);
+  set('fighter','champion',[[3,'improved-critical','Improved Critical'],[7,'remarkable-athlete','Remarkable Athlete'],[10,'additional-fighting-style','Additional Fighting Style'],[15,'superior-critical','Superior Critical'],[18,'survivor','Survivor']]);
+  set('fighter','battle-master',[[3,'combat-superiority','Combat Superiority'],[3,'student-of-war','Student of War'],[7,'know-your-enemy','Know Your Enemy'],[10,'improved-combat-superiority','Improved Combat Superiority'],[15,'relentless','Relentless'],[18,'improved-combat-superiority-2','Improved Combat Superiority']]);
+  set('fighter','eldritch-knight',[[3,'spellcasting','Spellcasting'],[3,'weapon-bond','Weapon Bond'],[7,'war-magic','War Magic'],[10,'eldritch-strike','Eldritch Strike'],[15,'arcane-charge','Arcane Charge'],[18,'improved-war-magic','Improved War Magic']]);
+  set('rogue','thief',[[3,'fast-hands','Fast Hands'],[3,'second-story-work','Second-Story Work'],[9,'supreme-sneak','Supreme Sneak'],[13,'use-magic-device','Use Magic Device'],[17,'thiefs-reflexes','Thief’s Reflexes']]);
+  set('rogue','assassin',[[3,'bonus-proficiencies','Bonus Proficiencies'],[3,'assassinate','Assassinate'],[9,'infiltration-expertise','Infiltration Expertise'],[13,'impromptu-disguise','Impostor'],[17,'death-strike','Death Strike']]);
+  set('rogue','arcane-trickster',[[3,'spellcasting','Spellcasting'],[3,'mage-hand-legerdemain','Mage Hand Legerdemain'],[9,'magical-ambush','Magical Ambush'],[13,'versatile-trickster','Versatile Trickster'],[17,'spell-thief','Spell Thief']]);
+  set('barbarian','berserker',[[3,'frenzy','Frenzy'],[6,'mindless-rage','Mindless Rage'],[10,'intimidating-presence','Intimidating Presence'],[14,'retaliation','Retaliation']]);
+  set('barbarian','totem',[[3,'spirit-seeker','Spirit Seeker'],[3,'totem-spirit','Totem Spirit'],[6,'aspect-of-the-beast','Aspect of the Beast'],[10,'spirit-walker','Spirit Walker'],[14,'totemic-attunement','Totemic Attunement']]);
+  set('monk','open-hand',[[3,'open-hand-technique','Open Hand Technique'],[6,'wholeness-of-body','Wholeness of Body'],[11,'tranquility','Tranquility'],[17,'quivering-palm','Quivering Palm']]);
+  set('monk','shadow',[[3,'shadow-arts','Shadow Arts'],[6,'shadow-step','Shadow Step'],[11,'cloak-of-shadows','Cloak of Shadows'],[17,'opportunist','Opportunist']]);
+  set('monk','four-elements',[[3,'elemental-attunement','Elemental Attunement'],[3,'disciple-of-elements','Disciple of the Elements'],[6,'elemental-disciplines','Elemental Disciplines'],[11,'elemental-disciplines-2','Elemental Disciplines'],[17,'elemental-disciplines-3','Elemental Disciplines']]);
+  set('wizard','abjuration',[[2,'abjuration-savant','Abjuration Savant'],[2,'arcane-ward','Arcane Ward'],[6,'projected-ward','Projected Ward'],[10,'improved-abjuration','Improved Abjuration'],[14,'spell-resistance','Spell Resistance']]);
+  set('wizard','evocation',[[2,'evocation-savant','Evocation Savant'],[2,'sculpt-spells','Sculpt Spells'],[6,'potent-cantrip','Potent Cantrip'],[10,'empowered-evocation','Empowered Evocation'],[14,'overchannel','Overchannel']]);
+  set('wizard','divination',[[2,'divination-savant','Divination Savant'],[2,'portent','Portent'],[6,'expert-divination','Expert Divination'],[10,'third-eye','The Third Eye'],[14,'greater-portent','Greater Portent']]);
+  set('sorcerer','draconic',[[1,'dragon-ancestor','Dragon Ancestor'],[1,'draconic-resilience','Draconic Resilience'],[6,'elemental-affinity','Elemental Affinity'],[14,'dragon-wings','Dragon Wings'],[18,'draconic-presence','Draconic Presence']]);
+  set('warlock','fiend',[[1,'dark-ones-blessing','Dark One’s Blessing'],[6,'dark-ones-own-luck','Dark One’s Own Luck'],[10,'fiendish-resilience','Fiendish Resilience'],[14,'hurl-through-hell','Hurl Through Hell']]);
+  set('bard','lore',[[3,'bonus-proficiencies','Bonus Proficiencies'],[3,'cutting-words','Cutting Words'],[6,'additional-magical-secrets','Additional Magical Secrets'],[14,'peerless-skill','Peerless Skill']]);
+  set('bard','valor',[[3,'bonus-proficiencies','Bonus Proficiencies'],[3,'combat-inspiration','Combat Inspiration'],[6,'extra-attack','Extra Attack'],[14,'battle-magic','Battle Magic']]);
+  set('cleric','life',[[1,'bonus-proficiency','Bonus Proficiency'],[1,'disciple-of-life','Disciple of Life'],[2,'preserve-life','Channel Divinity: Preserve Life'],[6,'blessed-healer','Blessed Healer'],[8,'divine-strike','Divine Strike'],[17,'supreme-healing','Supreme Healing']]);
+  set('druid','moon',[[2,'combat-wild-shape','Combat Wild Shape'],[2,'circle-forms','Circle Forms'],[6,'primal-strike','Primal Strike'],[10,'elemental-wild-shape','Elemental Wild Shape'],[14,'thousand-forms','Thousand Forms']]);
+})();

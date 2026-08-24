@@ -58,3 +58,4 @@ jobs:
       - run: node tests/v3-racial-smoke.js
       - run: node tests/v3-feature-progression-smoke.js
       - run: node tests/v3-spell-subclass-smoke.js
+      - run: node tests/v3-final-consistency.js

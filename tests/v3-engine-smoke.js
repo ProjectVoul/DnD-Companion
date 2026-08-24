@@ -5,7 +5,6 @@ const storage=new Map();
 global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
 global.window={};
 global.CustomEvent=class CustomEvent{constructor(type){this.type=type;}};
-global.window.dispatchEvent=()=>{};
 ['dnd-data-v2.js','dnd-content-v2.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js','dnd-engine-v3.js','dnd-engine-v3-rules-patch.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
 const E=window.DnDEngineV3;
 
@@ -16,6 +15,16 @@ assert.equal(E.hpMaximum(paladin),121);
 assert.equal(E.spellcasterLevel(paladin),6);
 assert.deepEqual(E.spellSlots(paladin),{1:4,2:3,3:3});
 assert.equal(E.spellDC(paladin),17);
+assert.equal(E.extraAttacks(paladin),2);
+
+const fighter11=E.create({abilityScores:{strength:18},classes:[{classId:'fighter',level:11,subclass:'battle-master'}]});
+assert.equal(E.extraAttacks(fighter11),3);
+const fighter20=E.create({abilityScores:{strength:18},classes:[{classId:'fighter',level:20,subclass:'battle-master'}]});
+assert.equal(E.extraAttacks(fighter20),4);
+const valor=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level:6,subclass:'valor'}]});
+assert.equal(E.extraAttacks(valor),2);
+const lore=E.create({abilityScores:{charisma:16},classes:[{classId:'bard',level:6,subclass:'lore'}]});
+assert.equal(E.extraAttacks(lore),1);
 
 const itemState=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13}],items:[
   {id:'plate',name:'Plate Armor',mechanics:{type:'armor',category:'heavy',armorClass:18},equipment:{equipped:true}},
@@ -67,7 +76,7 @@ assert.equal(E.hasVulnerability(conditions,'cold'),true);
 
 const artificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:14}]});
 assert.equal(E.spellcasterLevel(artificer),7);
-assert.equal(E.attunementCapacity(artificer),5);
+assert.equal(E.attunementCapacity(artificer),4);
 const highArtificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:18}]});
 assert.equal(E.attunementCapacity(highArtificer),6);
 

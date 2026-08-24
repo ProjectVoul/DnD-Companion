@@ -1,0 +1,3 @@
+import {SPECIES_BY_ID} from '../content/species';
+import type {Character} from '../types';
+export function applySpecies(c:Character,speciesId:string,subraceId?:string):Character{const s=SPECIES_BY_ID[speciesId];if(!s)return c;const sub=s.subraces.find(x=>x.id===subraceId);const abilityScores={...c.abilityScores};for(const [a,v] of Object.entries(s.abilityBonuses))abilityScores[a as keyof typeof abilityScores]+=v??0;if(sub)for(const [a,v] of Object.entries(sub.abilityBonuses))abilityScores[a as keyof typeof abilityScores]+=v??0;const speciesFeatures=[...s.traits,...(sub?.traits??[])];return {...c,species:s.name,subspecies:sub?.name,abilityScores,features:[...c.features,...speciesFeatures]}}

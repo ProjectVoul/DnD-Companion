@@ -1,41 +1,25 @@
 const fs=require('fs');
 const vm=require('vm');
 const assert=require('assert');
-
 const storage=new Map();
 global.localStorage={getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,String(v))};
 global.window={};
 global.CustomEvent=class CustomEvent{constructor(type){this.type=type;}};
 global.window.dispatchEvent=()=>{};
-
 ['dnd-data-v2.js','dnd-content-v2.js','dnd-rules-v2.js','dnd-class-features-v2.js','dnd-engine-v2.js'].forEach(file=>vm.runInThisContext(fs.readFileSync(file,'utf8'),{filename:file}));
-
 const E=window.DnDEngineV2;
 const base=E.create({abilityScores:{strength:16,dexterity:14,constitution:14,intelligence:10,wisdom:10,charisma:16},classes:[{classId:'paladin',level:6,subclass:'devotion',source:'phb2014'}]});
-assert.equal(E.totalLevel(base),6);
-assert.equal(E.profBonus(base),3);
-assert.equal(E.spellAbility(base),'charisma');
-assert.equal(E.spellDC(base),14);
-assert.equal(E.extraAttacks(base),1);
-
+assert.equal(E.totalLevel(base),6);assert.equal(E.profBonus(base),3);assert.equal(E.spellAbility(base),'charisma');assert.equal(E.spellDC(base),14);assert.equal(E.extraAttacks(base),1);
+const paladin13=E.create({abilityScores:{strength:16,dexterity:10,constitution:16,intelligence:11,wisdom:13,charisma:18},classes:[{classId:'paladin',level:13,subclass:'devotion'}]});
+assert.equal(E.hpMax(paladin13),121);assert.equal(E.spellcasterLevel(paladin13),6);assert.deepEqual(E.slots(paladin13),{1:4,2:3,3:3});assert.equal(E.saveThrow(paladin13,'wisdom'),6);assert.equal(E.saveThrow(paladin13,'charisma'),9);
+const skillState=E.create({abilityScores:{dexterity:16},proficiencies:{skills:{stealth:{proficiency:true},perception:{proficiency:true,expertise:true}}},classes:[{classId:'rogue',level:5}]});
+assert.equal(E.skill(skillState,'stealth'),6);assert.equal(E.skill(skillState,'perception'),9);
 const multiclass=E.create({abilityScores:{strength:16,dexterity:14,constitution:14,intelligence:10,wisdom:13,charisma:16},classes:[{classId:'paladin',level:6,subclass:'devotion'},{classId:'cleric',level:4,subclass:'life'}]});
-assert.equal(E.totalLevel(multiclass),10);
-assert.equal(E.profBonus(multiclass),4);
-assert.equal(E.spellcasterLevel(multiclass),7);
-assert.equal(E.slots(multiclass)[4],3);
-assert.equal(E.canMulticlassInto(multiclass,'wizard'),true);
-assert.equal(E.canMulticlassInto(E.create({abilityScores:{intelligence:12}}),'wizard'),false);
-
+assert.equal(E.totalLevel(multiclass),10);assert.equal(E.profBonus(multiclass),4);assert.equal(E.spellcasterLevel(multiclass),7);assert.equal(E.slots(multiclass)[4],3);assert.equal(E.canMulticlassInto(multiclass,'wizard'),true);assert.equal(E.canMulticlassInto(E.create({abilityScores:{intelligence:12}}),'wizard'),false);
 const fighter11=E.create({abilityScores:{strength:18,dexterity:12,constitution:16,intelligence:10,wisdom:10,charisma:10},classes:[{classId:'fighter',level:11,subclass:'battle-master'}]});
-assert.equal(E.extraAttacks(fighter11),3);
-assert.ok(E.features(fighter11).some(f=>f.id==='extra-attack'));
-
+assert.equal(E.extraAttacks(fighter11),3);assert.ok(E.features(fighter11).some(f=>f.id==='extra-attack'));
 const warlock=E.create({abilityScores:{strength:8,dexterity:14,constitution:14,intelligence:10,wisdom:10,charisma:18},classes:[{classId:'warlock',level:5,subclass:'hexblade'}]});
-assert.equal(E.spellcasterLevel(warlock),0);
-assert.deepEqual(E.slots(warlock).pact,{count:2,level:3});
-assert.equal(E.spellDC(warlock),15);
-
+assert.equal(E.spellcasterLevel(warlock),0);assert.deepEqual(E.slots(warlock).pact,{count:2,level:3});assert.equal(E.spellDC(warlock),15);
 const monk=E.create({abilityScores:{strength:10,dexterity:16,constitution:14,intelligence:10,wisdom:16,charisma:10},classes:[{classId:'monk',level:7,subclass:'open-hand'}]});
 assert.equal(E.ac(monk),16);
-
 console.log('D&D Companion v2 smoke tests passed');

@@ -1,24 +1,28 @@
 name: Validate D&D Companion
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Syntax check JavaScript
+          node-version: 22
+      - name: Validate rebuild architecture
+        if: github.head_ref == 'rebuild/react-engine'
+        run: |
+          npm install
+          npm run check
+          npm run test:rules
+          npm run build
+      - name: Validate legacy architecture
+        if: github.head_ref != 'rebuild/react-engine'
         shell: bash
         run: |
           set -euo pipefail
@@ -26,11 +30,6 @@ jobs:
             echo "Checking $file"
             node --check "$file"
           done < <(find . -maxdepth 2 -type f -name '*.js' -print0)
-
-      - name: Verify index assets
-        shell: bash
-        run: |
-          set -euo pipefail
           python3 - <<'PY'
           import re
           from pathlib import Path
@@ -41,9 +40,7 @@ jobs:
               path=ref.split('?',1)[0]
               if path.startswith(('http://','https://','#')):
                   continue
-              if not Path(path).exists():
-                  missing.append(path)
-          if missing:
-              raise SystemExit('Missing referenced assets: ' + ', '.join(missing))
+              if not Path(path).exists(): missing.append(path)
+          if missing: raise SystemExit('Missing referenced assets: ' + ', '.join(missing))
           print(f'Validated {len(refs)} local/remote references.')
           PY

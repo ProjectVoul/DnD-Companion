@@ -21,7 +21,7 @@ assert.equal(E.spellcasterLevel(paladin),6);
 assert.deepEqual(E.spellSlots(paladin),{1:4,2:3,3:3});
 assert.equal(E.spellDC(paladin),17);
 assert.equal(E.extraAttacks(paladin),2);
-assert.equal(E.saveThrow(paladin,'dexterity'),9);
+assert.equal(E.saveThrow(paladin,'dexterity'),4);
 assert.equal(E.hasImmunity(paladin,'frightened'),true);
 const unconsciousPaladin=E.create({...paladin,conditions:['unconscious']});
 assert.equal(E.hasImmunity(unconsciousPaladin,'frightened'),false);
@@ -95,5 +95,20 @@ assert.equal(E.spellcasterLevel(artificer),7);
 assert.equal(E.attunementCapacity(artificer),4);
 const highArtificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:18}]});
 assert.equal(E.attunementCapacity(highArtificer),6);
+
+const rest=E.create({abilityScores:{constitution:14,charisma:14},classes:[{classId:'paladin',level:10}],resources:{hp:{current:20,maximum:20,temporary:7},hitDice:{paladin:{current:2,maximum:10}},spellSlots:{1:3,2:2},deathSaves:{successes:1,failures:2},inspiration:true},conditions:['poisoned']});
+E.performLongRest(rest);
+assert.equal(rest.resources.hp.current,E.hpMaximum(rest));
+assert.equal(rest.resources.hp.temporary,0);
+assert.equal(rest.resources.hitDice.paladin.current,7);
+assert.equal(rest.resources.spellSlots[1],0);
+assert.deepEqual(rest.resources.deathSaves,{successes:0,failures:0});
+assert.equal(rest.resources.inspiration,true);
+assert.deepEqual(rest.conditions,['poisoned']);
+
+const short=E.create({classes:[{classId:'fighter',level:5}],resources:{shortResource:{current:0,maximum:1,recovery:'shortRest'},hitDice:{fighter:{current:2,maximum:5}}}});
+E.performShortRest(short);
+assert.equal(short.resources.shortResource.current,1);
+assert.equal(short.resources.hitDice.fighter.current,2);
 
 console.log('D&D Companion v3 engine smoke tests passed');

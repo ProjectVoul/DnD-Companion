@@ -6,3 +6,4 @@ export * from './rests';
 export * from './spellcasting';
 export * from './spell-slots';
 export * from './species';
+export * from './resources';

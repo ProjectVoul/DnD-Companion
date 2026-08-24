@@ -93,8 +93,18 @@ assert.equal(E.hasVulnerability(conditions,'cold'),true);
 const artificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:14}]});
 assert.equal(E.spellcasterLevel(artificer),7);
 assert.equal(E.attunementCapacity(artificer),5);
+assert.equal(E.canUseItem(artificer,{magic:true,attunementRequired:true,requirements:{class:'wizard',level:20},equipment:{attuned:true,equipped:true}}),true);
 const highArtificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:18}]});
 assert.equal(E.attunementCapacity(highArtificer),6);
+const art20=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:20}],items:[
+  {name:'A',magic:true,equipment:{equipped:true,attuned:true}},
+  {name:'B',magic:true,equipment:{equipped:true,attuned:true}}
+]});
+assert.equal(E.saveThrow(art20,'strength'),2);
+const alchemist15=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:15,subclass:'alchemist'}]});
+assert.equal(E.hasResistance(alchemist15,'acid'),true);
+assert.equal(E.hasResistance(alchemist15,'poison'),true);
+assert.equal(E.hasImmunity(alchemist15,'poisoned'),true);
 
 const rest=E.create({abilityScores:{constitution:14,charisma:14},classes:[{classId:'paladin',level:10}],resources:{hp:{current:20,maximum:20,temporary:7},hitDice:{paladin:{current:2,maximum:10}},spellSlots:{1:3,2:2},deathSaves:{successes:1,failures:2},inspiration:true},conditions:['poisoned']});
 E.performLongRest(rest);

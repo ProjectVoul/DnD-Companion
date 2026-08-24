@@ -7,6 +7,43 @@
   const save = c => e.saveCharacter(c);
   const clamp = (v,min,max) => Math.min(max,Math.max(min,Number(v)||0));
 
+  // The older synchronization layers recalculate maxima correctly, but some
+  // of them also initialize current values. Preserve live resource state while
+  // rules are re-derived, then clamp it against the newly calculated maxima.
+  if (!e.__resourceSyncV4Wrapped) {
+    const baseSync = e.syncCharacterRules;
+    e.syncCharacterRules = function(character){
+      const c=character;
+      const before={
+        hpCurrent:Number(c?.resources?.hp?.current),
+        hpTemporary:Number(c?.resources?.hp?.temporary),
+        hitDiceCurrent:Number(c?.resources?.hitDice?.current),
+        deathSaves:c?.resources?.deathSaves?{...c.resources.deathSaves}:null,
+        inspiration:c?.resources?.inspiration,
+        spellSlots:c?.resources?.spellSlots?JSON.parse(JSON.stringify(c.resources.spellSlots)):null,
+        featureUses:c?.resources?.featureUses?{...c.resources.featureUses}:null
+      };
+      const out=baseSync?baseSync(c):c;
+      out.resources=out.resources||{};
+      out.resources.hp=out.resources.hp||{maximum:1,current:1,temporary:0};
+      if(Number.isFinite(before.hpCurrent)) out.resources.hp.current=clamp(before.hpCurrent,0,Number(out.resources.hp.maximum)||1);
+      if(Number.isFinite(before.hpTemporary)) out.resources.hp.temporary=Math.max(0,before.hpTemporary);
+      if(out.resources.hitDice&&Number.isFinite(before.hitDiceCurrent)) out.resources.hitDice.current=clamp(before.hitDiceCurrent,0,Number(out.resources.hitDice.maximum)||0);
+      if(before.deathSaves) out.resources.deathSaves={...before.deathSaves};
+      if(before.inspiration!==undefined) out.resources.inspiration=Boolean(before.inspiration);
+      if(before.spellSlots){
+        out.resources.spellSlots=out.resources.spellSlots||{};
+        Object.keys(before.spellSlots).forEach(level=>{
+          const max=Number(out.resources.spellSlots[level]?.maximum)||0;
+          if(max>0) out.resources.spellSlots[level].current=clamp(before.spellSlots[level].current,0,max);
+        });
+      }
+      if(before.featureUses) out.resources.featureUses={...before.featureUses};
+      return out;
+    };
+    e.__resourceSyncV4Wrapped=true;
+  }
+
   function syncHome(c){
     const hp=c.resources?.hp||{};
     const cur=Math.max(0,Number(hp.current)||0), max=Math.max(1,Number(hp.maximum)||1);
@@ -36,7 +73,6 @@
     c.resources.hitDice=hd;
     Object.values(c.resources.spellSlots||{}).forEach(s=>{s.current=s.maximum;});
     c.resources.featureUses={};
-    c.resources.inspiration=Boolean(c.resources.inspiration);
     try{localStorage.removeItem('abilityState');}catch{}
     save(c);
     if(typeof closeRestMenu==='function') closeRestMenu();

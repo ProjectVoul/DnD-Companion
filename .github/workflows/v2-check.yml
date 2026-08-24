@@ -19,6 +19,7 @@ jobs:
       - run: node --check dnd-engine-v2.js
       - run: node --check dnd-engine-patch-v2.js
       - run: node --check dnd-engine-v3.js
+      - run: node --check dnd-engine-v3-rules-patch.js
       - run: node --check dnd-app-v2.js
       - run: node --check dnd-builder-v2.js
       - run: node --check dnd-sheet-enhancements-v2.js

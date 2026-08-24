@@ -92,7 +92,7 @@ assert.equal(E.hasVulnerability(conditions,'cold'),true);
 
 const artificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:14}]});
 assert.equal(E.spellcasterLevel(artificer),7);
-assert.equal(E.attunementCapacity(artificer),4);
+assert.equal(E.attunementCapacity(artificer),5);
 const highArtificer=E.create({abilityScores:{intelligence:18},classes:[{classId:'artificer',level:18}]});
 assert.equal(E.attunementCapacity(highArtificer),6);
 

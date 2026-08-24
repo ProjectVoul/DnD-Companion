@@ -1,0 +1,23 @@
+name: D&D Companion v2 checks
+on:
+  push:
+    branches: [architecture-v2]
+  pull_request:
+    branches: [main]
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --check dnd-data-v2.js
+      - run: node --check dnd-content-v2.js
+      - run: node --check dnd-rules-v2.js
+      - run: node --check dnd-class-features-v2.js
+      - run: node --check dnd-engine-v2.js
+      - run: node --check dnd-engine-patch-v2.js
+      - run: node --check dnd-app-v2.js
+      - run: node --check dnd-builder-v2.js
+      - run: node tests/v2-smoke.js

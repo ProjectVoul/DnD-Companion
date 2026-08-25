@@ -4,13 +4,13 @@ import {CLASS_PROGRESSION} from '../content/class-progression';
 import {multiclassSpellSlots} from './spell-slots';
 import {proficiencyBonus} from './derived';
 import {derivedAbilityMod,derivedMaxHP} from './effects';
-import {featIdFromName,featPrerequisiteMet} from './feats';
+import {featCanBeSelected,featIdFromName} from './feats';
 export type HPMode='average'|'roll';
 export function hasASI(classId:string,level:number){return (CLASS_PROGRESSION[classId]??[]).some(f=>f.level===level&&f.id.includes(':asi-'));}
 export function levelUp(c:Character,classId:string,mode:HPMode='average',abilityIncrease?:{ability?:Ability;amount?:number;secondAbility?:Ability},featSelection?:{id:string;choice?:FeatChoice}):Character{
  const current=c.classes.find(x=>x.id===classId);if(!current||current.level>=20||c.level>=20)return c;
  const next=structuredClone(c);const target=next.classes.find(x=>x.id===classId);const cls=CLASSES.find(x=>x.id===classId);if(!target||!cls)return c;
- if(featSelection&&!featPrerequisiteMet(next,featSelection.id))return c;
+ if(featSelection&&!featCanBeSelected(next,featSelection.id,featSelection.choice))return c;
  const oldMaxHP=derivedMaxHP(c);const oldConMod=derivedAbilityMod(c,'con');
  target.level+=1;next.level=Math.min(20,next.level+1);next.proficiencyBonus=proficiencyBonus(next.level);
  if(abilityIncrease?.ability){next.abilityScores[abilityIncrease.ability]=Math.min(20,next.abilityScores[abilityIncrease.ability]+(abilityIncrease.amount??2));if(abilityIncrease.secondAbility)next.abilityScores[abilityIncrease.secondAbility]=Math.min(20,next.abilityScores[abilityIncrease.secondAbility]+1)}

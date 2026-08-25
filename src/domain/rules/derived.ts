@@ -1,11 +1,11 @@
 import type {Ability,Character,Skill} from '../types';
 import {effectBonus,derivedAbilityMod} from './effects';
-import {featHasSaveProficiency} from './feats';
+import {featHasSaveProficiency,featSkillExpertise,featSkillProficiency} from './feats';
 export const ABILITIES:Ability[]=['str','dex','con','int','wis','cha'];
 export const SKILLS:Record<Skill,{ability:Ability;name:string}>={acrobatics:{ability:'dex',name:'Acrobatics'},animalHandling:{ability:'wis',name:'Animal Handling'},arcana:{ability:'int',name:'Arcana'},athletics:{ability:'str',name:'Athletics'},deception:{ability:'cha',name:'Deception'},history:{ability:'int',name:'History'},insight:{ability:'wis',name:'Insight'},intimidation:{ability:'cha',name:'Intimidation'},investigation:{ability:'int',name:'Investigation'},medicine:{ability:'wis',name:'Medicine'},nature:{ability:'int',name:'Nature'},perception:{ability:'wis',name:'Perception'},performance:{ability:'cha',name:'Performance'},persuasion:{ability:'cha',name:'Persuasion'},religion:{ability:'int',name:'Religion'},sleightOfHand:{ability:'dex',name:'Sleight of Hand'},stealth:{ability:'dex',name:'Stealth'},survival:{ability:'wis',name:'Survival'}};
 export function abilityMod(score:number){return Math.floor((score-10)/2)}
 export function proficiencyBonus(level:number){return Math.ceil(level/4)+1}
-export function skillBonus(c:Character,skill:Skill){const s=c.skillStates[skill];const base=derivedAbilityMod(c,SKILLS[skill].ability);return base+(s.proficient?c.proficiencyBonus:0)+(s.expertise?c.proficiencyBonus:0)+(s.bonusOverride??0)+effectBonus(c,'skill',undefined,skill)}
+export function skillBonus(c:Character,skill:Skill){const s=c.skillStates[skill];const proficient=s.proficient||featSkillProficiency(c,skill);const expertise=s.expertise||featSkillExpertise(c,skill);const base=derivedAbilityMod(c,SKILLS[skill].ability);return base+(proficient?c.proficiencyBonus:0)+(expertise?c.proficiencyBonus:0)+(s.bonusOverride??0)+effectBonus(c,'skill',undefined,skill)}
 export function saveBonus(c:Character,a:Ability){return derivedAbilityMod(c,a)+((c.savingThrowProficiency.includes(a)||featHasSaveProficiency(c,a))?c.proficiencyBonus:0)+effectBonus(c,'savingThrows',a)}
 export function initiative(c:Character){return derivedAbilityMod(c,'dex')+effectBonus(c,'initiative')}
 export function passivePerception(c:Character){return 10+skillBonus(c,'perception')+effectBonus(c,'passivePerception')}

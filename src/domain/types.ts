@@ -23,7 +23,7 @@ export interface Spell{id:string;name:string;level:number;school:string;classes:
 export interface SpellState{known:string[];prepared:string[];alwaysPrepared:string[];spellbook:string[];slots:Record<number,{max:number;used:number}>;pactSlots?:{max:number;used:number;level:number};}
 export interface ConcentrationState{spellId:string;classId:string;}
 export interface Feature{id:string;name:string;source:FeatureSource;level:number;description?:string;optional?:boolean;replaces?:string;effects?:Effect[];resourceId?:string;activation?:'action'|'bonus-action'|'reaction'|'passive'|'special';}
-export interface Resource{id:string;name:string;current:number;max:number;recharge:RechargeType;sourceId?:string;description?:string;}
+export interface Resource{id:string;name:string;current:number;max:number;recharge:RechargeType;unlimited?:boolean;sourceId?:string;description?:string;}
 export interface BackgroundData{name:string;skillProficiencies:string[];toolProficiencies:string[];languages:string[];feature?:string;description?:string;}
 export interface DeathSaves{successes:number;failures:number;}
 export interface HitDiePool{die:4|6|8|10|12;max:number;current:number;}

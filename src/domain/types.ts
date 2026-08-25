@@ -25,6 +25,8 @@ export interface Feature{id:string;name:string;source:FeatureSource;level:number
 export interface Resource{id:string;name:string;current:number;max:number;recharge:RechargeType;sourceId?:string;description?:string;}
 export interface BackgroundData{name:string;skillProficiencies:string[];toolProficiencies:string[];languages:string[];feature?:string;description?:string;}
 export interface DeathSaves{successes:number;failures:number;}
+export interface HitDiePool{die:4|6|8|10|12;max:number;current:number;}
+export interface HitDice{pools:HitDiePool[];}
 export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
 export interface FeatChoice{ability?:Ability;skill?:Skill;skills?:Skill[];damageType?:DamageType;}
 export type StoredFeatChoices=Record<string,FeatChoice|FeatChoice[]>;
@@ -33,7 +35,7 @@ export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;backgroundData?:BackgroundData;alignment?:string;
  speciesAbilityChoices?:Ability[];speciesSkillChoices?:Skill[];
  classes:CharacterClass[];level:number;abilityScores:AbilityScores;skillStates:Record<Skill,SkillState>;savingThrowProficiency:Ability[];
- proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:{die:Die;max:number;current:number};
+ proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:HitDice;
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
  languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;

@@ -1,5 +1,4 @@
 import type {Ability} from './types';
-
 export type SpellcastingModel='none'|'known'|'prepared'|'spellbook'|'pact';
 export interface ClassDefinition{ id:string; name:string; hitDie:4|6|8|10|12; primaryAbilities:Ability[]; savingThrows:Ability[]; spellcasting:SpellcastingModel; spellcastingAbility?:Ability; subclassLevel:number; }
 export const CLASSES:ClassDefinition[]=[
@@ -17,7 +16,6 @@ export const CLASSES:ClassDefinition[]=[
 {id:'wizard',name:'Wizard',hitDie:6,primaryAbilities:['int'],savingThrows:['int','wis'],spellcasting:'spellbook',spellcastingAbility:'int',subclassLevel:2},
 {id:'artificer',name:'Artificer',hitDie:8,primaryAbilities:['int'],savingThrows:['con','int'],spellcasting:'prepared',spellcastingAbility:'int',subclassLevel:3},
 ];
-
 export const SUBCLASSES:Record<string,{id:string;name:string;source:string}[]>= {
 barbarian:[{id:'berserker',name:'Path of the Berserker',source:'phb2014'},{id:'totem-warrior',name:'Path of the Totem Warrior',source:'phb2014'}],
 bard:[{id:'lore',name:'College of Lore',source:'phb2014'},{id:'valor',name:'College of Valor',source:'phb2014'}],
@@ -33,5 +31,4 @@ warlock:[{id:'archfey',name:'The Archfey',source:'phb2014'},{id:'fiend',name:'Th
 wizard:[{id:'abjuration',name:'School of Abjuration',source:'phb2014'},{id:'conjuration',name:'School of Conjuration',source:'phb2014'},{id:'divination',name:'School of Divination',source:'phb2014'},{id:'enchantment',name:'School of Enchantment',source:'phb2014'},{id:'evocation',name:'School of Evocation',source:'phb2014'},{id:'illusion',name:'School of Illusion',source:'phb2014'},{id:'necromancy',name:'School of Necromancy',source:'phb2014'},{id:'transmutation',name:'School of Transmutation',source:'phb2014'}],
 artificer:[{id:'alchemist',name:'Alchemist',source:'tasha2020'},{id:'armorer',name:'Armorer',source:'tasha2020'},{id:'artillerist',name:'Artillerist',source:'tasha2020'},{id:'battle-smith',name:'Battle Smith',source:'tasha2020'}],
 };
-
-export const SPECIES=['Dragonborn','Dwarf','Elf','Gnome','Half-Elf','Half-Orc','Halfling','Human','Tiefling'];
+export const SPECIES=['Dragonborn','Dwarf','Elf','Gnome','Half-Elf','Half-Orc','Halfling','Human','Variant Human','Tiefling'];

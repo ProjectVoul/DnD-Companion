@@ -11,7 +11,7 @@ export function allEffects(c:Character):Effect[]{
 }
 function matching(c:Character,target:Effect['target'],ability?:Ability,skill?:Skill){return allEffects(c).filter(e=>e.target===target&&(!e.ability||e.ability===ability)&&(!e.skill||e.skill===skill))}
 export function effectBonus(c:Character,target:Effect['target'],ability?:Ability,skill?:Skill){return matching(c,target,ability,skill).reduce((n,e)=>n+e.value,0)}
-export function derivedAbilityScore(c:Character,a:Ability){return c.abilityScores[a]+effectBonus(c,'ability',a)}
+export function derivedAbilityScore(c:Character,a:Ability){const effects=matching(c,'ability',a);const nonFeat=effects.filter(e=>!e.sourceId?.startsWith('feat:')).reduce((n,e)=>n+e.value,0);const feat=effects.filter(e=>e.sourceId?.startsWith('feat:')).reduce((n,e)=>n+e.value,0);return c.abilityScores[a]+nonFeat+Math.min(feat,Math.max(0,20-(c.abilityScores[a]+nonFeat)))}
 export function derivedAbilityMod(c:Character,a:Ability){return mod(derivedAbilityScore(c,a))}
 export function derivedMaxHP(c:Character){return Math.max(0,c.maxHP+effectBonus(c,'maxHP'))}
 export function totalWeight(c:Character){return c.items.reduce((n,i)=>n+(i.weight??0)*Math.max(0,i.quantity),0)}

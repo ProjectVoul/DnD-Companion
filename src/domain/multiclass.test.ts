@@ -8,9 +8,12 @@ const base:Character={id:'multiclass-test',name:'Test',species:'Human',classes:[
 assert.equal(canMulticlassInto(base,'fighter'),true);
 assert.equal(canMulticlassInto(base,'wizard'),false);
 assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,int:13}},'wizard'),true);
-assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,cha:13}},'paladin'),false);
+// Paladin requires STR 13 AND CHA 13; this fighter already has STR 16, so CHA 13 is sufficient here.
+assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,cha:13}},'paladin'),true);
+assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,cha:12}},'paladin'),false);
 assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,str:13,cha:13}},'paladin'),true);
 assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,dex:13,wis:13}},'monk'),true);
+assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,dex:13,wis:12}},'monk'),false);
 assert.equal(canMulticlassInto({...base,abilityScores:{...base.abilityScores,int:13}},'artificer'),true);
 assert.equal(canMulticlassInto({...base,classes:[{id:'wizard',name:'Wizard',level:4,spellcastingAbility:'int'}],abilityScores:{...base.abilityScores,int:12,str:16}},'fighter'),false);
 

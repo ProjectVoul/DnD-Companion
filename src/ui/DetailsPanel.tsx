@@ -11,7 +11,8 @@ export function DetailsPanel({c,update}:{c:Character;update:(fn:(x:Character)=>C
  const chooseBackground=(id:string)=>patch({background:id||undefined,backgroundData:(()=>{const b=BACKGROUNDS.find(x=>x.id===id);return b?{name:b.name,skillProficiencies:b.skillProficiencies,toolProficiencies:b.toolProficiencies,languages:b.languages,feature:b.feature}:undefined})()});
  const fightingClass=c.classes.find(cl=>['fighter','paladin','ranger'].includes(cl.id));
  const canChooseFightingStyle=!!fightingClass&&fightingClass.level>=2;
- const fightingStyle=c.fightingStyles?.[0]??'';
+ const storedStyle=c.fightingStyles?.[0]??'';
+ const fightingStyle=fightingStyles.find(s=>s.toLowerCase()===storedStyle.toLowerCase())??storedStyle;
  return <div className="grid">
   <section className="card"><h2>Character Details</h2><div className="form-grid">
    <label>Name<input value={c.name} onChange={e=>patch({name:e.target.value})}/></label>

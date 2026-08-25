@@ -3,7 +3,7 @@
   "private":true,
   "version":"0.1.0",
   "type":"module",
-  "scripts":{"dev":"vite","build":"tsc -b && vite build","preview":"vite preview","check":"tsc -b","test:rules":"node --import tsx src/domain/rules.test.ts && node --import tsx src/domain/multiclass.test.ts","test:invariants":"node tests/rebuild-invariants.mjs"},
+  "scripts":{"dev":"vite","build":"tsc -b && vite build","preview":"vite preview","check":"tsc -b","test:rules":"node --import tsx src/domain/rules.test.ts && node --import tsx src/domain/multiclass.test.ts && node --import tsx src/domain/content/progression.test.ts","test:invariants":"node tests/rebuild-invariants.mjs"},
   "dependencies":{"@vitejs/plugin-react":"^5.0.0","vite":"^7.1.3","typescript":"^5.8.3","react":"^19.1.1","react-dom":"^19.1.1","tsx":"^4.20.3"},
   "devDependencies":{"@types/node":"^22.15.0","@types/react":"^19.1.10","@types/react-dom":"^19.1.7"}
 }

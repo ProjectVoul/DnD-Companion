@@ -1,6 +1,6 @@
 import type {Feature} from '../types';
-const RESOURCE_BY_FEATURE:Record<string,string>={rage:'rage','bardic-inspiration':'bardic-inspiration','channel-divinity':'channel-divinity',ki:'ki','lay-on-hands':'lay-on-hands','sorcery-points':'sorcery-points','second-wind':'second-wind','action-surge':'action-surge'};
-const resourceFor=(classId:string,id:string)=>{const key=Object.keys(RESOURCE_BY_FEATURE).find(k=>id===k||id.startsWith(`${k}-`));return key?`${classId}:${RESOURCE_BY_FEATURE[key]}`:undefined};
+const RESOURCE_BY_FEATURE:Record<string,string>={rage:'rage','bardic-inspiration':'bardic-inspiration',ki:'ki','lay-on-hands':'lay-on-hands','sorcery-points':'sorcery-points','second-wind':'second-wind','action-surge':'action-surge'};
+const resourceFor=(classId:string,id:string)=>{if(id==='channel-divinity'||id.startsWith('channel-divinity-'))return 'shared:channel-divinity';const key=Object.keys(RESOURCE_BY_FEATURE).find(k=>id===k||id.startsWith(`${k}-`));return key?`${classId}:${RESOURCE_BY_FEATURE[key]}`:undefined};
 const f=(classId:string,level:number,id:string,name:string):Feature=>({id:`${classId}:${id}:${level}`,name,source:'class',level,resourceId:resourceFor(classId,id)});
 const pack=(classId:string,entries:[number,string,string][])=>entries.map(([level,id,name])=>f(classId,level,id,name));
 export const CLASS_PROGRESSION:Record<string,Feature[]>={

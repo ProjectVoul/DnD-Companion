@@ -1,4 +1,4 @@
-import type {Ability,Character,FeatChoice} from '../types';
+import type {Ability,Character,FeatChoice,Skill} from '../types';
 import {CLASSES} from '../catalog';
 import {CLASS_PROGRESSION} from '../content/class-progression';
 import {CLASS_SOURCES} from '../content/class-sources';
@@ -7,18 +7,22 @@ import {multiclassSpellSlots} from './spell-slots';
 import {proficiencyBonus,totalLevel} from './derived';
 import {derivedAbilityMod,derivedMaxHP} from './effects';
 import {featCanBeSelected,featIdFromName} from './feats';
+import {applyMulticlassProficiencies,multiclassChoiceValid,multiclassGrant} from './multiclass';
 export type HPMode='average'|'roll';
+export type MulticlassChoice={skills?:Skill[];tools?:string[]};
 export function hasASI(classId:string,level:number){return (CLASS_PROGRESSION[classId]??[]).some(f=>f.level===level&&f.id.includes(':asi-'));}
+function meetsRequirements(c:Character,classId:string){const cls=CLASSES.find(x=>x.id===classId);if(!cls)return false;return (cls.multiclassRequirements??[]).every(group=>group.some(ability=>c.abilityScores[ability]>=13));}
 export function canMulticlassInto(c:Character,classId:string){
  const current=c.classes.find(x=>x.id===classId);
  if(current)return true;
- const cls=CLASSES.find(x=>x.id===classId);if(!cls)return false;
- return (cls.multiclassRequirements??[]).every(group=>group.some(ability=>c.abilityScores[ability]>=13));
+ if(!meetsRequirements(c,classId))return false;
+ return c.classes.every(cl=>meetsRequirements(c,cl.id));
 }
-export function levelUp(c:Character,classId:string,mode:HPMode='average',abilityIncrease?:{ability?:Ability;amount?:number;secondAbility?:Ability},featSelection?:{id:string;choice?:FeatChoice}):Character{
+export function levelUp(c:Character,classId:string,mode:HPMode='average',abilityIncrease?:{ability?:Ability;amount?:number;secondAbility?:Ability},featSelection?:{id:string;choice?:FeatChoice},multiclassChoice?:MulticlassChoice):Character{
  const current=c.classes.find(x=>x.id===classId);if(current&&current.level>=20||c.level>=20)return c;
  if(!isContentSourceEnabled(c.contentSources,CLASS_SOURCES[classId]??'phb2014'))return c;
- if(!canMulticlassInto(c,classId))return c;
+ const addingNewClass=!current;if(addingNewClass&&!canMulticlassInto(c,classId))return c;
+ if(addingNewClass&&!multiclassChoiceValid(classId,multiclassChoice))return c;
  const nextClassLevel=current?current.level+1:1;
  const asi=hasASI(classId,nextClassLevel);
  if(abilityIncrease&&featSelection)return c;
@@ -33,6 +37,7 @@ export function levelUp(c:Character,classId:string,mode:HPMode='average',ability
  if(featSelection){const featId=featIdFromName(featSelection.id)??featSelection.id;next.feats=[...(next.feats??[]),featId];const existing=next.featChoices?.[featId];const stored=featId==='elemental-adept'&&existing?[...(Array.isArray(existing)?existing:[existing]),featSelection.choice??{}]:featSelection.choice;if(stored!==undefined)next.featChoices={...(next.featChoices??{}),[featId]:stored};}
  const con=derivedAbilityMod(next,'con');const roll=mode==='average'?Math.floor(cls.hitDie/2)+1:1+Math.floor(Math.random()*cls.hitDie);const gain=Math.max(1,roll+con);const conRetroactive=Math.max(0,con-oldConMod)*priorClassLevel;next.maxHP+=gain+conRetroactive;const newMaxHP=derivedMaxHP(next);next.currentHP=Math.max(0,Math.min(newMaxHP,next.currentHP+(newMaxHP-oldMaxHP)));
  const pool=next.hitDice.pools.find(p=>p.die===cls.hitDie);if(pool){pool.max+=1;pool.current+=1;}else next.hitDice.pools.push({die:cls.hitDie,max:1,current:1});
+ if(addingNewClass)Object.assign(next,applyMulticlassProficiencies(next,classId,multiclassChoice));
  if(cls.spellcasting!=='none'){const slots=multiclassSpellSlots(next);next.sharedSpellSlots=slots;const states={...next.spellcasting,[classId]:{...(next.spellcasting[classId]??{known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}}),slots}};next.spellcasting=Object.fromEntries(Object.entries(states).map(([id,s])=>[id,{...s,slots:{...s.slots,...slots}}]));}
  const gained=(CLASS_PROGRESSION[classId]??[]).filter(f=>f.level===target!.level);const existingFeatures=new Set(next.features.map(f=>f.id));gained.forEach(f=>{if(!existingFeatures.has(f.id))next.features.push(f)});return next;
 }

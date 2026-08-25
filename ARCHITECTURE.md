@@ -1,14 +1,15 @@
 # D&D Companion — clean rebuild
 
 ## Goal
-A generic D&D 5e 2014 character companion. The UI never contains class-specific rules; rules live in the domain engine and data layer.
+A generic D&D 5e 2014 character companion. The UI never contains class-specific rules; rules live in the domain engine and authoritative content layer.
 
 ## Layers
 - `src/domain/types.ts` — canonical persisted character model.
-- `src/domain/rules.ts` — pure derived-value functions; no DOM and no React.
-- `src/domain/data/` — authoritative rules datasets, progressively imported from the supplied 2014 PHB, DMG, MM, Xanathar and Tasha PDFs.
-- `src/application/` — character commands, validation, persistence and derived snapshots.
-- `src/components/` — React presentation only.
+- `src/domain/rules.ts` — public rules-engine entry point; pure rule functions live under `src/domain/rules/` with no DOM or React.
+- `src/domain/content/` — authoritative rules datasets, progressively imported from the supplied 2014 PHB, DMG, MM, Xanathar and Tasha PDFs.
+- `src/domain/catalog.ts` and `src/domain/character-builder.ts` — content/catalog orchestration and character construction.
+- `src/application/` — character commands, validation and persistence.
+- `src/ui/` — React presentation and user interaction only.
 - `src/App.tsx` — composition/navigation, not rules.
 
 ## Rules model
@@ -26,6 +27,9 @@ Equipment distinguishes weapon, armor, shield, focus, gear and magic item. Weapo
 
 ## Tasha/Xanathar
 Optional content is represented as selectable sources/options. It must never silently replace a 2014 core feature. Replacement relationships and prerequisites belong to the rules data, not UI code.
+
+## Legacy migration rule
+The root-level JavaScript/CSS implementation is legacy. New React code must not import or depend on it. Legacy files are removed in small verified batches only after the rebuild CI is green, with each deletion followed by TypeScript, rules, invariant and build checks.
 
 ## Testing standard
 Every rules block must pass:

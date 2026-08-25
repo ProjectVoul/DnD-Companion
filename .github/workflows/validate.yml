@@ -1,7 +1,7 @@
 name: Validate D&D Companion
 on:
   push:
-    branches: [main]
+    branches: [main, 'rebuild/react-engine']
   pull_request:
     branches: [main]
 jobs:
@@ -15,14 +15,15 @@ jobs:
         with:
           node-version: 22
       - name: Validate rebuild architecture
-        if: github.head_ref == 'rebuild/react-engine'
+        if: github.ref_name == 'rebuild/react-engine' || github.head_ref == 'rebuild/react-engine'
         run: |
           npm install
           npm run check
           npm run test:rules
+          npm run test:invariants
           npm run build
       - name: Validate legacy architecture
-        if: github.head_ref != 'rebuild/react-engine'
+        if: github.ref_name != 'rebuild/react-engine' && github.head_ref != 'rebuild/react-engine'
         shell: bash
         run: |
           set -euo pipefail

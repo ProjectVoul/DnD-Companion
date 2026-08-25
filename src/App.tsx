@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
-import {TEST_CHARACTER,SPELLS} from './domain/sample-data';
+import {TEST_CHARACTER} from './domain/sample-data';
+import {SPELLS} from './domain/content/spells';
 import {normalizeCharacter} from './domain/rules/character';
 import {loadCharacter,saveCharacter,clearCharacter} from './application/storage';
 import {Builder} from './ui/Builder';

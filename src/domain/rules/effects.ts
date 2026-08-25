@@ -22,7 +22,7 @@ export function allEffects(c:Character):Effect[]{
  const itemEffects=c.items.filter(i=>i.equipped||i.attuned).flatMap(i=>i.mechanicalEffects??[]).map(e=>({...e}));
  const featMechanicalEffects=featEffects(c);
  const hasArmor=c.items.some(i=>i.equipped&&i.kind==='armor');
- const fighting=hasArmor&&c.fightingStyles?.includes('defense')?[{id:'fighting-style-defense',name:'Defense Fighting Style',target:'ac' as const,value:1,passive:true,sourceId:'fighting-style-defense',description:'While wearing armor, gain +1 AC.'}]:[];
+ const fighting=hasArmor&&c.fightingStyles?.some(style=>style.toLowerCase()==='defense')?[{id:'fighting-style-defense',name:'Defense Fighting Style',target:'ac' as const,value:1,passive:true,sourceId:'fighting-style-defense',description:'While wearing armor, gain +1 AC.'}]:[];
  return [...featureEffects,...derivedFeatureEffects(c),...itemEffects,...featMechanicalEffects,...fighting];
 }
 function matching(c:Character,target:Effect['target'],ability?:Ability,skill?:Skill){return allEffects(c).filter(e=>e.target===target&&(!e.ability||e.ability===ability)&&(!e.skill||e.skill===skill))}

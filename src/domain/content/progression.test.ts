@@ -25,7 +25,8 @@ assert.deepEqual(levels('warlock','mystic-arcanum-8'),[15]);
 assert.deepEqual(levels('warlock','mystic-arcanum-9'),[17]);
 
 const standard=[4,8,12,16,19];
-for(const id of ['barbarian','bard','cleric','druid','monk','paladin','ranger','rogue','sorcerer','warlock','wizard'])assert.deepEqual(asiLevels(id),standard,`ASI progression mismatch: ${id}`);
+for(const id of ['barbarian','bard','cleric','druid','monk','paladin','ranger','sorcerer','warlock','wizard'])assert.deepEqual(asiLevels(id),standard,`ASI progression mismatch: ${id}`);
+assert.deepEqual(asiLevels('rogue'),[4,8,10,12,16,19]);
 assert.deepEqual(asiLevels('fighter'),[4,6,8,12,14,16,19]);
 assert.deepEqual(asiLevels('artificer'),standard);
 

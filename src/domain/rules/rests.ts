@@ -1,7 +1,6 @@
 import type {Character,RestType} from '../types';
 import {abilityMod} from './derived';
 import {derivedMaxHP} from './effects';
-
 export function applyRest(c:Character,type:RestType):Character{
  const next=structuredClone(c);const maxHP=derivedMaxHP(next);
  if(type==='short'){
@@ -13,7 +12,8 @@ export function applyRest(c:Character,type:RestType):Character{
  if(next.currentHP<=0)return next;
  next.currentHP=maxHP;next.tempHP=0;next.deathSaves={successes:0,failures:0};
  next.hitDice.current=Math.min(next.hitDice.max,next.hitDice.current+Math.max(1,Math.floor(next.hitDice.max/2)));
- Object.values(next.spellcasting).forEach(s=>{Object.values(s.slots).forEach(x=>x.used=0);if(s.pactSlots)s.pactSlots.used=0});
+ if(next.sharedSpellSlots)next.sharedSpellSlots=Object.fromEntries(Object.entries(next.sharedSpellSlots).map(([level,slot])=>[level,{...slot,used:0}]));
+ Object.values(next.spellcasting).forEach(s=>{Object.values(s.slots).forEach(x=>{x.used=0});if(s.pactSlots)s.pactSlots.used=0});
  next.resources.forEach(r=>{if(r.recharge==='long')r.current=r.max});
  next.items.forEach(i=>{if(i.charges?.recharge==='long')i.charges.current=i.charges.max});
  return next;

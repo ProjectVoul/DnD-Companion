@@ -11,7 +11,11 @@ export function FeaturesPanel({c,onResource}:{c:Character;onResource?:(resourceI
  const [selected,setSelected]=useState<Feature|null>(null);
  const chosen=new Set(c.optionalFeatures??[]);
  const optional=c.classes.flatMap(cl=>(OPTIONAL_CLASS_FEATURES[cl.id]??[]).filter(f=>chosen.has(f.id)&&f.level<=cl.level));
- const features=[...c.features,...c.classes.flatMap(cl=>(CLASS_PROGRESSION[cl.id]??[]).filter(f=>f.level<=cl.level)),...optional].map(f=>({...f,description:descriptionFor(f)}));
+ // c.features may contain a legacy copy of class progression. The canonical progression is derived below;
+ // retain only non-class stored features so old persisted characters cannot render duplicate class features.
+ const storedNonClass=c.features.filter(f=>f.source!=='class');
+ const progression=c.classes.flatMap(cl=>(CLASS_PROGRESSION[cl.id]??[]).filter(f=>f.level<=cl.level));
+ const features=[...storedNonClass,...progression,...optional].map(f=>({...f,description:descriptionFor(f)}));
  const unique=[...new Map(features.map(f=>[f.id,f])).values()].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
  return <section className="card"><div className="row"><div><h2>Features & Traits</h2><p className="muted">Class, subclass, species, feat, background and item effects live here. Click any entry for details.</p></div><span className="muted">{unique.length} active</span></div>
  {c.feats?.length?<><h3>Feats</h3>{c.feats.map((feat,i)=><button className="feature feature-button" key={`${feat}-${i}`} onClick={()=>setSelected({id:`feat:${feat}`,name:feat,source:'feat',level:0,description:FEAT_DESCRIPTIONS[feat]??'The selected feat is not yet populated in the canonical feat catalog.'})}><div className="row"><b>{feat}</b><small>Feat</small></div><small>{FEAT_DESCRIPTIONS[feat]?'Description available':'Description missing'}</small></button>)}</>:null}

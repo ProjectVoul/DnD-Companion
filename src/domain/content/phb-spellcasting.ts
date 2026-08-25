@@ -15,10 +15,10 @@ export const PHB_SPELLCASTING:Record<string,PhbSpellcastingProfile>={
   cleric:{ability:'wis',mode:'prepared',ritual:true,focus:true,multiclassContribution:'full'},
   druid:{ability:'wis',mode:'prepared',ritual:true,focus:true,multiclassContribution:'full'},
   paladin:{ability:'cha',mode:'prepared',ritual:false,focus:true,multiclassContribution:'half'},
-  ranger:{ability:'wis',mode:'known',ritual:false,focus:true,multiclassContribution:'half'},
+  ranger:{ability:'wis',mode:'known',ritual:false,focus:false,multiclassContribution:'half'},
   sorcerer:{ability:'cha',mode:'known',ritual:false,focus:true,multiclassContribution:'full'},
   wizard:{ability:'int',mode:'spellbook',ritual:true,focus:true,multiclassContribution:'full'},
   warlock:{ability:'cha',mode:'pact',ritual:false,focus:true,multiclassContribution:'none'},
-  fighter-eldritch-knight:{ability:'int',mode:'known',ritual:true,focus:false,multiclassContribution:'third'},
-  rogue-arcane-trickster:{ability:'int',mode:'known',ritual:true,focus:false,multiclassContribution:'third'},
+  'fighter-eldritch-knight':{ability:'int',mode:'known',ritual:false,focus:false,multiclassContribution:'third'},
+  'rogue-arcane-trickster':{ability:'int',mode:'known',ritual:false,focus:false,multiclassContribution:'third'},
 };

@@ -1,4 +1,4 @@
-import type {Character,Size,Skill} from '../domain/types';
+import type {Character,Size} from '../domain/types';
 import {BACKGROUNDS} from '../domain/content/backgrounds';
 const sizes:Size[]=['Tiny','Small','Medium','Large','Huge','Gargantuan'];
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);

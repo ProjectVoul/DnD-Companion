@@ -2,7 +2,7 @@ import { FEATS } from '../content/feats';
 import { isContentSourceEnabled } from '../content-sources';
 import type { Ability, Character, DamageType, Effect, FeatChoice, Skill } from '../types';
 
-export function featIdFromName(name: string) { return FEATS.find(f => f.name === name)?.id; }
+export function featIdFromName(name: string) { return FEATS.find(f => f.name === name || f.id === name)?.id; }
 export function featDefinition(idOrName: string) { return FEATS.find(f => f.id === idOrName || f.name === idOrName); }
 function featSourceEnabled(c: Character, idOrName: string) { const definition = featDefinition(idOrName); return !definition || isContentSourceEnabled(c.contentSources, definition.source); }
 function hasSpellcasting(c: Character) { return c.classes.some(cl => cl.level > 0 && cl.spellcastingAbility !== undefined); }

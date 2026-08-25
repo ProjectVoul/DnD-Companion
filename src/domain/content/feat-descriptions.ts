@@ -1,0 +1,22 @@
+export const FEAT_DESCRIPTIONS:Record<string,string>={
+'alert':'+5 initiative; cannot be surprised while conscious; unseen attackers do not gain advantage merely from being unseen.',
+'athlete':'Increase Strength or Dexterity by 1. Stand from prone using 5 feet, climb without extra movement, and make running jumps after 5 feet of movement.',
+'actor':'Increase Charisma by 1. Gain advantage on Deception and Performance when impersonating and mimic speech after listening for at least 1 minute.',
+'charger':'After Dashing at least 10 feet straight toward a target, make a melee attack or shove as a bonus action; the attack can deal +5 damage.',
+'crossbow-expert':'Ignore crossbow loading; no disadvantage for ranged attacks within 5 feet; after attacking with a one-handed weapon, make a hand-crossbow bonus attack.',
+'defensive-duelist':'When wielding a finesse weapon and hit by a melee attack, use your reaction to add proficiency bonus to AC against that attack.',
+'dual-wielder':'+1 AC while wielding separate melee weapons; draw or stow two one-handed weapons together; two-weapon fight with non-light one-handed melee weapons.',
+'dungeon-delver':'Advantage to find secret doors and traps, notice traps within 10 feet, advantage on saves against traps, and resistance to trap damage.',
+'durable':'Increase Constitution by 1. Hit Dice healing during short rests has a minimum of twice your Constitution modifier per die.',
+'elemental-adept':'Choose acid, cold, fire, lightning, or thunder. Ignore resistance to that type and treat 1s on its damage dice as 2s.',
+'grappler':'Advantage on attacks against creatures you grapple; with another grapple check you can restrain a grappled creature, but attacks against you then have advantage.',
+'great-weapon-master':'After a melee critical hit or reducing a creature to 0 HP, make a melee bonus attack. With a heavy weapon, take -5 to hit for +10 damage.',
+'healer':'A healer’s kit stabilizes and restores 1 HP. Spend a kit use to restore 1d6 + 4 + target Hit Dice maximum HP once per creature per rest.',
+'heavily-armored':'Increase Strength by 1 and gain heavy armor proficiency.',
+'heavy-armor-master':'Increase Strength by 1 and reduce nonmagical bludgeoning, piercing, and slashing weapon damage by 3 while in heavy armor.',
+'inspiring-leader':'Increase Charisma by 1. After 10 minutes, grant up to six friendly creatures temporary HP equal to level + Charisma modifier; recharge on a rest.',
+'keen-mind':'Increase Intelligence by 1. Always know north and time to the next sunrise/sunset and accurately recall anything seen or heard within the last month.',
+'lightly-armored':'Increase Strength or Dexterity by 1 and gain light armor proficiency.',
+'linguist':'Increase Intelligence by 1, learn three languages, and create written ciphers.',
+'lucky':'Gain three luck points per long rest. Spend one for an extra d20 on an attack, check, or save, or to impose an extra d20 on an attack against you.'
+};

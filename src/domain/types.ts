@@ -1,3 +1,4 @@
+export type {ContentSourceId} from './content-sources';
 import type {ContentSourceId} from './content-sources';
 export type Ability='str'|'dex'|'con'|'int'|'wis'|'cha';
 export type Skill='acrobatics'|'animalHandling'|'arcana'|'athletics'|'deception'|'history'|'insight'|'intimidation'|'investigation'|'medicine'|'nature'|'perception'|'performance'|'persuasion'|'religion'|'sleightOfHand'|'stealth'|'survival';

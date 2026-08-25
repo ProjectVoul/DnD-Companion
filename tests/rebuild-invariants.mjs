@@ -6,7 +6,8 @@ for(const token of ['Builder','DetailsPanel','EquipmentPanel','SpellsPanel','Ski
 const types=readFileSync('src/domain/types.ts','utf8');
 for(const token of ['alwaysPrepared','spellbook','damage','ArmorData','ShieldData','fightingStyles','feats','pactSlots','currency','backgroundData'])if(!types.includes(token))throw new Error(`Missing canonical model field: ${token}`);
 const sheet=readFileSync('src/ui/Sheet.tsx','utf8');
-for(const token of ['Short Rest','Long Rest','Spend Hit Die','Death Saves','Current hit points'])if(!sheet.includes(token))throw new Error(`Missing character sheet action/field: ${token}`);
+for(const token of ['Short Rest','Long Rest','Death Saves','Current hit points'])if(!sheet.includes(token))throw new Error(`Missing character sheet action/field: ${token}`);
+if(!sheet.includes('spendHitDie')||!sheet.match(/Spend d\{p\.die\}/))throw new Error('Missing character sheet hit-die spending action');
 const details=readFileSync('src/ui/DetailsPanel.tsx','utf8');
 for(const token of ['Background','Conditions','Resistances','Immunities','Vulnerabilities','Currency','Notes'])if(!details.includes(token))throw new Error(`Missing editable character detail: ${token}`);
 const equipment=readFileSync('src/ui/EquipmentPanel.tsx','utf8');

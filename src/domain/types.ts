@@ -1,3 +1,4 @@
+import type {ContentSourceId} from './content-sources';
 export type Ability='str'|'dex'|'con'|'int'|'wis'|'cha';
 export type Skill='acrobatics'|'animalHandling'|'arcana'|'athletics'|'deception'|'history'|'insight'|'intimidation'|'investigation'|'medicine'|'nature'|'perception'|'performance'|'persuasion'|'religion'|'sleightOfHand'|'stealth'|'survival';
 export type DamageType='acid'|'bludgeoning'|'cold'|'fire'|'force'|'lightning'|'necrotic'|'piercing'|'poison'|'psychic'|'radiant'|'slashing'|'thunder';
@@ -35,5 +36,5 @@ export interface Character{
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
  languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
- contentSources?:string[];optionalFeatures?:string[];
+ contentSources?:ContentSourceId[];optionalFeatures?:string[];
 }

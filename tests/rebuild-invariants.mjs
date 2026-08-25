@@ -1,5 +1,5 @@
 import {readFileSync} from 'node:fs';
-const required=['src/main.tsx','src/App.tsx','src/domain/types.ts','src/domain/rules.ts','src/domain/catalog.ts','src/domain/character-builder.ts','src/domain/spellcasting.ts','src/domain/slot-tables.ts','src/domain/validation.ts','src/application/storage.ts','src/ui/Builder.tsx','src/ui/DetailsPanel.tsx','src/ui/ResourcesPanel.tsx','src/ui/EquipmentPanel.tsx','src/ui/SpellsPanel.tsx','src/ui/Sheet.tsx'];
+const required=['src/main.tsx','src/App.tsx','src/domain/types.ts','src/domain/rules.ts','src/domain/catalog.ts','src/domain/character-builder.ts','src/domain/content/sources.ts','src/domain/slot-tables.ts','src/domain/validation.ts','src/application/storage.ts','src/ui/Builder.tsx','src/ui/DetailsPanel.tsx','src/ui/ResourcesPanel.tsx','src/ui/EquipmentPanel.tsx','src/ui/SpellsPanel.tsx','src/ui/Sheet.tsx'];
 for(const f of required)readFileSync(f,'utf8');
 const app=readFileSync('src/App.tsx','utf8');
 for(const token of ['Builder','DetailsPanel','EquipmentPanel','SpellsPanel','SkillsPanel','ResourcesPanel'])if(!app.includes(token))throw new Error(`Missing UI integration: ${token}`);

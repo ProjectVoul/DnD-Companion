@@ -24,7 +24,7 @@ export interface Resource{id:string;name:string;current:number;max:number;rechar
 export interface BackgroundData{name:string;skillProficiencies:string[];toolProficiencies:string[];languages:string[];feature?:string;description?:string;}
 export interface DeathSaves{successes:number;failures:number;}
 export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
-export interface FeatChoice{ability?:Ability;skill?:Skill;skills?:Skill[];}
+export interface FeatChoice{ability?:Ability;skill?:Skill;skills?:Skill[];damageType?:DamageType;}
 export interface CharacterClass{id:string;name:string;level:number;subclassId?:string;subclassName?:string;spellcastingAbility?:Ability;}
 export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;backgroundData?:BackgroundData;alignment?:string;

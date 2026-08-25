@@ -5,6 +5,7 @@ import {multiclassSpellSlots} from './spell-slots';
 import {proficiencyBonus} from './derived';
 import {derivedAbilityMod} from './effects';
 export type HPMode='average'|'roll';
+export function hasASI(classId:string,level:number){return (CLASS_PROGRESSION[classId]??[]).some(f=>f.level===level&&f.id.includes(':asi-'));}
 export function levelUp(c:Character,classId:string,mode:HPMode='average',abilityIncrease?:{ability?:Ability;amount?:number;secondAbility?:Ability}):Character{
  const current=c.classes.find(x=>x.id===classId);if(!current||current.level>=20||c.level>=20)return c;const next=structuredClone(c);const target=next.classes.find(x=>x.id===classId);const cls=CLASSES.find(x=>x.id===classId);if(!target||!cls)return c;
  target.level+=1;next.level=Math.min(20,next.level+1);next.proficiencyBonus=proficiencyBonus(next.level);

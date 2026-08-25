@@ -27,6 +27,7 @@ export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
 export interface CharacterClass{id:string;name:string;level:number;subclassId?:string;subclassName?:string;spellcastingAbility?:Ability;}
 export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;backgroundData?:BackgroundData;alignment?:string;
+ speciesAbilityChoices?:Ability[];speciesSkillChoices?:Skill[];
  classes:CharacterClass[];level:number;abilityScores:AbilityScores;skillStates:Record<Skill,SkillState>;savingThrowProficiency:Ability[];
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:{die:Die;max:number;current:number};
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;features:Feature[];resources:Resource[];

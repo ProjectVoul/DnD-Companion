@@ -1,4 +1,5 @@
 import { FEATS } from '../content/feats';
+import { isContentSourceEnabled } from '../content-sources';
 import type { Ability, Character, DamageType, Effect, FeatChoice, Skill } from '../types';
 
 export function featIdFromName(name: string) {
@@ -7,6 +8,11 @@ export function featIdFromName(name: string) {
 
 export function featDefinition(idOrName: string) {
   return FEATS.find(f => f.id === idOrName || f.name === idOrName);
+}
+
+function featSourceEnabled(c: Character, idOrName: string) {
+  const definition = featDefinition(idOrName);
+  return !definition || isContentSourceEnabled(c.contentSources, definition.source);
 }
 
 function hasSpellcasting(c: Character) {
@@ -145,6 +151,7 @@ export function elementalAdeptChoiceUsed(c: Character) {
 
 export function featCanBeSelected(c: Character, idOrName: string, choice?: FeatChoice) {
   const id = featIdFromName(idOrName) ?? idOrName;
+  if (!featSourceEnabled(c, id)) return false;
   if (id !== 'elemental-adept' && hasFeat(c, id)) return false;
   if (!featPrerequisiteMet(c, id)) return false;
   if (id === 'elemental-adept') {
@@ -203,6 +210,7 @@ export function featEffects(c: Character): Effect[] {
 
   for (const name of c.feats ?? []) {
     const id = featIdFromName(name) ?? name;
+    if (!featSourceEnabled(c, id)) continue;
     const index = occurrences[id] ?? 0;
     occurrences[id] = index + 1;
     const choice = featChoice(c, id, index);

@@ -8,7 +8,7 @@ export type Die=4|6|8|10|12|20|100;
 export type FeatureSource='class'|'subclass'|'species'|'feat'|'background'|'item'|'optional';
 export type RestType='short'|'long';
 export type RechargeType='short'|'long'|'manual';
-export type Size='Tiny'|'Small'|'Medium'|'Large';
+export type Size='Tiny'|'Small'|'Medium'|'Large'|'Huge'|'Gargantuan';
 export interface AbilityScores{str:number;dex:number;con:number;int:number;wis:number;cha:number;}
 export interface SkillState{proficient:boolean;expertise:boolean;bonusOverride?:number;}
 export interface DamagePart{dice:number;die:Die;type:DamageType;flat?:number;}

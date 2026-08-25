@@ -1,20 +1,20 @@
 import type {Ability} from './types';
 export type SpellcastingModel='none'|'known'|'prepared'|'spellbook'|'pact';
-export interface ClassDefinition{ id:string; name:string; hitDie:4|6|8|10|12; primaryAbilities:Ability[]; savingThrows:Ability[]; spellcasting:SpellcastingModel; spellcastingAbility?:Ability; subclassLevel:number; }
+export interface ClassDefinition{ id:string; name:string; hitDie:4|6|8|10|12; primaryAbilities:Ability[]; savingThrows:Ability[]; spellcasting:SpellcastingModel; spellcastingAbility?:Ability; subclassLevel:number; multiclassRequirements?:Ability[][]; }
 export const CLASSES:ClassDefinition[]=[
-{id:'barbarian',name:'Barbarian',hitDie:12,primaryAbilities:['str'],savingThrows:['str','con'],spellcasting:'none',subclassLevel:3},
-{id:'bard',name:'Bard',hitDie:8,primaryAbilities:['cha'],savingThrows:['dex','cha'],spellcasting:'known',spellcastingAbility:'cha',subclassLevel:3},
-{id:'cleric',name:'Cleric',hitDie:8,primaryAbilities:['wis'],savingThrows:['wis','cha'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:1},
-{id:'druid',name:'Druid',hitDie:8,primaryAbilities:['wis'],savingThrows:['int','wis'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:2},
-{id:'fighter',name:'Fighter',hitDie:10,primaryAbilities:['str','dex'],savingThrows:['str','con'],spellcasting:'none',subclassLevel:3},
-{id:'monk',name:'Monk',hitDie:8,primaryAbilities:['dex','wis'],savingThrows:['str','dex'],spellcasting:'none',subclassLevel:3},
-{id:'paladin',name:'Paladin',hitDie:10,primaryAbilities:['str','cha'],savingThrows:['wis','cha'],spellcasting:'prepared',spellcastingAbility:'cha',subclassLevel:3},
-{id:'ranger',name:'Ranger',hitDie:10,primaryAbilities:['dex','wis'],savingThrows:['str','dex'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:3},
-{id:'rogue',name:'Rogue',hitDie:8,primaryAbilities:['dex'],savingThrows:['dex','int'],spellcasting:'none',subclassLevel:3},
-{id:'sorcerer',name:'Sorcerer',hitDie:6,primaryAbilities:['cha'],savingThrows:['con','cha'],spellcasting:'known',spellcastingAbility:'cha',subclassLevel:1},
-{id:'warlock',name:'Warlock',hitDie:8,primaryAbilities:['cha'],savingThrows:['wis','cha'],spellcasting:'pact',spellcastingAbility:'cha',subclassLevel:1},
-{id:'wizard',name:'Wizard',hitDie:6,primaryAbilities:['int'],savingThrows:['int','wis'],spellcasting:'spellbook',spellcastingAbility:'int',subclassLevel:2},
-{id:'artificer',name:'Artificer',hitDie:8,primaryAbilities:['int'],savingThrows:['con','int'],spellcasting:'prepared',spellcastingAbility:'int',subclassLevel:3},
+{id:'barbarian',name:'Barbarian',hitDie:12,primaryAbilities:['str'],savingThrows:['str','con'],spellcasting:'none',subclassLevel:3,multiclassRequirements:[['str']]},
+{id:'bard',name:'Bard',hitDie:8,primaryAbilities:['cha'],savingThrows:['dex','cha'],spellcasting:'known',spellcastingAbility:'cha',subclassLevel:3,multiclassRequirements:[['cha']]},
+{id:'cleric',name:'Cleric',hitDie:8,primaryAbilities:['wis'],savingThrows:['wis','cha'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:1,multiclassRequirements:[['wis']]},
+{id:'druid',name:'Druid',hitDie:8,primaryAbilities:['wis'],savingThrows:['int','wis'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:2,multiclassRequirements:[['wis']]},
+{id:'fighter',name:'Fighter',hitDie:10,primaryAbilities:['str','dex'],savingThrows:['str','con'],spellcasting:'none',subclassLevel:3,multiclassRequirements:[['str','dex']]},
+{id:'monk',name:'Monk',hitDie:8,primaryAbilities:['dex','wis'],savingThrows:['str','dex'],spellcasting:'none',subclassLevel:3,multiclassRequirements:[['dex'],['wis']]},
+{id:'paladin',name:'Paladin',hitDie:10,primaryAbilities:['str','cha'],savingThrows:['wis','cha'],spellcasting:'prepared',spellcastingAbility:'cha',subclassLevel:3,multiclassRequirements:[['str'],['cha']]},
+{id:'ranger',name:'Ranger',hitDie:10,primaryAbilities:['dex','wis'],savingThrows:['str','dex'],spellcasting:'prepared',spellcastingAbility:'wis',subclassLevel:3,multiclassRequirements:[['dex'],['wis']]},
+{id:'rogue',name:'Rogue',hitDie:8,primaryAbilities:['dex'],savingThrows:['dex','int'],spellcasting:'none',subclassLevel:3,multiclassRequirements:[['dex']]},
+{id:'sorcerer',name:'Sorcerer',hitDie:6,primaryAbilities:['cha'],savingThrows:['con','cha'],spellcasting:'known',spellcastingAbility:'cha',subclassLevel:1,multiclassRequirements:[['cha']]},
+{id:'warlock',name:'Warlock',hitDie:8,primaryAbilities:['cha'],savingThrows:['wis','cha'],spellcasting:'pact',spellcastingAbility:'cha',subclassLevel:1,multiclassRequirements:[['cha']]},
+{id:'wizard',name:'Wizard',hitDie:6,primaryAbilities:['int'],savingThrows:['int','wis'],spellcasting:'spellbook',spellcastingAbility:'int',subclassLevel:2,multiclassRequirements:[['int']]},
+{id:'artificer',name:'Artificer',hitDie:8,primaryAbilities:['int'],savingThrows:['con','int'],spellcasting:'prepared',spellcastingAbility:'int',subclassLevel:3,multiclassRequirements:[['int']]},
 ];
 export const SUBCLASSES:Record<string,{id:string;name:string;source:string}[]>= {
 barbarian:[{id:'berserker',name:'Path of the Berserker',source:'phb2014'},{id:'totem-warrior',name:'Path of the Totem Warrior',source:'phb2014'}],

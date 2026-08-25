@@ -21,6 +21,7 @@ export interface Effect{ id:string;name:string;target:EffectTarget;value:number;
 export interface Item{id:string;name:string;kind:ItemKind;quantity:number;weight?:number;description?:string;equipped:boolean;requiresAttunement?:boolean;attuned?:boolean;weapon?:WeaponData;armor?:ArmorData;shield?:ShieldData;effects?:string[];mechanicalEffects?:Effect[];charges?:{current:number;max:number;recharge:RechargeType};homebrew?:boolean;}
 export interface Spell{id:string;name:string;level:number;school:string;classes:string[];ritual?:boolean;concentration?:boolean;source?:string;alwaysPrepared?:boolean;castingTime?:string;range?:string;components?:string[];duration?:string;description?:string;higherLevels?:string;}
 export interface SpellState{known:string[];prepared:string[];alwaysPrepared:string[];spellbook:string[];slots:Record<number,{max:number;used:number}>;pactSlots?:{max:number;used:number;level:number};}
+export interface ConcentrationState{spellId:string;classId:string;}
 export interface Feature{id:string;name:string;source:FeatureSource;level:number;description?:string;optional?:boolean;replaces?:string;effects?:Effect[];resourceId?:string;activation?:'action'|'bonus-action'|'reaction'|'passive'|'special';}
 export interface Resource{id:string;name:string;current:number;max:number;recharge:RechargeType;sourceId?:string;description?:string;}
 export interface BackgroundData{name:string;skillProficiencies:string[];toolProficiencies:string[];languages:string[];feature?:string;description?:string;}
@@ -36,7 +37,7 @@ export interface Character{
  speciesAbilityChoices?:Ability[];speciesSkillChoices?:Skill[];
  classes:CharacterClass[];level:number;abilityScores:AbilityScores;skillStates:Record<Skill,SkillState>;savingThrowProficiency:Ability[];
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:HitDice;
- deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;features:Feature[];resources:Resource[];
+ deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;concentration?:ConcentrationState;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
  languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
  contentSources?:ContentSourceId[];optionalFeatures?:string[];

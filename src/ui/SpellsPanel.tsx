@@ -1,13 +1,14 @@
 import {useMemo,useState} from 'react';
 import type {Character,Spell,SpellState} from '../domain/types';
 import {CLASSES} from '../domain/catalog';
-import {setPrepared,pactMagicSlots} from '../domain/rules/spellcasting';
+import {enabledContentSources} from '../domain/content-sources';
+import {setPrepared,pactMagicSlots,eligibleClassSpells} from '../domain/rules/spellcasting';
 import {maxPreparedSpells,spellAttackBonus,spellSaveDC} from '../domain/rules';
 import {multiclassSpellSlots,setSharedSpellSlotUsed} from '../domain/rules/spell-slots';
 export function SpellsPanel({c,update,spells}:{c:Character;update:(fn:(x:Character)=>Character)=>void;spells:Spell[]}){
  const spellClasses=c.classes.filter(cl=>cl.spellcastingAbility||CLASSES.find(x=>x.id===cl.id)?.spellcasting!=='none');const [classId,setClassId]=useState(spellClasses[0]?.id??c.classes[0]?.id??'');const activeClass=spellClasses.find(cl=>cl.id===classId)??spellClasses[0];const effectiveClassId=activeClass?.id??classId;const def=CLASSES.find(x=>x.id===effectiveClassId);const sc=c.spellcasting[effectiveClassId]??{known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}};const model=def?.spellcasting??'none';
  const [tab,setTab]=useState<'prepared'|'known'|'spellbook'|'list'>(model==='spellbook'?'spellbook':model==='known'||model==='pact'?'known':'prepared');const [details,setDetails]=useState<Spell|null>(null);
- const limit=maxPreparedSpells(c,effectiveClassId);const grouped=useMemo(()=>spells.reduce<Record<number,Spell[]>>((g,s)=>{(g[s.level]??=[]).push(s);return g},{}),[spells]);
+ const limit=maxPreparedSpells(c,effectiveClassId);const classSpells=useMemo(()=>eligibleClassSpells(spells,effectiveClassId,[...enabledContentSources(c.contentSources)]),[spells,effectiveClassId,c.contentSources]);const grouped=useMemo(()=>classSpells.reduce<Record<number,Spell[]>>((g,s)=>{(g[s.level]??=[]).push(s);return g},{}),[classSpells]);
  const derivedPact=effectiveClassId==='warlock'?pactMagicSlots(c,effectiveClassId):null;const pactSlots:SpellState['pactSlots']=sc.pactSlots??(derivedPact?{...derivedPact,used:0}:undefined);
  const togglePrepared=(id:string)=>update(x=>{const state=x.spellcasting[effectiveClassId]??{known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}};return {...x,spellcasting:{...x.spellcasting,[effectiveClassId]:setPrepared(state,id,!state.prepared.includes(id),maxPreparedSpells(x,effectiveClassId))}}});
  const toggleList=(id:string)=>update(x=>{const state=x.spellcasting[effectiveClassId]??{known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}};const key=model==='spellbook'?'spellbook':model==='known'||model==='pact'?'known':'prepared';if(key==='prepared')return {...x,spellcasting:{...x.spellcasting,[effectiveClassId]:setPrepared(state,id,!state.prepared.includes(id),maxPreparedSpells(x,effectiveClassId))}};const next=new Set(state[key]);next.has(id)?next.delete(id):next.add(id);return {...x,spellcasting:{...x.spellcasting,[effectiveClassId]:{...state,[key]:[...next]}}}});

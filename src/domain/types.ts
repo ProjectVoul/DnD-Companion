@@ -14,7 +14,7 @@ export interface DamagePart{dice:number;die:Die;type:DamageType;flat?:number;}
 export interface WeaponData{attackAbility:Ability;proficient:boolean;attackBonus:number;damageBonus:number;damage:DamagePart[];properties:string[];range?:string;}
 export interface ArmorData{category:ArmorCategory;baseAC:number;dexBonus:boolean;dexCap?:number;strengthRequirement?:number;stealthDisadvantage:boolean;magicBonus:number;}
 export interface ShieldData{acBonus:number;magicBonus:number;}
-export type EffectTarget='ac'|'savingThrows'|'initiative'|'speed'|'darkvision'|'skill'|'attack'|'damage'|'maxHP'|'ability'|'passivePerception'|'passiveInvestigation';
+export type EffectTarget='ac'|'savingThrows'|'initiative'|'speed'|'darkvision'|'skill'|'skillProficiency'|'skillExpertise'|'attack'|'damage'|'maxHP'|'ability'|'passivePerception'|'passiveInvestigation';
 export interface Effect{ id:string;name:string;target:EffectTarget;value:number;ability?:Ability;skill?:Skill;damageType?:DamageType;condition?:string;passive?:boolean;sourceId?:string;description?:string; }
 export interface Item{id:string;name:string;kind:ItemKind;quantity:number;weight?:number;description?:string;equipped:boolean;attuned?:boolean;weapon?:WeaponData;armor?:ArmorData;shield?:ShieldData;effects?:string[];mechanicalEffects?:Effect[];charges?:{current:number;max:number;recharge:RechargeType};homebrew?:boolean;}
 export interface Spell{id:string;name:string;level:number;school:string;classes:string[];ritual?:boolean;concentration?:boolean;source?:string;alwaysPrepared?:boolean;castingTime?:string;range?:string;components?:string[];duration?:string;description?:string;higherLevels?:string;}
@@ -24,7 +24,7 @@ export interface Resource{id:string;name:string;current:number;max:number;rechar
 export interface BackgroundData{name:string;skillProficiencies:string[];toolProficiencies:string[];languages:string[];feature?:string;description?:string;}
 export interface DeathSaves{successes:number;failures:number;}
 export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
-export interface FeatChoice{ability?:Ability;skill?:Skill;}
+export interface FeatChoice{ability?:Ability;skill?:Skill;skills?:Skill[];}
 export interface CharacterClass{id:string;name:string;level:number;subclassId?:string;subclassName?:string;spellcastingAbility?:Ability;}
 export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;backgroundData?:BackgroundData;alignment?:string;

@@ -9,7 +9,6 @@ export function applyRest(c:Character,type:RestType):Character{
   Object.values(next.spellcasting).forEach(s=>{if(s.pactSlots)s.pactSlots.used=0});
   return next;
  }
- if(next.currentHP<=0)return next;
  next.currentHP=maxHP;next.tempHP=0;next.deathSaves={successes:0,failures:0};
  next.hitDice.current=Math.min(next.hitDice.max,next.hitDice.current+Math.max(1,Math.floor(next.hitDice.max/2)));
  if(next.sharedSpellSlots)next.sharedSpellSlots=Object.fromEntries(Object.entries(next.sharedSpellSlots).map(([level,slot])=>[level,{...slot,used:0}]));

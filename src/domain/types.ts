@@ -25,6 +25,7 @@ export interface BackgroundData{name:string;skillProficiencies:string[];toolProf
 export interface DeathSaves{successes:number;failures:number;}
 export interface Currency{cp:number;sp:number;ep:number;gp:number;pp:number;}
 export interface FeatChoice{ability?:Ability;skill?:Skill;skills?:Skill[];damageType?:DamageType;}
+export type StoredFeatChoices=Record<string,FeatChoice|FeatChoice[]>;
 export interface CharacterClass{id:string;name:string;level:number;subclassId?:string;subclassName?:string;spellcastingAbility?:Ability;}
 export interface Character{
  id:string;name:string;species:string;subspecies?:string;background?:string;backgroundData?:BackgroundData;alignment?:string;
@@ -32,7 +33,7 @@ export interface Character{
  classes:CharacterClass[];level:number;abilityScores:AbilityScores;skillStates:Record<Skill,SkillState>;savingThrowProficiency:Ability[];
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:{die:Die;max:number;current:number};
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;features:Feature[];resources:Resource[];
- conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:Record<string,FeatChoice>;notes?:string;
+ conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
  languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
  contentSources?:string[];optionalFeatures?:string[];
 }

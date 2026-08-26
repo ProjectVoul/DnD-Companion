@@ -10,6 +10,8 @@ export type FeatureSource='class'|'subclass'|'species'|'feat'|'background'|'item
 export type RestType='short'|'long';
 export type RechargeType='short'|'long'|'manual';
 export type Size='Tiny'|'Small'|'Medium'|'Large'|'Huge'|'Gargantuan';
+export type InspirationState=[boolean,boolean,boolean,boolean];
+export type InspirationLegacy=boolean|number;
 export interface AbilityScores{str:number;dex:number;con:number;int:number;wis:number;cha:number;}
 export interface SkillState{proficient:boolean;expertise:boolean;bonusOverride?:number;}
 export interface DamagePart{dice:number;die:Die;type:DamageType;flat?:number;}
@@ -39,6 +41,6 @@ export interface Character{
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:HitDice;
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;concentration?:ConcentrationState;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
- languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
+ languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:InspirationState;currency?:Currency;experience?:number;
  contentSources?:ContentSourceId[];optionalFeatures?:string[];
 }

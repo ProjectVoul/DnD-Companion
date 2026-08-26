@@ -29,20 +29,25 @@ jobs:
       - run: npm run test:rules
       - run: npm run test:invariants
       - run: npm run build
+
+      # Deployment smoke-check: Pages must receive Vite's production output,
+      # never the TypeScript source entrypoint from index.html.
       - name: Verify deployable Vite output
         shell: bash
         run: |
           set -euo pipefail
           test -f dist/index.html
           test -d dist/assets
-          grep -Eq '<script[^>]+type=["'"']module["'"'][^>]+src=["'"']\./assets/[^"'"']+\.js["'"']' dist/index.html
+          grep -Eq 'type="module"[[:space:]]+src="\./assets/[^" ]+\.js"' dist/index.html
           ! grep -q 'src/main.tsx' dist/index.html
           test -n "$(find dist/assets -maxdepth 1 -type f -name '*.js' -print -quit)"
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
 
   deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/rebuild/react-engine'
     needs: build
     runs-on: ubuntu-latest
     environment:

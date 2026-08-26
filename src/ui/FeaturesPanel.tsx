@@ -2,8 +2,10 @@ import {useState} from 'react';
 import type {Character,Feature,FeatureSource} from '../domain/types';
 import {CLASS_PROGRESSION} from '../domain/content/class-progression';
 import {OPTIONAL_CLASS_FEATURES} from '../domain/content/optional-class-features';
+import {PALADIN_SUBCLASS_FEATURES} from '../domain/content/paladin-subclass-features';
 import {FEAT_DESCRIPTIONS} from '../domain/content/feat-descriptions';
 import {FEATURE_DESCRIPTIONS} from '../domain/content/feature-descriptions';
+import {enabledContentSources} from '../domain/content-sources';
 
 const descriptionFor=(feature:Feature)=>feature.description??FEATURE_DESCRIPTIONS[feature.id]??FEATURE_DESCRIPTIONS[`${feature.id.split(':')[0]}:${feature.id.split(':')[1]}`];
 const sourceLabels:Record<FeatureSource,string>={class:'Class',subclass:'Subclass',species:'Species / Race',feat:'Feats',background:'Background',item:'Items',optional:'Optional Features'};
@@ -11,12 +13,14 @@ const sourceOrder:FeatureSource[]=['species','background','class','subclass','fe
 
 export function FeaturesPanel({c,onResource}:{c:Character;onResource?:(resourceId:string)=>void}){
  const [selected,setSelected]=useState<Feature|null>(null);
+ const enabled=new Set(enabledContentSources(c.contentSources));
  const chosen=new Set(c.optionalFeatures??[]);
  const optional=c.classes.flatMap(cl=>(OPTIONAL_CLASS_FEATURES[cl.id]??[]).filter(f=>chosen.has(f.id)&&f.level<=cl.level));
  const storedNonClass=c.features.filter(f=>f.source!=='class');
  const progression=c.classes.flatMap(cl=>(CLASS_PROGRESSION[cl.id]??[]).filter(f=>f.level<=cl.level));
+ const subclass=c.classes.flatMap(cl=>cl.subclassId?(PALADIN_SUBCLASS_FEATURES[cl.subclassId]??[]).filter(f=>f.level<=cl.level&&enabled.has(f.sourceBook??'phb2014')):[]);
  const itemFeatures=c.items.filter(i=>(i.mechanicalEffects?.length||i.effects?.length)&&i.equipped).map(i=>({id:`item:${i.id}`,name:i.name,source:'item' as const,level:0,description:i.description??(i.effects??[]).join(' · '),effects:i.mechanicalEffects}));
- const features=[...storedNonClass,...progression,...optional,...itemFeatures].map(f=>({...f,description:descriptionFor(f)}));
+ const features=[...storedNonClass,...progression,...subclass,...optional,...itemFeatures].map(f=>({...f,description:descriptionFor(f)}));
  const unique=[...new Map(features.map(f=>[f.id,f])).values()].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
  const groups=sourceOrder.map(source=>({source,items:unique.filter(f=>f.source===source)})).filter(g=>g.items.length);
  return <section className="card"><div className="row"><div><h2>Features & Traits</h2><p className="muted">Features are grouped by origin so class, subclass, species, feats, background and item effects stay distinct.</p></div><span className="muted">{unique.length} active</span></div>

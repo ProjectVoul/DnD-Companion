@@ -1,1 +1,0 @@
-This file exists only to ensure the rebuild branch has a final CI-triggering commit after the architecture baseline was assembled. It can be removed after CI verification.

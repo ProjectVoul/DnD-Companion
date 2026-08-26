@@ -20,74 +20,19 @@ const fightingStyles:FightingStyleOption[]=[
 ];
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
 const inspirationSlots=(value:Character['inspiration']):[boolean,boolean,boolean,boolean]=>value??[false,false,false,false];
+const styleLevel=(classId:string)=>classId==='fighter'?1:2;
 
 export function DetailsPanel({c,update}:{c:Character;update:(fn:(x:Character)=>Character)=>void}){
- const background=BACKGROUNDS.find(b=>b.id===c.background);
- const patch=(p:Partial<Character>)=>update(x=>({...x,...p}));
- const setList=(key:'languages'|'toolProficiencies'|'armorProficiencies'|'weaponProficiencies',value:string)=>patch({[key]:split(value)} as Partial<Character>);
- const chooseBackground=(id:string)=>patch({background:id||undefined,backgroundData:(()=>{const b=BACKGROUNDS.find(x=>x.id===id);return b?{name:b.name,skillProficiencies:b.skillProficiencies,toolProficiencies:b.toolProficiencies,languages:b.languages,feature:b.feature}:undefined})()});
- const eligibleClasses=c.classes.filter(cl=>['fighter','paladin','ranger'].includes(cl.id)&&cl.level>=2);
- const fightingClass=eligibleClasses[0];
- const enabledTasha=(c.contentSources??[]).includes('tasha2020');
- const options=fightingStyles.filter(s=>s.classes.includes(fightingClass?.id??'')&&(s.source==='phb2014'||enabledTasha));
- const storedId=c.fightingStyles?.[0]?.toLowerCase()??'';
- const fightingStyle=options.find(s=>s.id===storedId)||fightingStyles.find(s=>s.id===storedId);
+ const background=BACKGROUNDS.find(b=>b.id===c.background);const patch=(p:Partial<Character>)=>update(x=>({...x,...p}));const setList=(key:'languages'|'toolProficiencies'|'armorProficiencies'|'weaponProficiencies',value:string)=>patch({[key]:split(value)} as Partial<Character>);const chooseBackground=(id:string)=>patch({background:id||undefined,backgroundData:(()=>{const b=BACKGROUNDS.find(x=>x.id===id);return b?{name:b.name,skillProficiencies:b.skillProficiencies,toolProficiencies:b.toolProficiencies,languages:b.languages,feature:b.feature}:undefined})()});
+ const eligibleClasses=c.classes.filter(cl=>['fighter','paladin','ranger'].includes(cl.id)&&cl.level>=styleLevel(cl.id));const enabledTasha=(c.contentSources??[]).includes('tasha2020');const currentStyles=c.fightingStyles??[];
+ const setStyle=(index:number,value:string)=>patch({fightingStyles:(()=>{const next=[...currentStyles];if(value)next[index]=value;else next.splice(index,1);return next.filter(Boolean);})()});
  const inspiration=inspirationSlots(c.inspiration);
  return <div className="grid">
-  <section className="card">
-   <h2>Character Details</h2>
-   <div className="form-grid">
-    <label>Name<input value={c.name} onChange={e=>patch({name:e.target.value})}/></label>
-    <label>Alignment<select value={c.alignment??''} onChange={e=>patch({alignment:e.target.value||undefined})}><option value="">Optional</option>{alignments.map(a=><option key={a}>{a}</option>)}</select></label>
-    <label>Background<select value={c.background??''} onChange={e=>chooseBackground(e.target.value)}><option value="">None</option>{BACKGROUNDS.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
-    <label>Size<select value={c.size??'Medium'} onChange={e=>patch({size:e.target.value as Size})}>{sizes.map(s=><option key={s}>{s}</option>)}</select></label>
-    <label>Speed<input type="number" min="0" value={c.speed??30} onChange={e=>patch({speed:Math.max(0,Number(e.target.value))})}/></label>
-    <label>Darkvision (ft)<input type="number" min="0" value={c.darkvision??0} onChange={e=>patch({darkvision:Math.max(0,Number(e.target.value))})}/></label>
-    <label>Experience<input type="number" min="0" value={c.experience??0} onChange={e=>patch({experience:Math.max(0,Number(e.target.value))})}/></label>
-   </div>
-   {background&&<p className="muted">{background.name}: {background.feature}. Background skills are managed by the character builder/skills panel.</p>}
-   <label>Notes<textarea rows={7} value={c.notes??''} onChange={e=>patch({notes:e.target.value})} placeholder="Character notes, story, campaign details..."/></label>
-  </section>
-
-  <section className="card">
-   <h2>Character State</h2>
-   <div>
-    <b>Inspiration</b>
-    <div className="inspiration-slots">{inspiration.map((checked,index)=><button key={index} type="button" className={`inspiration-slot${checked?' active':''}`} aria-label={`Inspiration ${index+1}`} aria-pressed={checked} onClick={()=>patch({inspiration:(()=>{const slots=[...inspirationSlots(c.inspiration)] as [boolean,boolean,boolean,boolean];slots[index]=!slots[index];return slots;})()})}>{checked?'●':'○'}</button>)}</div>
-    <small className="muted">Four independent sheet markers.</small>
-   </div>
-   {fightingClass&&<>
-    <h3>Fighting Style</h3>
-    <label>{fightingClass.name} · Level {fightingClass.level}
-     <select value={fightingStyle?.id??''} onChange={e=>patch({fightingStyles:e.target.value?[e.target.value]:[]})}>
-      <option value="">Choose a fighting style</option>
-      {options.map(s=><option key={s.id} value={s.id}>{s.name}{s.source==='tasha2020'?' · Tasha':''}</option>)}
-     </select>
-    </label>
-    {fightingStyle&&<p className="muted"><b>{fightingStyle.name}.</b> {fightingStyle.description}</p>}
-    {!enabledTasha&&<p className="muted">Enable Tasha 2020 to add the supplemental Fighting Style options.</p>}
-   </>}
-   <h3>Conditions</h3>
-   <label>Active conditions<input value={c.conditions.join(', ')} onChange={e=>patch({conditions:split(e.target.value)})} placeholder="Blinded, Poisoned"/></label>
-   <h3>Defenses</h3>
-   <label>Resistances<input value={c.resistances.join(', ')} onChange={e=>patch({resistances:split(e.target.value)})}/></label>
-   <label>Immunities<input value={(c.immunities??[]).join(', ')} onChange={e=>patch({immunities:split(e.target.value)})}/></label>
-   <label>Vulnerabilities<input value={(c.vulnerabilities??[]).join(', ')} onChange={e=>patch({vulnerabilities:split(e.target.value)})}/></label>
-  </section>
-
-  <section className="card">
-   <h2>Proficiencies & Languages</h2>
-   <label>Languages<input value={(c.languages??[]).join(', ')} onChange={e=>setList('languages',e.target.value)}/></label>
-   <label>Tool proficiencies<input value={(c.toolProficiencies??[]).join(', ')} onChange={e=>setList('toolProficiencies',e.target.value)}/></label>
-   <label>Armor proficiencies<input value={(c.armorProficiencies??[]).join(', ')} onChange={e=>setList('armorProficiencies',e.target.value)}/></label>
-   <label>Weapon proficiencies<input value={(c.weaponProficiencies??[]).join(', ')} onChange={e=>setList('weaponProficiencies',e.target.value)}/></label>
-  </section>
-
-  <section className="card">
-   <h2>Currency</h2>
-   <div className="statgrid">
-    {(['cp','sp','ep','gp','pp'] as const).map(k=><label key={k}>{k.toUpperCase()}<input type="number" min="0" value={c.currency?.[k]??0} onChange={e=>patch({currency:{cp:0,sp:0,ep:0,gp:0,pp:0,...c.currency,[k]:Math.max(0,Number(e.target.value))}})}/></label>)}
-   </div>
-  </section>
+  <section className="card"><h2>Character Details</h2><div className="form-grid"><label>Name<input value={c.name} onChange={e=>patch({name:e.target.value})}/></label><label>Alignment<select value={c.alignment??''} onChange={e=>patch({alignment:e.target.value||undefined})}><option value="">Optional</option>{alignments.map(a=><option key={a}>{a}</option>)}</select></label><label>Background<select value={c.background??''} onChange={e=>chooseBackground(e.target.value)}><option value="">None</option>{BACKGROUNDS.map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label><label>Size<select value={c.size??'Medium'} onChange={e=>patch({size:e.target.value as Size})}>{sizes.map(s=><option key={s}>{s}</option>)}</select></label><label>Speed<input type="number" min="0" value={c.speed??30} onChange={e=>patch({speed:Math.max(0,Number(e.target.value))})}/></label><label>Darkvision (ft)<input type="number" min="0" value={c.darkvision??0} onChange={e=>patch({darkvision:Math.max(0,Number(e.target.value))})}/></label><label>Experience<input type="number" min="0" value={c.experience??0} onChange={e=>patch({experience:Math.max(0,Number(e.target.value))})}/></label></div>{background&&<p className="muted">{background.name}: {background.feature}. Background skills are managed by the character builder/skills panel.</p>}<label>Notes<textarea rows={7} value={c.notes??''} onChange={e=>patch({notes:e.target.value})} placeholder="Character notes, story, campaign details..."/></label></section>
+  <section className="card"><h2>Character State</h2><div><b>Inspiration</b><div className="inspiration-slots">{inspiration.map((checked,index)=><button key={index} type="button" className={`inspiration-slot${checked?' active':''}`} aria-label={`Inspiration ${index+1}`} aria-pressed={checked} onClick={()=>patch({inspiration:(()=>{const slots=[...inspirationSlots(c.inspiration)] as [boolean,boolean,boolean,boolean];slots[index]=!slots[index];return slots;})()})}>{checked?'●':'○'}</button>)}</div><small className="muted">Four independent sheet markers.</small></div>
+  {eligibleClasses.length>0&&<><h3>Fighting Style</h3>{eligibleClasses.map((cl,index)=>{const options=fightingStyles.filter(s=>s.classes.includes(cl.id)&&(s.source==='phb2014'||enabledTasha));const selected=currentStyles[index];const selectedStyle=options.find(s=>s.id===selected)||fightingStyles.find(s=>s.id===selected);const unavailable=new Set(currentStyles.filter((_,i)=>i!==index));return <div key={cl.id} className="fighting-style-choice"><label>{cl.name} · Level {cl.level}<select value={selected??''} onChange={e=>setStyle(index,e.target.value)}><option value="">Choose a fighting style</option>{options.map(s=><option key={s.id} value={s.id} disabled={unavailable.has(s.id)}>{s.name}{s.source==='tasha2020'?' · Tasha':''}</option>)}</select></label>{selectedStyle&&<p className="muted"><b>{selectedStyle.name}.</b> {selectedStyle.description}</p>}</div>})}{!enabledTasha&&<p className="muted">Enable Tasha 2020 to add the supplemental Fighting Style options.</p>}</>}
+  <h3>Conditions</h3><label>Active conditions<input value={c.conditions.join(', ')} onChange={e=>patch({conditions:split(e.target.value)})} placeholder="Blinded, Poisoned"/></label><h3>Defenses</h3><label>Resistances<input value={c.resistances.join(', ')} onChange={e=>patch({resistances:split(e.target.value)})}/></label><label>Immunities<input value={(c.immunities??[]).join(', ')} onChange={e=>patch({immunities:split(e.target.value)})}/></label><label>Vulnerabilities<input value={(c.vulnerabilities??[]).join(', ')} onChange={e=>patch({vulnerabilities:split(e.target.value)})}/></label></section>
+  <section className="card"><h2>Proficiencies & Languages</h2><label>Languages<input value={(c.languages??[]).join(', ')} onChange={e=>setList('languages',e.target.value)}/></label><label>Tool proficiencies<input value={(c.toolProficiencies??[]).join(', ')} onChange={e=>setList('toolProficiencies',e.target.value)}/></label><label>Armor proficiencies<input value={(c.armorProficiencies??[]).join(', ')} onChange={e=>setList('armorProficiencies',e.target.value)}/></label><label>Weapon proficiencies<input value={(c.weaponProficiencies??[]).join(', ')} onChange={e=>setList('weaponProficiencies',e.target.value)}/></label></section>
+  <section className="card"><h2>Currency</h2><div className="statgrid">{(['cp','sp','ep','gp','pp'] as const).map(k=><label key={k}>{k.toUpperCase()}<input type="number" min="0" value={c.currency?.[k]??0} onChange={e=>patch({currency:{cp:0,sp:0,ep:0,gp:0,pp:0,...c.currency,[k]:Math.max(0,Number(e.target.value))}})}/></label>)}</div></section>
  </div>;
 }

@@ -10,12 +10,9 @@ function derivedFeatureEffects(c:Character):Effect[]{
  return effects;
 }
 
-function fightingStyleId(c:Character){return c.fightingStyles?.[0]?.toLowerCase()??'';}
 function fightingStyleEffects(c:Character):Effect[]{
- const style=fightingStyleId(c);const effects:Effect[]=[];
+ const style=c.fightingStyles?.[0]?.toLowerCase()??'';const effects:Effect[]=[];
  if(style==='defense'&&c.items.some(i=>i.equipped&&i.kind==='armor'))effects.push({id:'fighting-style:defense',name:'Defense',target:'ac',value:1,passive:true,sourceId:'fighting-style:defense',description:'While wearing armor, gain +1 AC.'});
- if(style==='archery')effects.push({id:'fighting-style:archery',name:'Archery',target:'attack',value:2,passive:true,sourceId:'fighting-style:archery',description:'Applies to ranged weapon attacks.'});
- if(style==='thrown-weapon-fighting')effects.push({id:'fighting-style:thrown-weapon',name:'Thrown Weapon Fighting',target:'damage',value:2,passive:true,sourceId:'fighting-style:thrown-weapon',description:'Applies to ranged attacks using thrown weapons.'});
  return effects;
 }
 

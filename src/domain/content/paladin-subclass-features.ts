@@ -1,7 +1,7 @@
 import type {Feature} from '../types';
 
 type OathFeature={id:string;name:string;level:number;description:string;source:'phb2014'|'tasha2020'};
-const f=(oath:string,value:OathFeature):Feature=>({id:`subclass:paladin:${oath}:${value.id}`,name:value.name,source:'subclass',level:value.level,description:value.description,optional:value.source==='tasha2020'});
+const f=(oath:string,value:OathFeature):Feature=>({id:`subclass:paladin:${oath}:${value.id}`,name:value.name,source:'subclass',sourceBook:value.source,level:value.level,description:value.description,optional:value.source==='tasha2020'});
 
 export const PALADIN_SUBCLASS_FEATURES:Record<string,Feature[]>={
  devotion:[

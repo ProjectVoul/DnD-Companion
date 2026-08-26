@@ -1,6 +1,8 @@
 import {strict as assert} from 'node:assert';
 import {abilityMod,proficiencyBonus,skillBonus,armorClass,maxPreparedSpells,spellSaveDC,spellAttackBonus,multiclassSpellSlots,passivePerception,saveBonus,speed} from './rules';
 import {normalizeCharacter} from './rules/character';
+import {classResources} from './rules/resources';
+import {applyRest,spendHitDice} from './rules/rests';
 import {SPELLS} from './content/spells';
 import type {Character} from './types';
 
@@ -14,4 +16,6 @@ const pal={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'pa
 const wizard={...base,abilityScores:{...base.abilityScores,int:18},classes:[{id:'wizard',name:'Wizard',level:5,spellcastingAbility:'int' as const}]};assert.equal(maxPreparedSpells(wizard,'wizard'),9);
 assert.ok(SPELLS.length>0);assert.equal(SPELLS.find(s=>s.id==='command')?.classes.join(','),'cleric,paladin');assert.equal(SPELLS.find(s=>s.id==='command')?.source,'phb2014');assert.equal(SPELLS.find(s=>s.id==='shield-of-faith')?.concentration,true);assert.equal(SPELLS.find(s=>s.id==='bless')?.classes.includes('paladin'),true);
 assert.deepEqual(normalizeCharacter({...base,inspiration:4 as never}).inspiration,[true,true,true,true]);assert.deepEqual(normalizeCharacter({...base,inspiration:2 as never}).inspiration,[true,true,false,false]);assert.deepEqual(normalizeCharacter({...base,inspiration:true as never}).inspiration,[true,false,false,false]);assert.deepEqual(normalizeCharacter({...base,inspiration:0 as never}).inspiration,[false,false,false,false]);
+const dragonborn=normalizeCharacter({...base,species:'Dragonborn',features:[]});const breath=classResources(dragonborn).find(r=>r.id==='feature:breath-weapon');assert.equal(breath?.max,1);assert.equal(breath?.recharge,'short');assert.equal(breath?.sourceId,'species:breath-weapon');assert.ok(dragonborn.features.some(f=>f.id==='breath-weapon'));
+const restStart=normalizeCharacter({...base,currentHP:10,hitDice:{pools:[{die:10,max:5,current:5}]},resources:classResources(base).map(r=>({...r,current:0}))});const short=applyRest(restStart,'short');assert.equal(short.currentHP,10);assert.equal(short.resources.find(r=>r.id==='fighter:second-wind')?.current,1);const spent=spendHitDice(short,2,12);assert.equal(spent.currentHP,22);assert.equal(spent.hitDice.pools[0].current,3);const dead=normalizeCharacter({...restStart,currentHP:0,deathSaves:{successes:2,failures:2}});const long=applyRest(dead,'long');assert.equal(long.currentHP,40);assert.deepEqual(long.deathSaves,{successes:0,failures:0});assert.equal(long.hitDice.pools[0].current,5);
 console.log('core rules tests passed');

@@ -1,6 +1,7 @@
 import type {Character,InspirationLegacy,InspirationState} from '../types';
 import {proficiencyBonus,totalLevel} from './derived';
 import {derivedMaxHP} from './effects';
+import {SPECIES_BY_ID} from '../content/species';
 
 const normalizeInspiration=(value:Character['inspiration']|InspirationLegacy|undefined):InspirationState=>{
  if(Array.isArray(value))return [!!value[0],!!value[1],!!value[2],!!value[3]];
@@ -8,8 +9,22 @@ const normalizeInspiration=(value:Character['inspiration']|InspirationLegacy|und
  return [value===true,false,false,false];
 };
 
+function materializeSpeciesFeatures(c:Character){
+ const species=SPECIES_BY_ID[c.species.toLowerCase()];
+ if(!species)return;
+ const traits=[...species.traits];
+ if(c.subspecies){
+  const sub=species.subraces.find(s=>s.id===c.subspecies);
+  if(sub)traits.push(...sub.traits);
+ }
+ const byId=new Map(c.features.map(f=>[f.id,f]));
+ for(const trait of traits)byId.set(trait.id,trait);
+ c.features=[...byId.values()];
+}
+
 export function normalizeCharacter(c:Character):Character{
  const n=structuredClone(c);
+ materializeSpeciesFeatures(n);
  n.level=totalLevel(n);
  n.proficiencyBonus=proficiencyBonus(n.level);
  n.currentHP=Math.max(0,Math.min(n.currentHP,derivedMaxHP(n)));

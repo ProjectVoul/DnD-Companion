@@ -1,31 +1,54 @@
 name: Deploy D&D Companion rebuild
+
 on:
   push:
     branches: [rebuild/react-engine]
+  workflow_dispatch:
+
 permissions:
   contents: read
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
+
       - uses: actions/configure-pages@v5
-      - run: npm install
+
+      - run: npm ci
       - run: npm run check
       - run: npm run test:rules
       - run: npm run test:invariants
       - run: npm run build
+
+      # Deployment smoke-check: Pages must receive Vite's production output,
+      # never the TypeScript source entrypoint from index.html.
+      - name: Verify deployable Vite output
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f dist/index.html
+          test -d dist/assets
+          grep -Eq '<script[^>]+type=["'"']module["'"'][^>]+src=["'"']\./assets/[^"'"']+\.js["'"']' dist/index.html
+          ! grep -q 'src/main.tsx' dist/index.html
+          test -n "$(find dist/assets -maxdepth 1 -type f -name '*.js' -print -quit)"
+
       - uses: actions/upload-pages-artifact@v4
         with:
           path: ./dist
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

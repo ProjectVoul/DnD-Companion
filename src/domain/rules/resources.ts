@@ -1,34 +1,15 @@
-import type {Character,Resource,RestType} from '../types';
+import type {Character,Resource} from '../types';
 
 export interface FeatureResourceRule{max:(c:Character)=>number;recharge:'short'|'long'|'manual';unlimited?:boolean;name:string;description?:string;}
 
 const FEATURE_RESOURCE_RULES:Record<string,FeatureResourceRule>={
-  'breath-weapon':{
-    name:'Breath Weapon',
-    max:()=>1,
-    recharge:'short',
-    description:'Dragonborn Breath Weapon. One use, recovered after a short or long rest.'
-  }
+  'breath-weapon':{name:'Breath Weapon',max:()=>1,recharge:'short',description:'Dragonborn Breath Weapon. One use, recovered after a short or long rest.'}
 };
 
 function featureResources(c:Character):Resource[]{
-  const seen=new Set<string>();
-  const out:Resource[]=[];
-  for(const feature of c.features){
-    const rule=FEATURE_RESOURCE_RULES[feature.id];
-    if(!rule||seen.has(feature.id))continue;
-    seen.add(feature.id);
-    const max=Math.max(0,Math.trunc(rule.max(c)));
-    out.push({id:`feature:${feature.id}`,name:rule.name,current:max,max,recharge:rule.recharge,unlimited:rule.unlimited,sourceId:`species:${feature.id}`,description:rule.description??feature.description});
-  }
-  if(c.species.toLowerCase()==='dragonborn'&&!seen.has('breath-weapon')){
-    const feature=c.features.find(f=>f.id==='breath-weapon');
-    if(feature){
-      const rule=FEATURE_RESOURCE_RULES['breath-weapon'];
-      out.push({id:'feature:breath-weapon',name:rule.name,current:1,max:1,recharge:rule.recharge,sourceId:'species:breath-weapon',description:rule.description??feature.description});
-    }
-  }
-  return out;
+ const seen=new Set<string>();const out:Resource[]=[];
+ for(const feature of c.features){const rule=FEATURE_RESOURCE_RULES[feature.id];if(!rule||seen.has(feature.id))continue;seen.add(feature.id);const max=Math.max(0,Math.trunc(rule.max(c)));out.push({id:`feature:${feature.id}`,name:rule.name,current:max,max,recharge:rule.recharge,unlimited:rule.unlimited,sourceId:`species:${feature.id}`,description:rule.description??feature.description});}
+ return out;
 }
 
 export function classResources(c:Character):Resource[]{

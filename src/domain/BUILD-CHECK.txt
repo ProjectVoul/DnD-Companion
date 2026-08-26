@@ -1,0 +1,1 @@
+Architecture baseline: React + TypeScript + Vite; domain/application/ui separation; canonical character state; builder; equipment; spellcasting; resources; persistence; validation.

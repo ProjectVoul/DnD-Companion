@@ -1,5 +1,6 @@
 import {strict as assert} from 'node:assert';
 import {abilityMod,proficiencyBonus,skillBonus,armorClass,maxPreparedSpells,spellSaveDC,spellAttackBonus,multiclassSpellSlots,passivePerception,saveBonus,speed} from './rules';
+import {normalizeCharacter} from './rules/character';
 import {SPELLS} from './content/spells';
 import type {Character} from './types';
 
@@ -12,4 +13,5 @@ const featCharacter={...base,feats:['Alert','Tough','Observant','Mobile'],featCh
 const pal={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'paladin',name:'Paladin',level:13,spellcastingAbility:'cha' as const}],proficiencyBonus:5};assert.equal(maxPreparedSpells(pal,'paladin'),10);assert.equal(spellSaveDC(pal,'paladin'),17);assert.equal(spellAttackBonus(pal,'paladin'),9);
 const wizard={...base,abilityScores:{...base.abilityScores,int:18},classes:[{id:'wizard',name:'Wizard',level:5,spellcastingAbility:'int' as const}]};assert.equal(maxPreparedSpells(wizard,'wizard'),9);
 assert.ok(SPELLS.length>0);assert.equal(SPELLS.find(s=>s.id==='command')?.classes.join(','),'cleric,paladin');assert.equal(SPELLS.find(s=>s.id==='command')?.source,'phb2014');assert.equal(SPELLS.find(s=>s.id==='shield-of-faith')?.concentration,true);assert.equal(SPELLS.find(s=>s.id==='bless')?.classes.includes('paladin'),true);
+const migratedInspiration=normalizeCharacter({...base,inspiration:4 as never});assert.equal(migratedInspiration.inspiration,true);const emptyInspiration=normalizeCharacter({...base,inspiration:0 as never});assert.equal(emptyInspiration.inspiration,false);
 console.log('core rules tests passed');

@@ -15,7 +15,7 @@ export function FeaturesPanel({c,onResource}:{c:Character;onResource?:(resourceI
  const [selected,setSelected]=useState<Feature|null>(null);
  const enabled=new Set(enabledContentSources(c.contentSources));
  const chosen=new Set(c.optionalFeatures??[]);
- const optional=c.classes.flatMap(cl=>(OPTIONAL_CLASS_FEATURES[cl.id]??[]).filter(f=>chosen.has(f.id)&&f.level<=cl.level));
+ const optional=c.classes.flatMap(cl=>(OPTIONAL_CLASS_FEATURES[cl.id]??[]).filter(f=>chosen.has(f.id)&&f.level<=cl.level&&enabled.has(f.sourceBook??'tasha2020')));
  const storedNonClass=c.features.filter(f=>f.source!=='class');
  const progression=c.classes.flatMap(cl=>(CLASS_PROGRESSION[cl.id]??[]).filter(f=>f.level<=cl.level));
  const subclass=c.classes.flatMap(cl=>cl.subclassId?(PALADIN_SUBCLASS_FEATURES[cl.subclassId]??[]).filter(f=>f.level<=cl.level&&enabled.has(f.sourceBook??'phb2014')):[]);

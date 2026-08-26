@@ -9,13 +9,11 @@ function derivedFeatureEffects(c:Character):Effect[]{
  if(paladin&&paladin.level>=6)effects.push({id:'paladin:aura-of-protection',name:'Aura of Protection',target:'savingThrows',value:Math.max(1,mod(c.abilityScores.cha)),passive:true,sourceId:'class:paladin:aura-of-protection',description:'Self benefit while conscious and within the aura.'});
  return effects;
 }
-
 function fightingStyleEffects(c:Character):Effect[]{
- const style=c.fightingStyles?.[0]?.toLowerCase()??'';const effects:Effect[]=[];
- if(style==='defense'&&c.items.some(i=>i.equipped&&i.kind==='armor'))effects.push({id:'fighting-style:defense',name:'Defense',target:'ac',value:1,passive:true,sourceId:'fighting-style:defense',description:'While wearing armor, gain +1 AC.'});
+ const styles=new Set((c.fightingStyles??[]).map(s=>s.toLowerCase()));const effects:Effect[]=[];
+ if(styles.has('defense')&&c.items.some(i=>i.equipped&&i.kind==='armor'))effects.push({id:'fighting-style:defense',name:'Defense',target:'ac',value:1,passive:true,sourceId:'fighting-style:defense',description:'While wearing armor, gain +1 AC.'});
  return effects;
 }
-
 export function allEffects(c:Character):Effect[]{
  const featureEffects=c.features.flatMap(f=>f.effects??[]).map(e=>({...e}));
  const itemEffects=c.items.filter(i=>i.equipped||i.attuned).flatMap(i=>i.mechanicalEffects??[]).map(e=>({...e}));

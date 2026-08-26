@@ -4,8 +4,23 @@ import {CLASS_PROGRESSION} from '../domain/content/class-progression';
 import {OPTIONAL_CLASS_FEATURES} from '../domain/content/optional-class-features';
 import {PALADIN_SUBCLASS_FEATURES} from '../domain/content/paladin-subclass-features';
 import {FEATURE_DESCRIPTIONS} from '../domain/content/feature-descriptions';
+import {SPECIES_BY_ID} from '../domain/content/species';
 import {enabledContentSources} from '../domain/content-sources';
 
+const FIGHTING_STYLE_DESCRIPTIONS:Record<string,string>={
+ archery:'+2 to attack rolls with ranged weapons.',
+ defense:'While wearing armor, gain +1 AC.',
+ dueling:'When wielding a melee weapon in one hand and no other weapons, gain +2 to damage rolls with it.',
+ 'great-weapon-fighting':'Reroll a 1 or 2 on a damage die for a two-handed or versatile melee weapon and use the new roll.',
+ protection:'Use your reaction to impose disadvantage on an attack against a nearby target other than you while wielding a shield.',
+ 'two-weapon-fighting':'Add your ability modifier to the damage of the second attack when fighting with two weapons.',
+ 'blind-fighting':'Blindsight to 10 feet.',
+ interception:'Use your reaction to reduce nearby ally damage by 1d10 + proficiency bonus, minimum 0, while wielding a shield or suitable weapon.',
+ 'thrown-weapon-fighting':'Draw thrown weapons as part of the attack and gain +2 damage on ranged attacks with them.',
+ 'unarmed-fighting':'Unarmed strikes deal 1d6 + Strength, or 1d8 without weapons/shield; grappled creatures can take 1d4 at the start of your turn.',
+ 'superior-technique':'Learn one Battle Master maneuver and gain one d6 superiority die, recovered on a short or long rest.',
+ 'druidic-warrior':'Learn two druid cantrips; they count as ranger spells and use Wisdom.'
+};
 const descriptionFor=(feature:Feature)=>feature.description??FEATURE_DESCRIPTIONS[feature.id]??FEATURE_DESCRIPTIONS[`${feature.id.split(':')[0]}:${feature.id.split(':')[1]}`];
 const sourceLabels:Record<FeatureSource,string>={class:'Class',subclass:'Subclass',species:'Species / Race',feat:'Feats',item:'Items',background:'Background',optional:'Optional Features'};
 const sourceOrder:FeatureSource[]=['species','background','class','subclass','feat','item','optional'];
@@ -14,12 +29,17 @@ export function FeaturesPanel({c,onResource}:{c:Character;onResource?:(resourceI
  const [selected,setSelected]=useState<Feature|null>(null);
  const enabled=new Set(enabledContentSources(c.contentSources));
  const chosen=new Set(c.optionalFeatures??[]);
+ const species=SPECIES_BY_ID[c.species.toLowerCase()];
+ const speciesFeatures:Feature[]=species?[...species.traits,...(c.subspecies?species.subraces.find(s=>s.id===c.subspecies)?.traits??[] )]:[];
  const optional=c.classes.flatMap(cl=>(OPTIONAL_CLASS_FEATURES[cl.id]??[]).filter(f=>chosen.has(f.id)&&f.level<=cl.level&&enabled.has(f.sourceBook??'tasha2020')));
- const storedNonClass=c.features.filter(f=>f.source!=='class');
+ const storedNonClass=c.features.filter(f=>f.source!=='class'&&f.source!=='species');
  const progression=c.classes.flatMap(cl=>(CLASS_PROGRESSION[cl.id]??[]).filter(f=>f.level<=cl.level));
  const subclass=c.classes.flatMap(cl=>cl.subclassId?(PALADIN_SUBCLASS_FEATURES[cl.subclassId]??[]).filter(f=>f.level<=cl.level&&enabled.has(f.sourceBook??'phb2014')):[]);
  const itemFeatures:Feature[]=c.items.filter(i=>(i.mechanicalEffects?.length||i.effects?.length)&&i.equipped).map(i=>({id:`item:${i.id}`,name:i.name,source:'item',level:0,description:i.description??(i.effects??[]).join(' · '),effects:i.mechanicalEffects}));
- const features:Feature[]=[...storedNonClass,...progression,...subclass,...optional,...itemFeatures].map(f=>({...f,description:descriptionFor(f)}));
+ const fightingStyle=c.fightingStyles?.[0];
+ const fightingClass=c.classes.find(cl=>['fighter','paladin','ranger'].includes(cl.id)&&cl.level>=2);
+ const fightingFeature=fightingStyle&&fightingClass?{id:`class:${fightingClass.id}:fighting-style:${fightingStyle}`,name:`Fighting Style — ${fightingStyle.replace(/(^|-)([a-z])/g,(_,a,b)=>`${a?' ':''}${b.toUpperCase()}`)}`,source:'class' as const,level:2,description:FIGHTING_STYLE_DESCRIPTIONS[fightingStyle.toLowerCase()]}:undefined;
+ const features:Feature[]=[...speciesFeatures,...storedNonClass,...progression,...subclass,...optional,...itemFeatures,...(fightingFeature?[fightingFeature]:[])].map(f=>({...f,description:descriptionFor(f)}));
  const unique=[...new Map(features.map(f=>[f.id,f])).values()].sort((a,b)=>a.level-b.level||a.name.localeCompare(b.name));
  const groups=sourceOrder.map(source=>({source,items:unique.filter(f=>f.source===source)})).filter(g=>g.items.length);
  return <section className="card"><div className="row"><div><h2>Features & Traits</h2><p className="muted">Features are grouped by origin so class, subclass, species, feats, background and item effects stay distinct.</p></div><span className="muted">{unique.length} active</span></div>

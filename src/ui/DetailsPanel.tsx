@@ -5,6 +5,7 @@ const sizes:Size[]=['Tiny','Small','Medium','Large','Huge','Gargantuan'];
 const alignments=['Lawful Good','Neutral Good','Chaotic Good','Lawful Neutral','Neutral','Chaotic Neutral','Lawful Evil','Neutral Evil','Chaotic Evil'];
 const fightingStyles=['Archery','Defense','Dueling','Great Weapon Fighting','Protection','Two-Weapon Fighting'];
 const split=(value:string)=>value.split(',').map(x=>x.trim()).filter(Boolean);
+const inspirationSlots=(value:Character['inspiration']):[boolean,boolean,boolean,boolean]=>value??[false,false,false,false];
 
 export function DetailsPanel({c,update}:{c:Character;update:(fn:(x:Character)=>Character)=>void}){
  const background=BACKGROUNDS.find(b=>b.id===c.background);
@@ -15,7 +16,7 @@ export function DetailsPanel({c,update}:{c:Character;update:(fn:(x:Character)=>C
  const canChooseFightingStyle=!!fightingClass&&fightingClass.level>=2;
  const storedStyle=c.fightingStyles?.[0]??'';
  const fightingStyle=fightingStyles.find(s=>s.toLowerCase()===storedStyle.toLowerCase())??storedStyle;
- const hasInspiration=!!c.inspiration;
+ const inspiration=inspirationSlots(c.inspiration);
  return <div className="grid">
   <section className="card">
    <h2>Character Details</h2>
@@ -36,10 +37,8 @@ export function DetailsPanel({c,update}:{c:Character;update:(fn:(x:Character)=>C
    <h2>Character State</h2>
    <div>
     <b>Inspiration</b>
-    <button type="button" className={`inspiration-toggle${hasInspiration?' active':''}`} aria-pressed={hasInspiration} onClick={()=>patch({inspiration:!hasInspiration})}>
-     {hasInspiration?'● Inspiration available':'○ Inspiration not available'}
-    </button>
-    <small className="muted">2014 rules track Inspiration as a single resource.</small>
+    <div className="inspiration-slots">{inspiration.map((checked,index)=><button key={index} type="button" className={`inspiration-slot${checked?' active':''}`} aria-label={`Inspiration ${index+1}`} aria-pressed={checked} onClick={()=>patch({inspiration:(()=>{const slots=[...inspirationSlots(c.inspiration)] as [boolean,boolean,boolean,boolean];slots[index]=!slots[index];return slots;})()})}>{checked?'●':'○'}</button>)}</div>
+    <small className="muted">Four independent sheet markers.</small>
    </div>
    {canChooseFightingStyle&&<>
     <h3>Fighting Style</h3>

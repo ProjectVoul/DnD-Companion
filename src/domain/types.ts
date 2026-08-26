@@ -3,7 +3,7 @@ import type {ContentSourceId} from './content-sources';
 export type Ability='str'|'dex'|'con'|'int'|'wis'|'cha';
 export type Skill='acrobatics'|'animalHandling'|'arcana'|'athletics'|'deception'|'history'|'insight'|'intimidation'|'investigation'|'medicine'|'nature'|'perception'|'performance'|'persuasion'|'religion'|'sleightOfHand'|'stealth'|'survival';
 export type DamageType='acid'|'bludgeoning'|'cold'|'fire'|'force'|'lightning'|'necrotic'|'piercing'|'poison'|'psychic'|'radiant'|'slashing'|'thunder';
-export type ItemKind='weapon'|'armor'|'shield'|'focus'|'gear'|'magic';
+export type ItemKind='armor'|'weapon'|'shield'|'focus'|'gear'|'magic';
 export type ArmorCategory='light'|'medium'|'heavy';
 export type Die=4|6|8|10|12|20|100;
 export type FeatureSource='class'|'subclass'|'species'|'feat'|'background'|'item'|'optional';
@@ -39,6 +39,6 @@ export interface Character{
  proficiencyBonus:number;maxHP:number;currentHP:number;tempHP:number;hitDice:HitDice;
  deathSaves:DeathSaves;items:Item[];spellcasting:Record<string,SpellState>;sharedSpellSlots?:Record<number,{max:number;used:number}>;concentration?:ConcentrationState;features:Feature[];resources:Resource[];
  conditions:string[];resistances:string[];immunities?:string[];vulnerabilities?:string[];fightingStyles?:string[];feats?:string[];featChoices?:StoredFeatChoices;notes?:string;
- languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean|number;currency?:Currency;experience?:number;
+ languages?:string[];toolProficiencies?:string[];armorProficiencies?:string[];weaponProficiencies?:string[];speed?:number;size?:Size;darkvision?:number;inspiration?:boolean;currency?:Currency;experience?:number;
  contentSources?:ContentSourceId[];optionalFeatures?:string[];
 }

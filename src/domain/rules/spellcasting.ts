@@ -1,5 +1,6 @@
 import type {Character,Spell,SpellState} from '../types';
 import {CLASSES} from '../catalog';
+import {subclassAlwaysPreparedSpellIds} from '../content/subclass-spell-access';
 import {derivedAbilityMod} from './effects';
 const PACT_SLOTS:[number,number][]=[[1,1],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,3],[12,3],[13,3],[14,3],[15,3],[16,3],[17,4],[18,4],[19,4],[20,4]];
 const PACT_SLOT_LEVEL=[0,1,1,2,2,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5];
@@ -8,6 +9,8 @@ const FULL_CASTER=['bard','cleric','druid','sorcerer','wizard'];
 export function emptySpellState():SpellState{return {known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}}}
 export function spellcastingClass(c:Character,classId:string){return c.classes.find(x=>x.id===classId)}
 export function eligibleClassSpells(spells:Spell[],classId:string,enabledSources:string[]){return spells.filter(s=>s.classes.includes(classId)&&enabledSources.includes(s.source??'phb2014'))}
+export function subclassAlwaysPrepared(c:Character,classId:string):string[]{const cl=spellcastingClass(c,classId);if(!cl)return [];return subclassAlwaysPreparedSpellIds(cl)}
+export function hydrateSubclassAlwaysPrepared(c:Character,classId:string):Character{const cl=spellcastingClass(c,classId);if(!cl)return c;const state=c.spellcasting[classId]??emptySpellState();const always=[...new Set([...state.alwaysPrepared,...subclassAlwaysPreparedSpellIds(cl)])];return {...c,spellcasting:{...c.spellcasting,[classId]:{...state,alwaysPrepared:always}}}}
 export function availablePrepared(state:SpellState){return [...new Set([...state.alwaysPrepared,...state.prepared])]}
 export function canPrepare(state:SpellState,spellId:string,preparedLimit:number){if(state.alwaysPrepared.includes(spellId))return true;if(state.prepared.includes(spellId))return true;return state.prepared.length<preparedLimit}
 export function setPrepared(state:SpellState,spellId:string,prepared:boolean,limit:number):SpellState{const always=state.alwaysPrepared.includes(spellId);const next=new Set(state.prepared);if(always)return state;if(prepared&&next.size<limit)next.add(spellId);if(!prepared)next.delete(spellId);return {...state,prepared:[...next]}}

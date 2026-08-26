@@ -11,8 +11,10 @@ permissions:
   pages: write
   id-token: write
 
+# Keep push/deployment runs independent from PR validation runs.
+# A PR check must never cancel the Pages deployment triggered by a push.
 concurrency:
-  group: pages
+  group: pages-${{ github.event_name }}
   cancel-in-progress: true
 
 jobs:

@@ -1,5 +1,5 @@
 import type {Feature} from '../types';
-const o=(classId:string,level:number,id:string,name:string,replaces?:string):Feature=>({id:`tasha:${classId}:${id}`,name,source:'optional',level,optional:true,replaces});
+const o=(classId:string,level:number,id:string,name:string,replaces?:string):Feature=>({id:`tasha:${classId}:${id}`,name,source:'optional',sourceBook:'tasha2020',level,optional:true,replaces});
 export const OPTIONAL_CLASS_FEATURES:Record<string,Feature[]>={
 barbarian:[o('barbarian',2,'instinctive-pounce','Instinctive Pounce'),o('barbarian',3,'primal-knowledge','Primal Knowledge')],
 bard:[o('bard',1,'additional-spells','Additional Bard Spells'),o('bard',2,'magical-inspiration','Magical Inspiration'),o('bard',4,'cantrip-versatility','Cantrip Versatility')],

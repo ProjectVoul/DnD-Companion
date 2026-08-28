@@ -34,22 +34,24 @@ export const SUBCLASS_FEATURE_SLOTS: SubclassFeatureSlot[] = Object.entries(ALL_
 export const subclassFeatureSlots = (classId: string, subclassId: string): SubclassFeatureSlot[] =>
   SUBCLASS_FEATURE_SLOTS.filter(f => f.classId === classId && f.subclassId === subclassId);
 
-/**
- * Resolve concrete subclass features already present in the canonical registry.
- * Missing content is deliberately omitted rather than represented as fake rules text.
- */
-export const subclassFeaturesFor = (classId: string, subclassId: string, level: number): Feature[] =>
-  SUBCLASS_FEATURES.filter(
-    feature =>
-      feature.subclassId === subclassId &&
-      feature.level <= level &&
-      feature.level <= (FEATURE_LEVELS[classId]?.[FEATURE_LEVELS[classId].length - 1] ?? level),
+/** Resolve only canonical features belonging to this subclass and unlocked by this class level. */
+export const subclassFeaturesFor = (classId: string, subclassId: string, level: number): Feature[] => {
+  const allowedLevels = FEATURE_LEVELS[classId] ?? [];
+  return SUBCLASS_FEATURES.filter(feature =>
+    feature.subclassId === subclassId &&
+    feature.level <= level &&
+    allowedLevels.includes(feature.level),
   );
+};
 
 export const subclassFeaturesAtLevel = (classId: string, subclassId: string, level: number): Feature[] =>
-  SUBCLASS_FEATURES.filter(feature => feature.subclassId === subclassId && feature.level === level);
+  SUBCLASS_FEATURES.filter(feature =>
+    feature.subclassId === subclassId &&
+    feature.level === level &&
+    (FEATURE_LEVELS[classId] ?? []).includes(level),
+  );
 
-/** Legacy compatibility helper: returns only unresolved slots, never pretending they are real features. */
+/** Legacy compatibility helper: unresolved progression slots are exposed as explicit placeholders, never fake rules. */
 export const subclassFeaturePlaceholders = (classId: string, subclassId: string): Feature[] =>
   subclassFeatureSlots(classId, subclassId)
     .filter(slot => !SUBCLASS_FEATURES.some(feature => feature.subclassId === subclassId && feature.level === slot.level))

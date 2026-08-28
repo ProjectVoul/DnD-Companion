@@ -1,5 +1,7 @@
 import {CLASSES,SPECIES} from './catalog';
 import {ALL_SUBCLASSES} from './content/subclass-registry';
+import {subclassFeaturePlaceholders} from './content/subclass-progression';
+import {subclassFeatures} from './content/subclass-features';
 import {FULL_CASTER_SLOTS,PACT_SLOTS} from './slot-tables';
 import {DEFAULT_CONTENT_OPTIONS} from './content-sources';
 import type {Ability,Character,Skill,SpellState} from './types';
@@ -15,4 +17,6 @@ function spellStateForClass(classId:string,level:number):SpellState{const def=CL
 export function createBlankCharacter():Character{return {id:crypto.randomUUID(),name:'New Character',species:SPECIES[0],classes:[],level:1,abilityScores:{str:8,dex:8,con:8,int:8,wis:8,cha:8},skillStates:defaultSkillStates(),savingThrowProficiency:[],proficiencyBonus:2,maxHP:1,currentHP:1,tempHP:0,hitDice:{pools:[]},deathSaves:{successes:0,failures:0},items:[],spellcasting:{},features:[],resources:[],conditions:[],resistances:[],fightingStyles:[],feats:[],contentSources:[...DEFAULT_CONTENT_OPTIONS.enabledSources]};}
 export function setClass(c:Character,classId:string):Character{const def=CLASSES.find(x=>x.id===classId);if(!def)return c;const next={...c,classes:[{id:def.id,name:def.name,level:1,spellcastingAbility:def.spellcastingAbility}],savingThrowProficiency:[...def.savingThrows],proficiencyBonus:proficiency(1),hitDice:{pools:[{die:def.hitDie,max:1,current:1}]},maxHP:Math.max(1,def.hitDie+mod(c.abilityScores.con)),currentHP:Math.max(1,def.hitDie+mod(c.abilityScores.con)),spellcasting:def.spellcasting==='none'?{}:{[classId]:spellStateForClass(classId,1)}};return applyStartingProficiencies(next,classId);}
 export function availableSubclasses(classId:string){return ALL_SUBCLASSES[classId]??[];}
-export function assignSubclass(c:Character,subclassId:string):Character{const cl=c.classes[0];if(!cl)return c;const sub=availableSubclasses(cl.id).find(x=>x.id===subclassId);return sub?{...c,classes:[{...cl,subclassId:sub.id,subclassName:sub.name}]}:c;}
+function featuresForSubclass(classId:string,subclassId:string,classLevel:number){const concrete=subclassFeatures(classId,subclassId).filter(f=>f.level<=classLevel);if(concrete.length)return concrete;return subclassFeaturePlaceholders(classId,subclassId).filter(f=>f.level<=classLevel);}
+/** Assign a subclass to the matching class in a multiclass character. If classId is omitted, the first class accepting the subclass is used. */
+export function assignSubclass(c:Character,subclassId:string,classId?:string):Character{const index=classId?c.classes.findIndex(cl=>cl.id===classId):c.classes.findIndex(cl=>availableSubclasses(cl.id).some(x=>x.id===subclassId));if(index<0)return c;const cl=c.classes[index];const sub=availableSubclasses(cl.id).find(x=>x.id===subclassId);if(!sub)return c;const nextClasses=c.classes.map((x,i)=>i===index?{...x,subclassId:sub.id,subclassName:sub.name}:x);const withoutOld=c.features.filter(f=>f.source!=='subclass'||!f.id.startsWith(`subclass:${cl.id}:`));const added=featuresForSubclass(cl.id,sub.id,cl.level);const byId=new Map([...withoutOld,...added].map(f=>[f.id,f]));return {...c,classes:nextClasses,features:[...byId.values()]};}

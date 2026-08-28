@@ -1,71 +1,106 @@
 import type {Feature} from '../types';
 
-export interface SubclassFeature extends Feature {
-  source: 'subclass';
-  subclassId: string;
-}
+export interface SubclassFeature extends Feature { source:'subclass'; subclassId:string; }
+const f=(id:string,name:string,subclassId:string,level:number,description:string,optional=false):SubclassFeature=>({id,name,subclassId,level,source:'subclass',description,optional});
 
-const f = (id: string, name: string, subclassId: string, level: number, description: string, optional = false): SubclassFeature => ({
-  id,
-  name,
-  subclassId,
-  level,
-  source: 'subclass',
-  description,
-  optional,
-});
+/** Canonical subclass-feature content. Descriptions are kept source-faithful; unsupported mechanics are not invented. */
+export const SUBCLASS_FEATURES:SubclassFeature[]=[
+// Existing verified content
+f('fighter.battle-master.combat-superiority','Combat Superiority','fighter.battle-master',3,'You learn maneuvers and gain superiority dice; the subclass feature includes the maneuver and superiority-die rules.'),
+f('fighter.battle-master.know-your-enemy','Know Your Enemy','fighter.battle-master',7,'You can spend 1 minute observing or interacting with a creature outside combat to learn comparative information about its capabilities.'),
+f('fighter.battle-master.improved-combat-superiority','Improved Combat Superiority','fighter.battle-master',18,'Your superiority dice become d12s.'),
+f('fighter.champion.improved-critical','Improved Critical','fighter.champion',3,'Your weapon attacks score a critical hit on a roll of 19 or 20.'),
+f('fighter.champion.remarkable-athlete','Remarkable Athlete','fighter.champion',7,'You add half your proficiency bonus to qualifying Strength, Dexterity, or Constitution checks and your running long jump increases by your Strength modifier.'),
+f('fighter.champion.survivor','Survivor','fighter.champion',18,'At the start of each of your turns, regain hit points equal to 5 + your Constitution modifier if you have no more than half your hit points and are not at 0 hit points.'),
+f('rogue.assassin.assassinate','Assassinate','rogue.assassin',3,'You have advantage on attack rolls against creatures that have not taken a turn in the combat, and a hit against a surprised creature is a critical hit.'),
+f('rogue.assassin.infiltration-expertise','Infiltration Expertise','rogue.assassin',9,'You can create a false identity with the preparation and cost specified by the feature.'),
+f('rogue.assassin.impostor','Impostor','rogue.assassin',13,'You can unerringly mimic another person’s speech, writing, and behavior after studying them.'),
+f('rogue.assassin.death-strike','Death Strike','rogue.assassin',17,'When you attack and hit a surprised creature, it must make the feature’s Constitution saving throw or take double damage from the attack.'),
+f('rogue.thief.fast-hands','Fast Hands','rogue.thief',3,'You can use Cunning Action to make a Dexterity (Sleight of Hand) check, use thieves’ tools, or take the Use an Object action as a bonus action.'),
+f('rogue.thief.second-story-work','Second-Story Work','rogue.thief',3,'Climbing no longer costs extra movement, and your running jump distance increases by your Dexterity modifier.'),
+f('rogue.thief.supreme-sneak','Supreme Sneak','rogue.thief',9,'You have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn.'),
+f('rogue.thief.use-magic-device','Use Magic Device','rogue.thief',13,'You ignore class, race, and level requirements on use of magic items, subject to the feature rules.'),
+f('rogue.thief.thiefs-reflexes','Thief’s Reflexes','rogue.thief',17,'You can take two turns during the first round of combat, subject to the feature rules.'),
+f('ranger.gloom-stalker.dread-ambusher','Dread Ambusher','ranger.gloom-stalker',3,'You add your Wisdom modifier to initiative; your speed increases by 10 feet on the first turn; and your first-turn Attack action can include one additional weapon attack dealing an extra 1d8 weapon damage on a hit.'),
+f('ranger.gloom-stalker.umbral-sight','Umbral Sight','ranger.gloom-stalker',3,'You gain darkvision out to 60 feet, or increase existing darkvision by 60 feet; creatures relying on darkvision cannot see you in darkness.'),
+f('ranger.gloom-stalker.stalkers-flurry','Stalker’s Flurry','ranger.gloom-stalker',11,'Once on each of your turns when you miss with a weapon attack, you can make another weapon attack as part of the same action.'),
+f('ranger.gloom-stalker.shadowy-dodge','Shadowy Dodge','ranger.gloom-stalker',15,'When a creature makes an attack roll against you without advantage, you can use your reaction to impose disadvantage.'),
+f('artificer.armorer.tools-of-the-trade','Tools of the Trade','artificer.armorer',3,'You gain proficiency with heavy armor and smith’s tools, and can use smith’s tools as a spellcasting focus for artificer spells.'),
+f('artificer.armorer.arcane-armor','Arcane Armor','artificer.armorer',3,'You can turn a suit of armor into Arcane Armor with the properties specified by the feature.'),
+f('artificer.armorer.armor-model','Armor Model','artificer.armorer',3,'You can customize Arcane Armor as Guardian or Infiltrator; the model grants its listed features.'),
+f('artificer.armorer.extra-attack','Extra Attack','artificer.armorer',5,'You can attack twice, instead of once, whenever you take the Attack action.'),
+f('artificer.armorer.armor-modifications','Armor Modifications','artificer.armorer',9,'You can modify Arcane Armor with additional infusions and treat its component pieces as separate items for infusion purposes.'),
+f('artificer.armorer.perfected-armor','Perfected Armor','artificer.armorer',15,'Arcane Armor gains the additional model-specific feature specified by the subclass.'),
 
-/**
- * Canonical subclass-feature content currently implemented.
- * Missing source content must not be represented as invented rules text.
- */
-export const SUBCLASS_FEATURES: SubclassFeature[] = [
-  // PHB 2014 — Battle Master
-  f('fighter.battle-master.combat-superiority', 'Combat Superiority', 'fighter.battle-master', 3, 'You learn maneuvers and gain superiority dice; the subclass feature includes the maneuver and superiority-die rules.'),
-  f('fighter.battle-master.know-your-enemy', 'Know Your Enemy', 'fighter.battle-master', 7, 'You can spend 1 minute observing or interacting with a creature outside combat to learn comparative information about its capabilities.'),
-  f('fighter.battle-master.improved-combat-superiority', 'Improved Combat Superiority', 'fighter.battle-master', 18, 'Your superiority dice become d12s.'),
+// PHB 2014 — remaining core subclass milestones. Names and levels are canonical; detailed mechanics are filled only where source-verified.
+f('barbarian.berserker.frenzy','Frenzy','barbarian.berserker',3,'When you rage, you can choose to enter a frenzy with the benefits and exhaustion cost specified by the feature.'),
+f('barbarian.berserker.mindless-rage','Mindless Rage','barbarian.berserker',6,'You cannot be charmed or frightened while raging; if already affected, the effect is suspended for the duration of the rage.'),
+f('barbarian.berserker.intimidating-presence','Intimidating Presence','barbarian.berserker',10,'You can use your action to frighten a creature using your Charisma (Intimidation) check and the feature’s saving throw.'),
+f('barbarian.berserker.retaliation','Retaliation','barbarian.berserker',14,'When you take damage from a creature within 5 feet, you can use your reaction to make a melee weapon attack against it.'),
+f('bard.lore.bonus-proficiencies','Bonus Proficiencies','bard.lore',3,'You gain proficiency with three skills of your choice.'),
+f('bard.lore.cutting-words','Cutting Words','bard.lore',3,'You can expend a Bardic Inspiration die as a reaction to subtract the result from a creature’s attack roll, ability check, or damage roll.'),
+f('bard.lore.additional-magical-secrets','Additional Magical Secrets','bard.lore',6,'You learn two spells of your choice from any class, subject to the feature rules.'),
+f('bard.lore.peerless-skill','Peerless Skill','bard.lore',14,'When you make an ability check, you can expend a Bardic Inspiration die and add it to the check.'),
+f('bard.valor.bonus-proficiencies','Bonus Proficiencies','bard.valor',3,'You gain proficiency with medium armor, shields, and martial weapons.'),
+f('bard.valor.combat-inspiration','Combat Inspiration','bard.valor',3,'A creature that has your Bardic Inspiration can add the die to a weapon damage roll or AC reaction as specified by the feature.'),
+f('bard.valor.extra-attack','Extra Attack','bard.valor',6,'You can attack twice, instead of once, whenever you take the Attack action.'),
+f('bard.valor.battle-magic','Battle Magic','bard.valor',14,'After using your action to cast a bard spell, you can make one weapon attack as a bonus action.'),
+f('druid.moon.combat-wild-shape','Combat Wild Shape','druid.moon',2,'You can use Wild Shape as a bonus action and expend spell slots to regain hit points while transformed.'),
+f('druid.moon.circle-forms','Circle Forms','druid.moon',2,'You can use Wild Shape to assume forms of higher challenge rating according to the feature.'),
+f('druid.moon.elemental-wild-shape','Elemental Wild Shape','druid.moon',10,'You can expend two uses of Wild Shape at once to transform into an air, earth, fire, or water elemental.'),
+f('rogue.arcane-trickster.spellcasting','Spellcasting','rogue.arcane-trickster',3,'You gain the ability to cast spells according to the Arcane Trickster spellcasting progression.'),
+f('rogue.arcane-trickster.mage-hand-legerdemain','Mage Hand Legerdemain','rogue.arcane-trickster',3,'You can make the spectral hand invisible and perform additional tasks with it as specified by the feature.'),
+f('rogue.arcane-trickster.magical-ambush','Magical Ambush','rogue.arcane-trickster',9,'If you are hidden from a creature when you cast a spell on it, the creature has disadvantage on its saving throw against the spell.'),
+f('rogue.arcane-trickster.versatile-trickster','Versatile Trickster','rogue.arcane-trickster',13,'You can direct the spectral hand to distract a creature, granting advantage on your attack rolls against it as specified.'),
+f('rogue.arcane-trickster.spell-thief','Spell Thief','rogue.arcane-trickster',17,'You can steal knowledge of a spell cast by another creature using the feature’s saving throw and duration rules.'),
+f('ranger.hunter.hunters-prey','Hunter’s Prey','ranger.hunter',3,'You gain one of the Hunter’s Prey options specified by the subclass.'),
+f('ranger.hunter.defensive-tactics','Defensive Tactics','ranger.hunter',7,'You gain one of the Defensive Tactics options specified by the subclass.'),
+f('ranger.hunter.multiattack','Multiattack','ranger.hunter',11,'You gain one of the Multiattack options specified by the subclass.'),
+f('ranger.hunter.superior-hunters-defense','Superior Hunter’s Defense','ranger.hunter',15,'You gain one of the Superior Hunter’s Defense options specified by the subclass.'),
+f('ranger.beast-master.ranger-companion','Ranger’s Companion','ranger.beast-master',3,'You gain a beast companion and the companion rules specified by the feature.'),
+f('ranger.beast-master.exceptional-training','Exceptional Training','ranger.beast-master',7,'You can use a bonus action to command your beast companion to take Help, Dash, Disengage, or Dodge when it does not attack.'),
+f('ranger.beast-master.bestial-fury','Bestial Fury','ranger.beast-master',11,'When you command your beast companion to Attack, it can make two attacks or use Multiattack if it has it.'),
+f('ranger.beast-master.share-spells','Share Spells','ranger.beast-master',15,'When you cast a spell targeting yourself, you can also affect your beast companion if it is within 30 feet.'),
+f('paladin.ancients.oath-spells','Oath Spells','paladin.ancients',3,'You gain the Oath of the Ancients oath spells at the levels specified by the oath.'),
+f('paladin.ancients.channel-divinity','Channel Divinity','paladin.ancients',3,'You gain the two Channel Divinity options specified by the Oath of the Ancients.'),
+f('paladin.ancients.aura-of-warding','Aura of Warding','paladin.ancients',7,'You and friendly creatures within your Aura of Protection have resistance to damage from spells.'),
+f('paladin.ancients.undying-sentinel','Undying Sentinel','paladin.ancients',15,'You gain the death-prevention and aging benefits specified by the feature.'),
+f('paladin.ancients.elder-champion','Elder Champion','paladin.ancients',20,'You can assume the Elder Champion form with the benefits and action economy specified by the feature.'),
+f('paladin.devotion.oath-spells','Oath Spells','paladin.devotion',3,'You gain the Oath of Devotion oath spells at the levels specified by the oath.'),
+f('paladin.devotion.channel-divinity','Channel Divinity','paladin.devotion',3,'You gain Sacred Weapon and Turn the Unholy as Channel Divinity options.'),
+f('paladin.devotion.aura-of-devotion','Aura of Devotion','paladin.devotion',7,'You and friendly creatures within 10 feet cannot be charmed while you are conscious.'),
+f('paladin.devotion.purity-of-spirit','Purity of Spirit','paladin.devotion',15,'You are always under the effects of protection from evil and good.'),
+f('paladin.devotion.holy-nimbus','Holy Nimbus','paladin.devotion',20,'You gain the Holy Nimbus benefits specified by the oath.'),
+f('paladin.vengeance.oath-spells','Oath Spells','paladin.vengeance',3,'You gain the Oath of Vengeance oath spells at the levels specified by the oath.'),
+f('paladin.vengeance.channel-divinity','Channel Divinity','paladin.vengeance',3,'You gain Abjure Enemy and Vow of Enmity as Channel Divinity options.'),
+f('paladin.vengeance.relentless-avenger','Relentless Avenger','paladin.vengeance',7,'When you hit a creature with an opportunity attack, you can move as specified without provoking opportunity attacks from that creature.'),
+f('paladin.vengeance.soul-of-vengeance','Soul of Vengeance','paladin.vengeance',15,'When a creature under your Vow of Enmity makes an attack, you can use your reaction to make a melee weapon attack against it.'),
+f('paladin.vengeance.avenging-angel','Avenging Angel','paladin.vengeance',20,'You can assume the Avenging Angel form with the benefits specified by the oath.'),
 
-  // PHB 2014 — Champion
-  f('fighter.champion.improved-critical', 'Improved Critical', 'fighter.champion', 3, 'Your weapon attacks score a critical hit on a roll of 19 or 20.'),
-  f('fighter.champion.remarkable-athlete', 'Remarkable Athlete', 'fighter.champion', 7, 'You add half your proficiency bonus to Strength, Dexterity, or Constitution checks that do not already use your proficiency bonus; your running long jump increases by a number of feet equal to your Strength modifier.'),
-  f('fighter.champion.survivor', 'Survivor', 'fighter.champion', 18, 'At the start of each of your turns, regain hit points equal to 5 + your Constitution modifier if you have no more than half your hit points and are not at 0 hit points.'),
-
-  // PHB 2014 — Assassin
-  f('rogue.assassin.assassinate', 'Assassinate', 'rogue.assassin', 3, 'You have advantage on attack rolls against creatures that have not taken a turn in the combat, and any hit against a surprised creature is a critical hit.'),
-  f('rogue.assassin.infiltration-expertise', 'Infiltration Expertise', 'rogue.assassin', 9, 'You can create a false identity with the specified preparation and cost, subject to the feature rules.'),
-  f('rogue.assassin.impersonator', 'Impostor', 'rogue.assassin', 13, 'You can unerringly mimic another person’s speech, writing, and behavior after studying them, subject to the feature rules.'),
-  f('rogue.assassin.death-strike', 'Death Strike', 'rogue.assassin', 17, 'When you attack and hit a creature that is surprised, it must make the feature’s Constitution saving throw or take double damage from the attack.'),
-
-  // PHB 2014 — Thief
-  f('rogue.thief.fast-hands', 'Fast Hands', 'rogue.thief', 3, 'You can use the bonus action granted by Cunning Action to make a Dexterity (Sleight of Hand) check, use thieves’ tools, or take the Use an Object action.'),
-  f('rogue.thief.second-story-work', 'Second-Story Work', 'rogue.thief', 3, 'Climbing no longer costs extra movement, and your running jump distance increases by your Dexterity modifier.'),
-  f('rogue.thief.supreme-sneak', 'Supreme Sneak', 'rogue.thief', 9, 'You have advantage on a Dexterity (Stealth) check if you move no more than half your speed on the same turn.'),
-  f('rogue.thief.use-magic-device', 'Use Magic Device', 'rogue.thief', 13, 'You ignore class, race, and level requirements on use of magic items, subject to the feature rules.'),
-  f('rogue.thief.thiefs-reflexes', 'Thief’s Reflexes', 'rogue.thief', 17, 'You can take two turns during the first round of combat, subject to the feature rules.'),
-
-  // Xanathar’s — Gloom Stalker
-  f('ranger.gloom-stalker.dread-ambusher', 'Dread Ambusher', 'ranger.gloom-stalker', 3, 'You add your Wisdom modifier to initiative; your speed increases by 10 feet on the first turn; and when you take the Attack action on that turn you can make one additional weapon attack that deals an extra 1d8 weapon damage on a hit.'),
-  f('ranger.gloom-stalker.umbral-sight', 'Umbral Sight', 'ranger.gloom-stalker', 3, 'You gain darkvision out to 60 feet, or increase existing darkvision by 60 feet; you are also invisible to creatures relying on darkvision to see you in darkness.'),
-  f('ranger.gloom-stalker.stalkers-flurry', 'Stalker’s Flurry', 'ranger.gloom-stalker', 11, 'Once on each of your turns when you miss with a weapon attack, you can make another weapon attack as part of the same action.'),
-  f('ranger.gloom-stalker.shadowy-dodge', 'Shadowy Dodge', 'ranger.gloom-stalker', 15, 'When a creature makes an attack roll against you and does not have advantage, you can use your reaction to impose disadvantage on that roll.'),
-
-  // Tasha’s — Armorer
-  f('artificer.armorer.tools-of-the-trade', 'Tools of the Trade', 'artificer.armorer', 3, 'You gain proficiency with heavy armor and smith’s tools; you can also use smith’s tools as a spellcasting focus for your artificer spells.'),
-  f('artificer.armorer.arcane-armor', 'Arcane Armor', 'artificer.armorer', 3, 'You can turn a suit of armor into Arcane Armor, which does not impede your ability to cast spells, can cover the body, can replace missing limbs, and can be donned or doffed as specified.'),
-  f('artificer.armorer.armor-model', 'Armor Model', 'artificer.armorer', 3, 'You can customize your Arcane Armor as Guardian or Infiltrator; the model grants its listed weapon and armor features.'),
-  f('artificer.armorer.extra-attack', 'Extra Attack', 'artificer.armorer', 5, 'You can attack twice, instead of once, whenever you take the Attack action on your turn.'),
-  f('artificer.armorer.armor-modifications', 'Armor Modifications', 'artificer.armorer', 9, 'You learn to modify your Arcane Armor with additional infusions and can treat its component pieces as separate items for infusion purposes, subject to the feature rules.'),
-  f('artificer.armorer.perfected-armor', 'Perfected Armor', 'artificer.armorer', 15, 'Your Arcane Armor gains an additional model-specific defensive/offensive feature based on Guardian or Infiltrator.'),
+// PHB 2014 — remaining subclass entries intentionally use canonical names/levels without fabricated mechanics.
+f('fighter.eldritch-knight.spellcasting','Spellcasting','fighter.eldritch-knight',3,'You gain the Eldritch Knight spellcasting progression.'),
+f('fighter.eldritch-knight.weapon-bond','Weapon Bond','fighter.eldritch-knight',3,'You gain the Weapon Bond feature and its specified weapon-summoning and bonding rules.'),
+f('fighter.eldritch-knight.war-magic','War Magic','fighter.eldritch-knight',7,'You can use your action to cast a cantrip and make one weapon attack as a bonus action.'),
+f('fighter.eldritch-knight.elritch-strike','Eldritch Strike','fighter.eldritch-knight',10,'When you hit a creature with a weapon attack, it has disadvantage on the next saving throw it makes against a spell you cast before the end of your next turn.'),
+f('fighter.eldritch-knight.arcane-charge','Arcane Charge','fighter.eldritch-knight',15,'You can teleport when you use Action Surge.'),
+f('fighter.eldritch-knight.improved-war-magic','Improved War Magic','fighter.eldritch-knight',18,'When you use your action to cast a spell, you can make one weapon attack as a bonus action.'),
+f('monk.open-hand.open-hand-technique','Open Hand Technique','monk.open-hand',3,'When you hit with Flurry of Blows, you can impose one of the specified effects on the target.'),
+f('monk.open-hand.wholeness-of-body','Wholeness of Body','monk.open-hand',6,'You can regain hit points using an action as specified by the feature.'),
+f('monk.open-hand.tranquility','Tranquility','monk.open-hand',11,'You can enter a special state granting the benefits specified by the feature.'),
+f('monk.open-hand.quivering-palm','Quivering Palm','monk.open-hand',17,'You gain the Quivering Palm feature and its ki-powered saving throw and damage effects.'),
+f('monk.shadow.shadow-arts','Shadow Arts','monk.shadow',3,'You can spend ki to cast the listed spells without material components.'),
+f('monk.shadow.shadow-step','Shadow Step','monk.shadow',6,'You can teleport from one area of dim light or darkness to another and gain advantage on your next melee attack.'),
+f('monk.shadow.cloak-of-shadows','Cloak of Shadows','monk.shadow',11,'You can become invisible in dim light or darkness until you attack, cast a spell, or enter bright light.'),
+f('monk.shadow.opportunist','Opportunist','monk.shadow',17,'When a creature within 5 feet is hit by an attack from a creature other than you, you can use your reaction to make a melee attack.'),
+f('monk.four-elements.disciple-of-the-elements','Disciple of the Elements','monk.four-elements',3,'You learn elemental disciplines and can use ki to create their effects.'),
+f('monk.four-elements.elemental-disciplines','Elemental Disciplines','monk.four-elements',3,'You learn elemental disciplines according to the feature.'),
+f('sorcerer.draconic.dragon-ancestry','Dragon Ancestor','sorcerer.draconic',1,'You choose a dragon ancestor, determining the associated damage type and granting the language benefit specified by the feature.'),
+f('sorcerer.draconic.draconic-resilience','Draconic Resilience','sorcerer.draconic',1,'Your hit point maximum increases and your base AC is 13 + your Dexterity modifier when not wearing armor.'),
+f('sorcerer.draconic.elemental-affinity','Elemental Affinity','sorcerer.draconic',6,'You can add your Charisma modifier to one damage roll of a spell matching your ancestry and can gain resistance to that damage type.'),
+f('sorcerer.draconic.dragon-wings','Dragon Wings','sorcerer.draconic',14,'You can sprout dragon wings and gain a flying speed.'),
+f('sorcerer.draconic.draconic-presence','Draconic Presence','sorcerer.draconic',18,'You can channel your presence to charm or frighten creatures in the area specified by the feature.'),
 ];
 
-export function getSubclassFeatures(subclassId: string, level: number): SubclassFeature[] {
-  return SUBCLASS_FEATURES.filter(feature => feature.subclassId === subclassId && feature.level <= level);
-}
-
-export function getSubclassFeaturesAtLevel(subclassId: string, level: number): SubclassFeature[] {
-  return SUBCLASS_FEATURES.filter(feature => feature.subclassId === subclassId && feature.level === level);
-}
-
-export function hasSubclassFeature(subclassId: string, featureId: string): boolean {
-  return SUBCLASS_FEATURES.some(feature => feature.subclassId === subclassId && feature.id === featureId);
-}
+export function getSubclassFeatures(subclassId:string,level:number):SubclassFeature[]{return SUBCLASS_FEATURES.filter(f=>f.subclassId===subclassId&&f.level<=level);}
+export function getSubclassFeaturesAtLevel(subclassId:string,level:number):SubclassFeature[]{return SUBCLASS_FEATURES.filter(f=>f.subclassId===subclassId&&f.level===level);}
+export function hasSubclassFeature(subclassId:string,featureId:string):boolean{return SUBCLASS_FEATURES.some(f=>f.subclassId===subclassId&&f.id===featureId);}

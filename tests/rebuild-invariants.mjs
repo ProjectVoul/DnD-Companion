@@ -6,12 +6,13 @@ for(const token of ['Builder','DetailsPanel','EquipmentPanel','SpellsPanel','Ski
 const types=readFileSync('src/domain/types.ts','utf8');
 for(const token of ['alwaysPrepared','spellbook','damage','ArmorData','ShieldData','fightingStyles','feats','pactSlots','currency','backgroundData'])if(!types.includes(token))throw new Error(`Missing canonical model field: ${token}`);
 const sheet=readFileSync('src/ui/Sheet.tsx','utf8');
-for(const token of ['Short Rest','Long Rest','Death Saves','Current hit points'])if(!sheet.includes(token))throw new Error(`Missing character sheet action/field: ${token}`);
-if(!sheet.includes('spendHitDie')||!sheet.match(/Spend d\{p\.die\}/))throw new Error('Missing character sheet hit-die spending action');
+for(const token of ['Short Rest','Long Rest','Death Saves','Current hit points','spendHitDice','Hit Dice to spend','HP recovered from your rolls'])if(!sheet.includes(token))throw new Error(`Missing character sheet rest/hit-point control: ${token}`);
+if(!sheet.includes('inspiration.map')||!sheet.includes('inspiration-slot')||!sheet.includes('aria-pressed'))throw new Error('Missing four independent inspiration markers');
 const details=readFileSync('src/ui/DetailsPanel.tsx','utf8');
 for(const token of ['Background','Conditions','Resistances','Immunities','Vulnerabilities','Currency','Notes'])if(!details.includes(token))throw new Error(`Missing editable character detail: ${token}`);
 const equipment=readFileSync('src/ui/EquipmentPanel.tsx','utf8');
-for(const token of ['Weapon','Armor','Shield','description'])if(!equipment.includes(token))throw new Error(`Missing equipment UI field/category: ${token}`);
+for(const token of ['Weapon','Armor','Shield','description','miscellaneous','Consumables','Ammunition','Quest Items','Treasure'])if(!equipment.includes(token))throw new Error(`Missing equipment UI field/category: ${token}`);
+if(!equipment.includes('Delete item')||!equipment.includes('onClick={remove}'))throw new Error('Missing item deletion action');
 const spells=readFileSync('src/ui/SpellsPanel.tsx','utf8');
 for(const token of ['Prepared','Spellbook','Known','Class Spell List','Always Prepared','Pact Slots'])if(!spells.includes(token))throw new Error(`Missing spell model/UI separation: ${token}`);
 const main=readFileSync('src/main.tsx','utf8');

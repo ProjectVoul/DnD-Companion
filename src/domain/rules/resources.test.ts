@@ -22,7 +22,15 @@ const paladin=character([{id:'paladin',name:'Paladin',level:14,spellcastingAbili
 assert.equal(resource(paladin,'paladin:lay-on-hands')?.max,70);
 assert.equal(resource(paladin,'paladin:divine-sense')?.max,5);
 assert.equal(resource(paladin,'paladin:cleansing-touch')?.max,4);
-assert.equal(resource(paladin,'shared:channel-divinity')?.max,1);
+assert.equal(resource(paladin,'paladin:channel-divinity')?.max,1);
+
+const cleric=character([{id:'cleric',name:'Cleric',level:18,spellcastingAbility:'wis'}]);
+assert.equal(resource(cleric,'cleric:channel-divinity')?.max,3);
+
+const multiclass=character([{id:'cleric',name:'Cleric',level:18,spellcastingAbility:'wis'},{id:'paladin',name:'Paladin',level:3,spellcastingAbility:'cha'}]);
+assert.equal(resource(multiclass,'cleric:channel-divinity')?.max,3);
+assert.equal(resource(multiclass,'paladin:channel-divinity')?.max,1);
+assert.equal(classResources(multiclass).filter(r=>r.name==='Channel Divinity').length,2);
 
 const artificer=character([{id:'artificer',name:'Artificer',level:10,spellcastingAbility:'int'}]);
 assert.equal(resource(artificer,'artificer:flash-of-genius')?.max,4);

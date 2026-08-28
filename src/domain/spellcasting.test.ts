@@ -5,7 +5,7 @@ const base:Character={id:'spell-test',name:'Test',species:'Human',classes:[],lev
 const wizard={...base,classes:[{id:'wizard',name:'Wizard',level:5,spellcastingAbility:'int' as const}]};
 assert.equal(maxPreparedSpells(wizard,'wizard'),8); // INT +3 + wizard level 5
 const cleric={...base,classes:[{id:'cleric',name:'Cleric',level:5,spellcastingAbility:'wis' as const}]};assert.equal(maxPreparedSpells(cleric,'cleric'),8);
-const paladin={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'paladin',name:'Paladin',level:5,spellcastingAbility:'cha' as const}]};assert.equal(maxPreparedSpells(paladin,'paladin'),5); // CHA +4 + floor(5/2)
+const paladin={...base,abilityScores:{...base.abilityScores,cha:18},classes:[{id:'paladin',name:'Paladin',level:5,spellcastingAbility:'cha' as const}]};assert.equal(maxPreparedSpells(paladin,'paladin'),6); // CHA +4 + floor(5/2)
 const bard={...base,classes:[{id:'bard',name:'Bard',level:5,spellcastingAbility:'cha' as const}],spellcasting:{bard:{known:['x','y','z'],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}}}};assert.equal(maxKnownSpells(bard,'bard'),8);
 const sorcerer={...base,classes:[{id:'sorcerer',name:'Sorcerer',level:10,spellcastingAbility:'cha' as const}]};assert.equal(maxKnownSpells(sorcerer,'sorcerer'),15);
 const warlock={...base,classes:[{id:'warlock',name:'Warlock',level:11,spellcastingAbility:'cha' as const}]};assert.equal(maxKnownSpells(warlock,'warlock'),11);assert.deepEqual(pactMagicSlots(warlock),{max:3,level:5});

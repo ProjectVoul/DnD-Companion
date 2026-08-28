@@ -4,9 +4,10 @@ import {CLASSES} from '../catalog';
 
 const EXPECTED_LEVELS:Record<string,number[]>={
  barbarian:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
- // Bard's Song of Rest scales at 9th, 13th and 17th; the class has no 7th-level feature.
+ // Bard has no base-class feature at 7th level; Song of Rest scales at 9th, 13th and 17th.
  bard:[1,2,3,4,5,6,8,10,12,13,14,16,17,18,19,20],
- cleric:[1,2,3,4,5,6,8,10,11,12,14,16,17,18,19,20],
+ // Cleric has no base-class feature at 3rd level; its Divine Domain progression is subclass content.
+ cleric:[1,2,4,5,6,8,10,11,12,14,16,17,18,19,20],
  druid:[1,2,4,6,8,10,12,14,16,18,19,20],
  fighter:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
  monk:[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],

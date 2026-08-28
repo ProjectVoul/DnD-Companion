@@ -13,5 +13,5 @@ const ek={...base,classes:[{id:'fighter',name:'Fighter',level:7,subclassId:'eldr
 const at={...base,classes:[{id:'rogue',name:'Rogue',level:9,subclassId:'arcane-trickster'}]};assert.equal(multiclassCasterLevel(at),3);
 const artificer1={...base,classes:[{id:'artificer',name:'Artificer',level:1,spellcastingAbility:'int' as const}]};assert.equal(multiclassCasterLevel(artificer1),1);assert.equal(spellcastingProgression(artificer1,'artificer').halfCasterLevels,1);
 const artificer3={...base,classes:[{id:'artificer',name:'Artificer',level:3,spellcastingAbility:'int' as const}]};assert.equal(multiclassCasterLevel(artificer3),2);
-const mixed={...base,classes:[{id:'wizard',name:'Wizard',level:5,spellcastingAbility:'int' as const},{id:'paladin',name:'Paladin',level:6,spellcastingAbility:'cha' as const},{id:'fighter',name:'Fighter',level:6,subclassId:'eldritch-knight'}]};assert.equal(multiclassCasterLevel(mixed),9);
+const mixed={...base,classes:[{id:'wizard',name:'Wizard',level:5,spellcastingAbility:'int' as const},{id:'paladin',name:'Paladin',level:6,spellcastingAbility:'cha' as const},{id:'fighter',name:'Fighter',level:6,subclassId:'eldritch-knight'}]};assert.equal(multiclassCasterLevel(mixed),10);
 console.log('spellcasting progression tests passed');

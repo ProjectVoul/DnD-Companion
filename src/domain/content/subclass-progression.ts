@@ -2,6 +2,7 @@ import type {Feature} from '../types';
 import {ALL_SUBCLASSES} from './subclass-registry';
 import {SUBCLASS_FEATURES} from './subclassFeatures';
 import {EXPANSION_SUBCLASS_FEATURES} from './expansionSubclassFeatures';
+import {TASHA_SUBCLASS_FEATURES} from './tashaSubclassFeatures';
 
 /** Universal 2014 subclass progression levels. Actual feature records remain canonical data. */
 const FEATURE_LEVELS: Record<string, number[]> = {
@@ -12,7 +13,7 @@ const FEATURE_LEVELS: Record<string, number[]> = {
   artificer: [3, 5, 9, 15],
 };
 
-const CANONICAL_SUBCLASS_FEATURES = [...SUBCLASS_FEATURES, ...EXPANSION_SUBCLASS_FEATURES];
+const CANONICAL_SUBCLASS_FEATURES = [...SUBCLASS_FEATURES, ...EXPANSION_SUBCLASS_FEATURES, ...TASHA_SUBCLASS_FEATURES];
 const matchesSubclass = (featureSubclassId: string, classId: string, subclassId: string) =>
   featureSubclassId === subclassId || featureSubclassId === `${classId}.${subclassId}`;
 

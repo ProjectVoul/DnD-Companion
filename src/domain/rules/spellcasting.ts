@@ -4,7 +4,7 @@ import {subclassAlwaysPreparedSpellIds} from '../content/subclass-spell-access';
 import {derivedAbilityMod} from './effects';
 const PACT_SLOTS:[number,number][]=[[1,1],[2,2],[3,2],[4,2],[5,2],[6,2],[7,2],[8,2],[9,2],[10,2],[11,3],[12,3],[13,3],[14,3],[15,3],[16,3],[17,4],[18,4],[19,4],[20,4]];
 const PACT_SLOT_LEVEL=[0,1,1,2,2,3,3,4,4,5,5,5,5,5,5,5,5,5,5,5,5];
-const KNOWN_SPELLS:Record<string,number[]>={bard:[4,5,6,7,8,9,10,11,12,14,15,15,16,18,19,19,20,22,22,22],sorcerer:[4,5,6,7,8,9,10,11,12,13,15,15,15,18,18,18,19,19,20,22],warlock:[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15]};
+const KNOWN_SPELLS:Record<string,number[]>={bard:[4,5,6,7,8,9,10,11,12,14,15,15,16,18,19,19,20,22,22,22],sorcerer:[2,3,4,5,6,7,8,9,10,11,12,12,13,13,14,14,15,15,15,15],warlock:[2,3,4,5,6,7,8,9,10,10,11,11,12,12,13,13,14,14,15,15]};
 const FULL_CASTER=['bard','cleric','druid','sorcerer','wizard'];
 export function emptySpellState():SpellState{return {known:[],prepared:[],alwaysPrepared:[],spellbook:[],slots:{}}}
 export function spellcastingClass(c:Character,classId:string){return c.classes.find(x=>x.id===classId)}

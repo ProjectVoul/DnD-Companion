@@ -14,7 +14,7 @@ assert.deepEqual(byId.dwarf.languages,['Common','Dwarvish']);
 assert.deepEqual(byId.elf.languages,['Common','Elvish']);
 assert.deepEqual(byId.gnome.languages,['Common','Gnomish']);
 assert.deepEqual(byId.halfling.languages,['Common','Halfling']);
-assert.deepEqual(byId.half-orc.languages,['Common','Orc']);
+assert.deepEqual(byId['half-orc'].languages,['Common','Orc']);
 assert.deepEqual(byId.tiefling.languages,['Common','Infernal']);
 assert.deepEqual(byId.human.languages,['Common']);
 assert.equal(byId.human.languageChoiceCount,1);

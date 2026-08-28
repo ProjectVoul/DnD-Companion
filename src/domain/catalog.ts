@@ -16,19 +16,46 @@ export const CLASSES:ClassDefinition[]=[
 {id:'wizard',name:'Wizard',hitDie:6,primaryAbilities:['int'],savingThrows:['int','wis'],spellcasting:'spellbook',spellcastingAbility:'int',subclassLevel:2,multiclassRequirements:[['int']]},
 {id:'artificer',name:'Artificer',hitDie:8,primaryAbilities:['int'],savingThrows:['con','int'],spellcasting:'prepared',spellcastingAbility:'int',subclassLevel:3,multiclassRequirements:[['int']]},
 ];
-export const SUBCLASSES:Record<string,{id:string;name:string;source:string}[]>= {
-barbarian:[{id:'berserker',name:'Path of the Berserker',source:'phb2014'},{id:'totem-warrior',name:'Path of the Totem Warrior',source:'phb2014'}],
-bard:[{id:'lore',name:'College of Lore',source:'phb2014'},{id:'valor',name:'College of Valor',source:'phb2014'}],
-cleric:[{id:'knowledge',name:'Knowledge Domain',source:'phb2014'},{id:'life',name:'Life Domain',source:'phb2014'},{id:'light',name:'Light Domain',source:'phb2014'},{id:'nature',name:'Nature Domain',source:'phb2014'},{id:'tempest',name:'Tempest Domain',source:'phb2014'},{id:'trickery',name:'Trickery Domain',source:'phb2014'},{id:'war',name:'War Domain',source:'phb2014'}],
-druid:[{id:'land',name:'Circle of the Land',source:'phb2014'},{id:'moon',name:'Circle of the Moon',source:'phb2014'}],
-fighter:[{id:'champion',name:'Champion',source:'phb2014'},{id:'battle-master',name:'Battle Master',source:'phb2014'},{id:'eldritch-knight',name:'Eldritch Knight',source:'phb2014'}],
-monk:[{id:'open-hand',name:'Way of the Open Hand',source:'phb2014'},{id:'shadow',name:'Way of Shadow',source:'phb2014'},{id:'four-elements',name:'Way of the Four Elements',source:'phb2014'}],
-paladin:[{id:'ancients',name:'Oath of the Ancients',source:'phb2014'},{id:'devotion',name:'Oath of Devotion',source:'phb2014'},{id:'vengeance',name:'Oath of Vengeance',source:'phb2014'}],
-ranger:[{id:'hunter',name:'Hunter',source:'phb2014'},{id:'beast-master',name:'Beast Master',source:'phb2014'}],
-rogue:[{id:'thief',name:'Thief',source:'phb2014'},{id:'assassin',name:'Assassin',source:'phb2014'},{id:'arcane-trickster',name:'Arcane Trickster',source:'phb2014'}],
-sorcerer:[{id:'draconic',name:'Draconic Bloodline',source:'phb2014'},{id:'wild-magic',name:'Wild Magic',source:'phb2014'}],
-warlock:[{id:'archfey',name:'The Archfey',source:'phb2014'},{id:'fiend',name:'The Fiend',source:'phb2014'},{id:'great-old-one',name:'The Great Old One',source:'phb2014'}],
-wizard:[{id:'abjuration',name:'School of Abjuration',source:'phb2014'},{id:'conjuration',name:'School of Conjuration',source:'phb2014'},{id:'divination',name:'School of Divination',source:'phb2014'},{id:'enchantment',name:'School of Enchantment',source:'phb2014'},{id:'evocation',name:'School of Evocation',source:'phb2014'},{id:'illusion',name:'School of Illusion',source:'phb2014'},{id:'necromancy',name:'School of Necromancy',source:'phb2014'},{id:'transmutation',name:'School of Transmutation',source:'phb2014'}],
-artificer:[{id:'alchemist',name:'Alchemist',source:'tasha2020'},{id:'armorer',name:'Armorer',source:'tasha2020'},{id:'artillerist',name:'Artillerist',source:'tasha2020'},{id:'battle-smith',name:'Battle Smith',source:'tasha2020'}],
+
+export const SUBCLASSES:Record<string,{id:string;name:string;source:string}[]>={
+barbarian:[
+{id:'berserker',name:'Path of the Berserker',source:'phb2014'},{id:'totem-warrior',name:'Path of the Totem Warrior',source:'phb2014'},
+{id:'ancestral-guardian',name:'Path of the Ancestral Guardian',source:'xanathar2017'},{id:'storm-herald',name:'Path of the Storm Herald',source:'xanathar2017'},{id:'zealot',name:'Path of the Zealot',source:'xanathar2017'},{id:'beast',name:'Path of the Beast',source:'tasha2020'},{id:'wild-magic',name:'Path of Wild Magic',source:'tasha2020'}],
+bard:[
+{id:'lore',name:'College of Lore',source:'phb2014'},{id:'valor',name:'College of Valor',source:'phb2014'},
+{id:'glamour',name:'College of Glamour',source:'xanathar2017'},{id:'swords',name:'College of Swords',source:'xanathar2017'},{id:'whispers',name:'College of Whispers',source:'xanathar2017'},{id:'eloquence',name:'College of Eloquence',source:'tasha2020'},{id:'creation',name:'College of Creation',source:'tasha2020'}],
+cleric:[
+{id:'knowledge',name:'Knowledge Domain',source:'phb2014'},{id:'life',name:'Life Domain',source:'phb2014'},{id:'light',name:'Light Domain',source:'phb2014'},{id:'nature',name:'Nature Domain',source:'phb2014'},{id:'tempest',name:'Tempest Domain',source:'phb2014'},{id:'trickery',name:'Trickery Domain',source:'phb2014'},{id:'war',name:'War Domain',source:'phb2014'},
+{id:'forge',name:'Forge Domain',source:'xanathar2017'},{id:'grave',name:'Grave Domain',source:'xanathar2017'},{id:'twilight',name:'Twilight Domain',source:'tasha2020'}],
+druid:[
+{id:'land',name:'Circle of the Land',source:'phb2014'},{id:'moon',name:'Circle of the Moon',source:'phb2014'},
+{id:'dreams',name:'Circle of Dreams',source:'xanathar2017'},{id:'shepherd',name:'Circle of the Shepherd',source:'xanathar2017'},{id:'spores',name:'Circle of Spores',source:'xanathar2017'},{id:'stars',name:'Circle of Stars',source:'tasha2020'},{id:'wildfire',name:'Circle of Wildfire',source:'tasha2020'}],
+fighter:[
+{id:'champion',name:'Champion',source:'phb2014'},{id:'battle-master',name:'Battle Master',source:'phb2014'},{id:'eldritch-knight',name:'Eldritch Knight',source:'phb2014'},
+{id:'arcane-archer',name:'Arcane Archer',source:'xanathar2017'},{id:'cavalier',name:'Cavalier',source:'xanathar2017'},{id:'samurai',name:'Samurai',source:'xanathar2017'},{id:'echo-knight',name:'Echo Knight',source:'other'},{id:'psi-warrior',name:'Psi Warrior',source:'tasha2020'},{id:'rune-knight',name:'Rune Knight',source:'tasha2020'}],
+monk:[
+{id:'open-hand',name:'Way of the Open Hand',source:'phb2014'},{id:'shadow',name:'Way of Shadow',source:'phb2014'},{id:'four-elements',name:'Way of the Four Elements',source:'phb2014'},
+{id:'drunken-master',name:'Way of the Drunken Master',source:'xanathar2017'},{id:'kensei',name:'Way of the Kensei',source:'xanathar2017'},{id:'sun-soul',name:'Way of the Sun Soul',source:'xanathar2017'}],
+paladin:[
+{id:'ancients',name:'Oath of the Ancients',source:'phb2014'},{id:'devotion',name:'Oath of Devotion',source:'phb2014'},{id:'vengeance',name:'Oath of Vengeance',source:'phb2014'},
+{id:'conquest',name:'Oath of Conquest',source:'xanathar2017'},{id:'redemption',name:'Oath of Redemption',source:'xanathar2017'}],
+ranger:[
+{id:'hunter',name:'Hunter',source:'phb2014'},{id:'beast-master',name:'Beast Master',source:'phb2014'},
+{id:'gloom-stalker',name:'Gloom Stalker',source:'xanathar2017'},{id:'horizon-walker',name:'Horizon Walker',source:'xanathar2017'},{id:'monster-slayer',name:'Monster Slayer',source:'xanathar2017'}],
+rogue:[
+{id:'thief',name:'Thief',source:'phb2014'},{id:'assassin',name:'Assassin',source:'phb2014'},{id:'arcane-trickster',name:'Arcane Trickster',source:'phb2014'},
+{id:'inquisitive',name:'Inquisitive',source:'xanathar2017'},{id:'mastermind',name:'Mastermind',source:'xanathar2017'},{id:'scout',name:'Scout',source:'xanathar2017'},{id:'swashbuckler',name:'Swashbuckler',source:'xanathar2017'},{id:'phantom',name:'Phantom',source:'tasha2020'},{id:'soulknife',name:'Soulknife',source:'tasha2020'}],
+sorcerer:[
+{id:'draconic',name:'Draconic Bloodline',source:'phb2014'},{id:'wild-magic',name:'Wild Magic',source:'phb2014'},
+{id:'divine-soul',name:'Divine Soul',source:'xanathar2017'},{id:'shadow-magic',name:'Shadow Magic',source:'xanathar2017'},{id:'storm-sorcery',name:'Storm Sorcery',source:'xanathar2017'},{id:'aberrant-mind',name:'Aberrant Mind',source:'tasha2020'},{id:'clockwork-soul',name:'Clockwork Soul',source:'tasha2020'}],
+warlock:[
+{id:'archfey',name:'The Archfey',source:'phb2014'},{id:'fiend',name:'The Fiend',source:'phb2014'},{id:'great-old-one',name:'The Great Old One',source:'phb2014'},
+{id:'celestial',name:'The Celestial',source:'xanathar2017'},{id:'hexblade',name:'The Hexblade',source:'xanathar2017'},{id:'fathomless',name:'The Fathomless',source:'tasha2020'},{id:'genie',name:'The Genie',source:'tasha2020'}],
+wizard:[
+{id:'abjuration',name:'School of Abjuration',source:'phb2014'},{id:'conjuration',name:'School of Conjuration',source:'phb2014'},{id:'divination',name:'School of Divination',source:'phb2014'},{id:'enchantment',name:'School of Enchantment',source:'phb2014'},{id:'evocation',name:'School of Evocation',source:'phb2014'},{id:'illusion',name:'School of Illusion',source:'phb2014'},{id:'necromancy',name:'School of Necromancy',source:'phb2014'},{id:'transmutation',name:'School of Transmutation',source:'phb2014'},
+{id:'bladesinging',name:'Bladesinging',source:'tasha2020'},{id:'order-of-scribes',name:'Order of Scribes',source:'tasha2020'}],
+artificer:[
+{id:'alchemist',name:'Alchemist',source:'tasha2020'},{id:'armorer',name:'Armorer',source:'tasha2020'},{id:'artillerist',name:'Artillerist',source:'tasha2020'},{id:'battle-smith',name:'Battle Smith',source:'tasha2020'}],
 };
+
 export const SPECIES=['Dragonborn','Dwarf','Elf','Gnome','Half-Elf','Half-Orc','Halfling','Human','Variant Human','Tiefling'];

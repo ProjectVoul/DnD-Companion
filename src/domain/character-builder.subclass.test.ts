@@ -16,8 +16,10 @@ const wizard=assignSubclass(paladin,'order-of-scribes','wizard');
 assert.equal(wizard.classes[1].subclassId,'order-of-scribes');
 assert.ok(wizard.features.some(f=>f.id==='wizard:order-of-scribes:quill'));
 assert.ok(wizard.features.some(f=>f.id==='wizard:order-of-scribes:one-with-the-word'));
-assert.ok(!wizard.features.some(f=>f.id==='paladin:glory:aura-of-alacrity'));
-assert.ok(!wizard.features.some(f=>f.id==='paladin:glory:living-legend'));
+// Assigning a second subclass must preserve the first class's independent subclass features.
+assert.ok(wizard.features.some(f=>f.id==='paladin:glory:aura-of-alacrity'));
+assert.ok(wizard.features.some(f=>f.id==='paladin:glory:living-legend'));
+assert.ok(!wizard.features.some(f=>f.id==='wizard:bladesinging:blade-song'));
 
 const swords=assignSubclass(multiclass,'swords','bard');
 assert.equal(swords.classes[0].subclassId,undefined);
